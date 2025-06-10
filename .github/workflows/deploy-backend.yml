@@ -1,0 +1,45 @@
+name: Deploy Spring Boot to EC2
+on:
+  push:
+    branches: [ dev-BE ]  # 원하는 브랜치로 수정
+    paths:
+      - 'backend/**'
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      - name: Set up SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+      - name: Deploy to EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+          # 환경변수 내보내기
+          export DB_URL="${{ secrets.DB_URL }}"
+          export DB_USERNAME="${{ secrets.DB_USERNAME }}"
+          export DB_PASSWORD="${{ secrets.DB_PASSWORD }}"
+          export OAUTH_GITHUB_CLIENT_ID="${{ secrets.OAUTH_GITHUB_CLIENT_ID }}"
+          export OAUTH_GITHUB_CLIENT_SECRET="${{ secrets.OAUTH_GITHUB_CLIENT_SECRET }}"
+          export OAUTH_GITHUB_REDIRECT_URI="${{ secrets.OAUTH_GITHUB_REDIRECT_URI }}"
+          # 로그 저장할 디렉토리 추가
+          sudo mkdir -p /var/log/airdnd
+          sudo chown $(whoami):$(whoami) /var/log/airdnd
+          # 프로젝트 디렉토리로 이동
+          cd ~/airdnd  # EC2에 clone해둔 경로
+          # 최신 코드 가져오기
+          git fetch origin dev-Be
+          git rebase origin/dev-Be || git reset --hard origin/dev-Be
+          # 빌드 및 실행
+          chmod +x ./gradlew
+          ./gradlew -p backend build -x test
+          # 기존 실행 중인 서버 종료 (포트 충돌 방지)
+          pkill -f 'java -jar' || true
+          # 서버 재실행 (환경변수 주입 포함)
+          nohup java -jar \
+          -Dspring.profiles.active=prod \
+          backend/build/libs/backend-0.0.1-SNAPSHOT.jar > /var/log/airdnd/app.log 2>&1 &
+          EOF

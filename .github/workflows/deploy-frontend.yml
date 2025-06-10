@@ -1,0 +1,42 @@
+name: Frontend Auto Deploy
+on:
+  push:
+    branches:
+      - dev-fe
+    paths:
+      - 'frontend/**'
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+      - name: Install Dependencies & Build
+        working-directory: ./frontend
+        run: |
+          npm install
+          npm run build
+      - name: Compress Build Files
+        run: |
+          zip -r frontend-build.zip frontend/dist
+      - name: Set up SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+      - name: Upload to EC2 and Deploy
+        run: |
+          scp -o StrictHostKeyChecking=no frontend-build.zip ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/tmp/
+          ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+            # 정적 파일 디렉토리 초기화
+            sudo rm -rf /var/www/airdnd/frontend/*
+            # 압축 해제 및 복사
+            unzip -o /tmp/frontend-build.zip -d /tmp/frontend-build
+            sudo cp -r /tmp/frontend-build/* /var/www/airdnd/
+            # 정리
+            rm -rf /tmp/frontend-build /tmp/frontend-build.zip
+          EOF
