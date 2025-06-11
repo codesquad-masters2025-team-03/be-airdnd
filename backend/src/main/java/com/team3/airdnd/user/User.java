@@ -7,10 +7,10 @@ import java.time.LocalDateTime;
 import jakarta.persistence.Id;
 
 @Getter
+@Entity
 @Builder
 @AllArgsConstructor
-@Entity
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor
 public class User {
 
     @Id
@@ -35,6 +35,9 @@ public class User {
 
     @Column(nullable = false, length = 20)
     private String phone;
+
+    @Column(name = "profile_url")
+    private String profileUrl;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
