@@ -26,7 +26,7 @@ jobs:
           sudo mkdir -p /var/log/airdnd
           sudo chown $(whoami):$(whoami) /var/log/airdnd
           # 프로젝트 디렉토리로 이동
-          cd ~/airdnd  # EC2에 clone해둔 경로
+          cd ~/be-airdnd  # EC2에 clone해둔 경로
           # 최신 코드 가져오기
           git fetch origin dev-BE
           git rebase origin/dev-BE || git reset --hard origin/dev-BE
