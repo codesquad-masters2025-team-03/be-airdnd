@@ -1,5 +1,5 @@
-package com.team3.airdnd.payment;
-import com.team3.airdnd.user.User;
+package com.team3.airdnd.payment.domain;
+import com.team3.airdnd.user.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
 

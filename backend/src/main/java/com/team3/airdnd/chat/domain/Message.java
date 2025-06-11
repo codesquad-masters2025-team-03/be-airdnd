@@ -1,6 +1,6 @@
-package com.team3.airdnd.chat;
+package com.team3.airdnd.chat.domain;
 
-import com.team3.airdnd.user.User;
+import com.team3.airdnd.user.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
 

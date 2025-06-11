@@ -1,6 +1,6 @@
-package com.team3.airdnd.payment;
+package com.team3.airdnd.payment.domain;
 
-import com.team3.airdnd.accomodation.Reservation;
+import com.team3.airdnd.accomodation.domain.Reservation;
 import jakarta.persistence.*;
 import lombok.*;
 

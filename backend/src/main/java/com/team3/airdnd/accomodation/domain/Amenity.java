@@ -1,10 +1,7 @@
-package com.team3.airdnd.accomodation;
+package com.team3.airdnd.accomodation.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.util.ArrayList;
-import java.util.List;
 
 
 @Entity

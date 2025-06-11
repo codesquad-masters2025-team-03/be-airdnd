@@ -1,4 +1,4 @@
-package com.team3.airdnd.storedFile;
+package com.team3.airdnd.storedFile.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
