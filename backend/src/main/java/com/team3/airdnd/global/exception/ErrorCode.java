@@ -13,6 +13,7 @@ public enum ErrorCode {
 
   FAILURE_LOGIN(40100, HttpStatus.UNAUTHORIZED, "잘못된 아이디 또는 비밀번호입니다."),
   ACCESS_DENIED(40300, HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
+  DUPLICATED_LOGIN_ID(40900, HttpStatus.CONFLICT, "이미 존재하는 로그인 아이디입니다."),
 
   INTERNAL_SERVER_ERROR(50000, HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 에러입니다.");
 
