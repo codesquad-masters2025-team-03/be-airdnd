@@ -1,24 +1,64 @@
-# Compiled class file
+# ============================
+# 💻 Java 관련
+# ============================
 *.class
-
-# Log file
-*.log
-
-# BlueJ files
-*.ctxt
-
-# Mobile Tools for Java (J2ME)
-.mtj.tmp/
-
-# Package Files #
 *.jar
 *.war
-*.nar
 *.ear
+*.nar
 *.zip
 *.tar.gz
 *.rar
+*.log
 
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+# ============================
+# 🧪 IDE 관련 (IntelliJ, Eclipse 등)
+# ============================
+.idea/
+*.iml
+*.ipr
+*.iws
+*.classpath
+*.project
+*.settings/
+
+# ============================
+# 🛠️ Gradle 관련
+# ============================
+.gradle/
+build/
+out/
+!gradle/wrapper/gradle-wrapper.properties
+!gradlew
+!gradlew.bat
+
+# Gradle 캐시/히스토리 파일들 (성능엔 도움 되지만 공유엔 불필요)
+*.lock
+
+# ============================
+# 🧪 테스트 관련
+# ============================
+test-output/
+surefire-reports/
+target/
+
+# ============================
+# 📱 J2ME / Mobile tools
+# ============================
+.mtj.tmp/
+
+# ============================
+# ⚠️ JVM 크래시 로그
+# ============================
 hs_err_pid*
 replay_pid*
+
+# ============================
+# 🧹 운영체제 & 편집기 임시파일
+# ============================
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*.bak
+*.tmp
