@@ -35,7 +35,7 @@ public class AuthService {
     userRepository.save(user);
   }
 
-  public void login(LoginRequest request) {
+  public boolean login(LoginRequest request) {
     User user = userRepository.findByLoginId(request.getLoginId())
         .orElseThrow(() -> new CommonException(ErrorCode.NOT_FOUND_USER));
 
@@ -43,6 +43,6 @@ public class AuthService {
       throw new CommonException(ErrorCode.FAILURE_LOGIN);
     }
 
-    return;
+    return true;
   }
 }
