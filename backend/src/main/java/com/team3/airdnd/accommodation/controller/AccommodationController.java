@@ -1,6 +1,6 @@
-package com.team3.airdnd.accomodation.controller;
+package com.team3.airdnd.accommodation.controller;
 
-import com.team3.airdnd.accomodation.service.AccomodationService;
+import com.team3.airdnd.accommodation.service.AccomodationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

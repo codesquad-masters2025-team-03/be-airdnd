@@ -1,4 +1,4 @@
-package com.team3.airdnd.accomodation.domain;
+package com.team3.airdnd.accommodation.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
