@@ -37,7 +37,7 @@ public class Reservation {
     private Status status;
 
     @Column(name = "total_price", nullable = false)
-    private Integer totalPrice;
+    private Long totalPrice;
 
     public enum Status {
         PENDING, CONFIRMED, CANCELLED

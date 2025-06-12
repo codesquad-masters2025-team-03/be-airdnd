@@ -1,6 +1,6 @@
 package com.team3.airdnd.storedFile.repository;
 
-import com.team3.airdnd.storedFile.dto.ImageDto;
+import com.team3.airdnd.storedFile.dto.StoredFileResponseDto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import com.team3.airdnd.storedFile.domain.StoredFile;
 import org.springframework.data.jpa.repository.Query;
@@ -10,15 +10,15 @@ import java.util.List;
 
 public interface StoredFileRepository extends JpaRepository<StoredFile, Long> {
     @Query("""
-    SELECT new com.team3.airdnd.storedFile.dto.ImageDto(
-        s.id,
-        s.fileUrl
-    )
-    FROM StoredFile s
-    WHERE s.targetType = :targetType AND s.targetId = :targetId
-    ORDER BY s.fileOrder ASC
-""")
-    List<ImageDto> findImageDtoByTargetTypeAndTargetId(
+        SELECT new com.team3.airdnd.storedFile.dto.StoredFileResponseDto.ImageUrlDto(
+            s.id,
+            s.fileUrl
+        )
+        FROM StoredFile s
+        WHERE s.targetType = :targetType AND s.targetId = :targetId
+        ORDER BY s.fileOrder ASC
+    """)
+    List<StoredFileResponseDto.ImageUrlDto> findImageByTargetTypeAndTargetIdOrderByFileOrderAsc(
             @Param("targetType") StoredFile.TargetType targetType,
             @Param("targetId") Long targetId
     );

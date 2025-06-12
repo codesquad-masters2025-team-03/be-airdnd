@@ -24,7 +24,7 @@ public class Payment {
     @JoinColumn(name = "payment_method_id", nullable = false)
     private PaymentMethod paymentMethod;
 
-    private Integer amount;
+    private Long amount;
 
     @Column(name = "paid_at", nullable = false)
     private LocalDateTime paidAt;

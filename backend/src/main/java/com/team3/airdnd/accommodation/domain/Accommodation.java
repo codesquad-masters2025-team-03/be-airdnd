@@ -22,7 +22,7 @@ public class Accommodation {
     private String name;
 
     @Column(name = "price_per_night", nullable = false)
-    private Integer pricePerNight;
+    private Long pricePerNight;
 
     @Column(length = 500)
     private String description;
@@ -30,8 +30,8 @@ public class Accommodation {
     @Column(name = "max_guests")
     private Integer maxGuests;
 
-    @Column(name = "bad_count")
-    private Integer badCount;
+    @Column(name = "bed_count")
+    private Integer bedCount;
 
     @OneToOne
     @JoinColumn(name = "address_id", unique = true)
