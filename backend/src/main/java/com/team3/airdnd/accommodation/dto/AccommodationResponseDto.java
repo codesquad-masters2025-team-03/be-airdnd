@@ -1,6 +1,6 @@
 package com.team3.airdnd.accommodation.dto;
 
-import com.team3.airdnd.storedFile.dto.StoredFileResponseDto;
+import com.team3.airdnd.storedFile.dto.ImageUrlDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -14,15 +14,15 @@ public class AccommodationResponseDto {
     @Builder
     public static class AccommodationDetailDto {
         private String name;
-        private List<StoredFileResponseDto.ImageUrlDto> imageUrls;
-        private List<AmenityResponseDto.AmenityInfoDto> amenities;
+        private List<ImageUrlDto> imageUrls;
+        private List<AmenityInfoDto> amenities;
         private Long hostId;
         private String description;
         private long pricePerNight;
         private int maxGuests;
         private int bedCount;
         private AddressInfoDto address;
-        private ReviewResponseDto.ReviewListDto reviews;
+        private ReviewListDto reviews;
     }
 
     @AllArgsConstructor
@@ -34,5 +34,14 @@ public class AccommodationResponseDto {
         private String streetAddress;
         private double latitude;
         private double longitude;
+    }
+
+    @AllArgsConstructor
+    @Getter
+    @Builder
+    public static class ReviewListDto {
+        private double avgRating;
+        private int reviewSize;
+        private List<ReviewInfoDto> comments;
     }
 }

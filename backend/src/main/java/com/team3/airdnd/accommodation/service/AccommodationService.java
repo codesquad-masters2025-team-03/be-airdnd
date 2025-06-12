@@ -3,15 +3,15 @@ package com.team3.airdnd.accommodation.service;
 import com.team3.airdnd.accommodation.domain.Accommodation;
 import com.team3.airdnd.accommodation.domain.Address;
 import com.team3.airdnd.accommodation.dto.AccommodationResponseDto;
-import com.team3.airdnd.accommodation.dto.AmenityResponseDto;
-import com.team3.airdnd.accommodation.dto.ReviewResponseDto;
+import com.team3.airdnd.accommodation.dto.AmenityInfoDto;
+import com.team3.airdnd.accommodation.dto.ReviewInfoDto;
 import com.team3.airdnd.accommodation.repository.AccommodationAmenityRepository;
 import com.team3.airdnd.accommodation.repository.AccommodationRepository;
 import com.team3.airdnd.accommodation.repository.ReviewRepository;
 import com.team3.airdnd.global.exception.CommonException;
 import com.team3.airdnd.global.exception.ErrorCode;
 import com.team3.airdnd.storedFile.domain.StoredFile;
-import com.team3.airdnd.storedFile.dto.StoredFileResponseDto;
+import com.team3.airdnd.storedFile.dto.ImageUrlDto;
 import com.team3.airdnd.storedFile.repository.StoredFileRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -29,9 +29,9 @@ public class AccommodationService {
     
     public AccommodationResponseDto.AccommodationDetailDto getAccommodationDetail(Long id) {
         Accommodation accommodation = findAccommodationOrThrow(id);
-        List<StoredFileResponseDto.ImageUrlDto> imageUrls = findAllImageUrlsByAccommodationId(id);
-        List<AmenityResponseDto.AmenityInfoDto> amenities = findAmenityNamesByAccommodationId(id);
-        ReviewResponseDto.ReviewListDto reviewLists = buildReviewLists(id);
+        List<ImageUrlDto> imageUrls = findAllImageUrlsByAccommodationId(id);
+        List<AmenityInfoDto> amenities = findAmenityNamesByAccommodationId(id);
+        AccommodationResponseDto.ReviewListDto reviewLists = buildReviewLists(id);
         AccommodationResponseDto.AddressInfoDto address = buildAddress(accommodation.getAddress());
 
         return AccommodationResponseDto.AccommodationDetailDto.builder()
@@ -53,23 +53,23 @@ public class AccommodationService {
                 .orElseThrow(() -> new CommonException(ErrorCode.NOT_FOUND_RESOURCE));
     }
 
-    private List<StoredFileResponseDto.ImageUrlDto> findAllImageUrlsByAccommodationId(Long id) {
+    private List<ImageUrlDto> findAllImageUrlsByAccommodationId(Long id) {
         return storedFileRepository.findImageByTargetTypeAndTargetIdOrderByFileOrderAsc(
                         StoredFile.TargetType.ACCOMMODATION, id);
     }
-    private List<AmenityResponseDto.AmenityInfoDto> findAmenityNamesByAccommodationId(Long id) {
+    private List<AmenityInfoDto> findAmenityNamesByAccommodationId(Long id) {
         return accommodationAmenityRepository.findAmenityByAccommodationId(id);
     }
 
-    private ReviewResponseDto.ReviewListDto buildReviewLists(Long id) {
-        List<ReviewResponseDto.ReviewInfoDto> reviews = reviewRepository.findReviewByAccommodationId(id);
+    private AccommodationResponseDto.ReviewListDto buildReviewLists(Long id) {
+        List<ReviewInfoDto> reviews = reviewRepository.findReviewByAccommodationId(id);
 
         double avg = reviews.stream()
-                .mapToDouble(ReviewResponseDto.ReviewInfoDto::getRating)
+                .mapToDouble(ReviewInfoDto::rating)
                 .average()
                 .orElse(0.0);
 
-        return ReviewResponseDto.ReviewListDto.builder()
+        return AccommodationResponseDto.ReviewListDto.builder()
                 .avgRating(avg)
                 .reviewSize(reviews.size())
                 .comments(reviews)
