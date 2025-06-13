@@ -44,4 +44,5 @@ public class AccommodationResponseDto {
         private int reviewSize;
         private List<ReviewInfoDto> comments;
     }
+
 }
