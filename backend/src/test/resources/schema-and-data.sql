@@ -108,7 +108,7 @@ INSERT INTO accommodation (name, description, price_per_night, max_guests, bed_c
 VALUES ('리뷰 없는 숙소', '리뷰가 없는 숙소입니다.', 100000, 2, 1, 1, 1, NOW());
 
 -- 어메니티 샘플
-INSERT INTO amenity (name) VALUES ('헤어드라이기'), ('세탁기'), ('와이파이');
+INSERT INTO amenity (name) VALUES ('AIR_CONDITIONER'), ('TV'), ('HEATER');
 
 -- 숙소-어메니티 매핑
 INSERT INTO accommodation_amenity (accommodation_id, amenity_id)
