@@ -85,7 +85,7 @@ CREATE TABLE stored_file (
                              id BIGINT AUTO_INCREMENT PRIMARY KEY,
                              file_url VARCHAR(255) NOT NULL,
                              file_type VARCHAR(50) NOT NULL,
-                             file_order INT NOT NULL,
+                             file_order BIGINT NOT NULL,
                              target_type VARCHAR(50) NOT NULL,
                              target_id BIGINT NOT NULL
 );
