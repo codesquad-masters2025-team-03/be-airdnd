@@ -33,6 +33,12 @@ public class Accommodation {
     @Column(name = "bed_count")
     private Integer bedCount;
 
+    @Column(name = "bedroom_count")
+    private Integer bedroomCount;
+
+    @Column(name = "bathroom_count")
+    private Integer bathroomCount;
+
     @OneToOne
     @JoinColumn(name = "address_id", unique = true)
     private Address address;
