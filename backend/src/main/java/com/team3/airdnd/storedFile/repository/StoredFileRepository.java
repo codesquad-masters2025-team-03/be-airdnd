@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface StoredFileRepository extends JpaRepository<StoredFile, Long> {
     @Query("""
@@ -22,4 +23,11 @@ public interface StoredFileRepository extends JpaRepository<StoredFile, Long> {
             @Param("targetType") StoredFile.TargetType targetType,
             @Param("targetId") Long targetId
     );
+
+	Optional<StoredFile> findByTargetTypeAndTargetIdAndFileOrder(
+		StoredFile.TargetType targetType,
+		Long targetId,
+		Integer fileOrder
+	);
 }
+
