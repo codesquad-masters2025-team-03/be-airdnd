@@ -1,4 +1,4 @@
-package com.team3.airdnd.accommodation.domain;
+package com.team3.airdnd.accomodation.domain;
 
 import com.team3.airdnd.user.domain.User;
 import jakarta.persistence.*;
@@ -12,14 +12,13 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Reservation {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "guest_id", nullable = false)
-    private User guest;
+    private User guestId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "accommodation_id", nullable = false)
@@ -38,7 +37,7 @@ public class Reservation {
     private Status status;
 
     @Column(name = "total_price", nullable = false)
-    private Long totalPrice;
+    private Integer totalPrice;
 
     public enum Status {
         PENDING, CONFIRMED, CANCELLED
