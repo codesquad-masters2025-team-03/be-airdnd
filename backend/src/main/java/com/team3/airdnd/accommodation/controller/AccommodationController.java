@@ -1,11 +1,5 @@
 package com.team3.airdnd.accommodation.controller;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.team3.airdnd.accommodation.dto.AccommodationResponseDto;
 import com.team3.airdnd.accommodation.dto.PriceHistogramRequestDto;
 import com.team3.airdnd.accommodation.service.AccommodationService;
@@ -13,6 +7,12 @@ import com.team3.airdnd.global.dto.ResponseDto;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
@@ -32,4 +32,16 @@ public class AccommodationController {
 	public ResponseDto<?> getAccommodationPriceRange(@Valid @ModelAttribute PriceHistogramRequestDto request) {
 		return ResponseDto.ok(accommodationService.getPriceHistogram(request));
 	}
+
+	/*
+	@GetMapping("")
+	public ResponseDto<AccommodationResponseDto.AccommodationListDto> getAccommodationList(
+		@RequestParam(required = false, defaultValue = "1") int page,
+		@RequestParam(required = false, defaultValue = "5") int size
+	){
+		//AccommodationResponseDto.AccommodationListDto accommodations = accommodationService.getAccommodations(page, size);
+		//return ResponseDto.ok(accommodations);
+	}
+
+	 */
 }
