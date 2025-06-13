@@ -16,6 +16,8 @@ public class AccommodationAmenity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private Integer count;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "accommodation_id", nullable = false)
     private Accommodation accommodation;
