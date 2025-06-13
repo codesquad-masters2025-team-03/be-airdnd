@@ -1,6 +1,7 @@
 package com.team3.airdnd.accommodation.controller;
 
 import com.team3.airdnd.accommodation.dto.AccommodationResponseDto;
+import com.team3.airdnd.accommodation.service.AccommodationService;
 import com.team3.airdnd.global.dto.ResponseDto;
 
 import lombok.RequiredArgsConstructor;
@@ -28,8 +29,8 @@ public class AccommodationController {
 	public ResponseDto<AccommodationResponseDto.AccommodationListDto> getAccommodationList(
 		@RequestParam(required = false, defaultValue = "1") int page,
 		@RequestParam(required = false, defaultValue = "5") int size
-        ){
-			AccommodationResponseDto.AccommodationListDto accommodations = accomodationService.getAccommodations(page, size);
+	) {
+		AccommodationResponseDto.AccommodationListDto accommodations = accommodationService.getAccommodations(page,size);
 			return ResponseDto.ok(accommodations);
 		}
 }
