@@ -21,6 +21,7 @@ public interface AccommodationAmenityRepository extends JpaRepository<Accommodat
         WHERE aa.accommodation.id = :accommodationId
   """)
     List<AmenityInfoDto> findAmenityByAccommodationId(
-        @Param("accommodationId") Long accommodationId
+            @Param("accommodationId") Long accommodationId
     );
+	List<AccommodationAmenity> findByAccommodation_Id(Long accommodationId);
 }
