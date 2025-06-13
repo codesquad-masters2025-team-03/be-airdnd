@@ -1,4 +1,4 @@
-package com.team3.airdnd.accomodation.domain;
+package com.team3.airdnd.accommodation.domain;
 
 import com.team3.airdnd.user.domain.User;
 import jakarta.persistence.*;
@@ -18,7 +18,7 @@ public class Reservation {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "guest_id", nullable = false)
-    private User guestId;
+    private User guest;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "accommodation_id", nullable = false)
@@ -37,7 +37,7 @@ public class Reservation {
     private Status status;
 
     @Column(name = "total_price", nullable = false)
-    private Integer totalPrice;
+    private Long totalPrice;
 
     public enum Status {
         PENDING, CONFIRMED, CANCELLED

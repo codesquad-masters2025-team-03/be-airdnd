@@ -1,4 +1,4 @@
-package com.team3.airdnd.accomodation.domain;
+package com.team3.airdnd.accommodation.domain;
 
 import com.team3.airdnd.user.domain.User;
 import jakarta.persistence.*;
@@ -30,8 +30,8 @@ public class Accommodation {
     @Column(name = "max_guests")
     private Integer maxGuests;
 
-    @Column(name = "bad_count")
-    private Integer badCount;
+    @Column(name = "bed_count")
+    private Integer bedCount;
 
     @OneToOne
     @JoinColumn(name = "address_id", unique = true)
@@ -47,6 +47,6 @@ public class Accommodation {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "host_id", nullable = false)
-    private User hostId;
+    private User host;
 
 }
