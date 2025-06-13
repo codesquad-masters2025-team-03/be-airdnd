@@ -1,4 +1,4 @@
-package com.team3.airdnd.accommodation.domain;
+package com.team3.airdnd.accomodation.domain;
 
 import com.team3.airdnd.user.domain.User;
 import jakarta.persistence.*;
@@ -12,17 +12,20 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Review {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "guest_id", nullable = false)
+    private User guestId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reservation_id", nullable = false)
-    private Reservation reservation;
+    private Reservation reservationId;
 
     @Column(nullable = false)
-    private Double rating;
+    private Integer rating;
 
     @Column(length = 500)
     private String content;

@@ -9,7 +9,6 @@ import lombok.Getter;
 @Getter
 @Schema(name = "ExceptionDto", description = "API 예외 발생 시 응답 DTO")
 public class ExceptionDto {
-
   @Schema(name = "code", description = "에러 코드")
   @NotNull
   private final Integer code;

@@ -1,4 +1,4 @@
-package com.team3.airdnd.accommodation.domain;
+package com.team3.airdnd.accomodation.domain;
 
 import com.team3.airdnd.user.domain.User;
 import jakarta.persistence.*;
@@ -14,7 +14,6 @@ import jakarta.persistence.Id;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Accommodation {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -23,7 +22,7 @@ public class Accommodation {
     private String name;
 
     @Column(name = "price_per_night", nullable = false)
-    private Long pricePerNight;
+    private Integer pricePerNight;
 
     @Column(length = 500)
     private String description;
@@ -31,8 +30,8 @@ public class Accommodation {
     @Column(name = "max_guests")
     private Integer maxGuests;
 
-    @Column(name = "bed_count")
-    private Integer bedCount;
+    @Column(name = "bad_count")
+    private Integer badCount;
 
     @OneToOne
     @JoinColumn(name = "address_id", unique = true)
@@ -48,6 +47,6 @@ public class Accommodation {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "host_id", nullable = false)
-    private User host;
+    private User hostId;
 
 }
