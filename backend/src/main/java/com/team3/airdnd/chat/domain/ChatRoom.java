@@ -1,6 +1,6 @@
 package com.team3.airdnd.chat.domain;
 
-import com.team3.airdnd.accomodation.domain.Reservation;
+import com.team3.airdnd.accommodation.domain.Reservation;
 import com.team3.airdnd.user.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ChatRoom {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

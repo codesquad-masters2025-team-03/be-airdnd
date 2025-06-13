@@ -8,7 +8,8 @@ import lombok.*;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class StroedFile {
+public class StoredFile {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -27,6 +28,9 @@ public class StroedFile {
     // 실제 참조하는 대상 ID (accommodation_id 또는 message_id)
     @Column(nullable = false)
     private Long targetId;
+
+    @Column(name = "file_order", nullable = false)
+    private Integer fileOrder;
 
     public enum TargetType {
         ACCOMMODATION,

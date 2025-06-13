@@ -1,4 +1,4 @@
-package com.team3.airdnd.accomodation.domain;
+package com.team3.airdnd.accommodation.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -12,6 +12,7 @@ import jakarta.persistence.Id;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AccommodationAmenity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

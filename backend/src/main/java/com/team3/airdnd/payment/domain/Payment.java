@@ -1,6 +1,6 @@
 package com.team3.airdnd.payment.domain;
 
-import com.team3.airdnd.accomodation.domain.Reservation;
+import com.team3.airdnd.accommodation.domain.Reservation;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Payment {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -24,7 +25,7 @@ public class Payment {
     @JoinColumn(name = "payment_method_id", nullable = false)
     private PaymentMethod paymentMethod;
 
-    private Integer amount;
+    private Long amount;
 
     @Column(name = "paid_at", nullable = false)
     private LocalDateTime paidAt;
