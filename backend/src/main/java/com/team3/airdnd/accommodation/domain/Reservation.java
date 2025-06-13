@@ -18,7 +18,7 @@ public class Reservation {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "guest_id", nullable = false)
-    private User guestId;
+    private User guest;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "accommodation_id", nullable = false)

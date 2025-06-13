@@ -85,7 +85,7 @@ CREATE TABLE stored_file (
                              id BIGINT AUTO_INCREMENT PRIMARY KEY,
                              file_url VARCHAR(255) NOT NULL,
                              file_type VARCHAR(50) NOT NULL,
-                             file_order BIGINT NOT NULL,
+                             file_order INT NOT NULL,
                              target_type VARCHAR(50) NOT NULL,
                              target_id BIGINT NOT NULL
 );
@@ -121,7 +121,6 @@ INSERT INTO reservation (guest_id, accommodation_id) VALUES (2, 1);
 INSERT INTO review (reservation_id, content, created_at, rating)
 VALUES (1, '정말 깨끗하고 호스트도 친절했어요.', '2025-06-11 10:23:00', 4.5),
        (1, '위치가 너무 좋았어요.', '2025-06-10 18:01:00', 4.5);
-
 -- 이미지 샘플
 INSERT INTO stored_file (file_url, file_type, file_order, target_type, target_id)
 VALUES ('https://cdn.../accom1.jpg', 'image/jpeg', 1, 'ACCOMMODATION', 1),

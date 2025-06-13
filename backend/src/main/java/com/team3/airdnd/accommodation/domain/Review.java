@@ -21,7 +21,7 @@ public class Review {
     private Reservation reservation;
 
     @Column(nullable = false)
-    private Integer rating;
+    private Double rating;
 
     @Column(length = 500)
     private String content;
