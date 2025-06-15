@@ -1,7 +1,10 @@
 package com.team3.airdnd.accommodation.domain;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Builder
@@ -19,6 +22,9 @@ public class Address {
 
     @Column(name = "street_address")
     private String streetAddress;
+
+    @Column(name = "detail_address")
+    private String detailAddress;
 
     @Column(nullable = false)
     private Double latitude;

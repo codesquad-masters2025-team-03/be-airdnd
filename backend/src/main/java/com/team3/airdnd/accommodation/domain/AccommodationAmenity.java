@@ -1,9 +1,10 @@
 package com.team3.airdnd.accommodation.domain;
 
 import jakarta.persistence.*;
-import lombok.*;
-
-import jakarta.persistence.Id;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 
 @Entity
@@ -15,8 +16,6 @@ public class AccommodationAmenity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    private Integer count;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "accommodation_id", nullable = false)
