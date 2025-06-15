@@ -21,16 +21,12 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.team3.airdnd.accommodation.dto.AccommodationRequestDto;
-import com.team3.airdnd.accommodation.dto.AccommodationResponseDto;
 import com.team3.airdnd.accommodation.dto.PriceHistogramRequestDto;
-import com.team3.airdnd.accommodation.dto.PriceHistogramResponseDto;
-import com.team3.airdnd.accommodation.service.AccommodationService;
-import com.team3.airdnd.global.dto.ResponseDto;
 import com.team3.airdnd.global.exception.CommonException;
 import com.team3.airdnd.global.exception.ErrorCode;
 
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
+
 
 @RestController
 @RequiredArgsConstructor
@@ -38,6 +34,7 @@ import lombok.RequiredArgsConstructor;
 public class AccommodationController {
 
 	private final AccommodationService accommodationService;
+
 
 	@GetMapping("/{accommodation-id}")
 	public ResponseEntity<ResponseDto<AccommodationResponseDto.AccommodationDetailDto>> getAccommodationDetail(
