@@ -1,13 +1,14 @@
 package com.team3.airdnd.accommodation.controller;
-
-import com.team3.airdnd.accommodation.dto.AccommodationResponseDto;
-import com.team3.airdnd.accommodation.dto.AccommodationResponseDto;
-import com.team3.airdnd.accommodation.service.AccommodationService;
 import com.team3.airdnd.global.dto.ResponseDto;
 import lombok.RequiredArgsConstructor;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,20 +17,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.team3.airdnd.accommodation.dto.AccommodationRequestDto;
-import com.team3.airdnd.accommodation.service.AccommodationService;
-import jakarta.validation.Valid;
+import com.team3.airdnd.accommodation.dto.AccommodationResponseDto;
 import com.team3.airdnd.accommodation.dto.PriceHistogramRequestDto;
+import com.team3.airdnd.accommodation.dto.PriceHistogramResponseDto;
 import com.team3.airdnd.accommodation.service.AccommodationService;
-import com.team3.airdnd.global.dto.ResponseDto;
 
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
@@ -71,15 +64,9 @@ public class AccommodationController {
 		return ResponseDto.noContent();
 	}
 
-	@GetMapping("/{accommodation-id}")
-	public ResponseDto<AccommodationResponseDto.AccommodationDetailDto> getAccommodationDetail(
-		@PathVariable("accommodation-id") Long id) {
-		AccommodationResponseDto.AccommodationDetailDto detailDto = accommodationService.getAccommodationDetail(id);
-		return ResponseDto.ok(detailDto);
-	}
-
 	@GetMapping("/price-range")
-	public ResponseDto<?> getAccommodationPriceRange(@Valid @ModelAttribute PriceHistogramRequestDto request) {
+	public ResponseEntity<ResponseDto<PriceHistogramResponseDto>> getAccommodationPriceRange(
+		@Valid @ModelAttribute PriceHistogramRequestDto request) {
 		return ResponseDto.ok(accommodationService.getPriceHistogram(request));
 	}
 
@@ -94,4 +81,13 @@ public class AccommodationController {
 	}
 
 
+
+	@GetMapping("/host")
+	public ResponseEntity<ResponseDto<Map<String, Object>>> getMyAccommodations(@RequestParam Long hostId) {
+		List<AccommodationResponseDto.HostAccommodationDto> accommodations = accommodationService.getMyAccommodations(
+			hostId);
+
+		Map<String, Object> data = Map.of("accommodations", accommodations);
+		return ResponseDto.ok(data);
+	}
 }

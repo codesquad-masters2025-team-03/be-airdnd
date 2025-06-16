@@ -1,5 +1,7 @@
 package com.team3.airdnd.accommodation.service;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -14,11 +16,13 @@ import com.team3.airdnd.accommodation.domain.AccommodationAmenity;
 import com.team3.airdnd.accommodation.domain.Address;
 import com.team3.airdnd.accommodation.domain.Amenity;
 import com.team3.airdnd.accommodation.domain.AmenityType;
-import com.team3.airdnd.accommodation.dto.AccommodationRequestDto;
 import com.team3.airdnd.accommodation.domain.QAccommodation;
 import com.team3.airdnd.accommodation.domain.QReservation;
+import com.team3.airdnd.accommodation.dto.AccommodationRequestDto;
 import com.team3.airdnd.accommodation.dto.AccommodationResponseDto;
 import com.team3.airdnd.accommodation.dto.AmenityInfoDto;
+import com.team3.airdnd.accommodation.dto.HostAccommodationQueryDto;
+import com.team3.airdnd.accommodation.dto.PriceHistogramRequestDto;
 import com.team3.airdnd.accommodation.dto.PriceHistogramRequestDto;
 import com.team3.airdnd.accommodation.dto.PriceHistogramResponseDto;
 import com.team3.airdnd.accommodation.dto.ReviewInfoDto;
@@ -324,6 +328,30 @@ public class AccommodationService {
 		}
 
 		return new PriceHistogramResponseDto(min, max, histogram);
+	}
+
+	public List<AccommodationResponseDto.HostAccommodationDto> getMyAccommodations(Long hostId) {
+		List<HostAccommodationQueryDto> accommodations = accommodationRepository.findAccommodationListByHostId(
+			hostId);
+		return accommodations.stream()
+			.map(accommodation -> {
+				List<ImageUrlDto> images = storedFileRepository.findImageByTargetTypeAndTargetIdOrderByFileOrderAsc(
+					StoredFile.TargetType.ACCOMMODATION,
+					accommodation.id()
+				);
+
+				String imageUrl = images.isEmpty() ? null : images.get(0).imageUrl(); // fileOrder = 1
+
+				return AccommodationResponseDto.HostAccommodationDto.builder()
+					.id(accommodation.id())
+					.name(accommodation.name())
+					.city(accommodation.city())
+					.district(accommodation.district())
+					.streetAddress(accommodation.streetAddress())
+					.imageUrl(imageUrl)
+					.build();
+			})
+			.toList();
 	}
 
 	//숙소 목록 페이징 구현

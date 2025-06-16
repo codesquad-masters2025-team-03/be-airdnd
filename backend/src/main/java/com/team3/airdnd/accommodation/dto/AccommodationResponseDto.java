@@ -1,14 +1,15 @@
 package com.team3.airdnd.accommodation.dto;
 
+import java.util.List;
+
 import com.team3.airdnd.storedFile.dto.ImageUrlDto;
+
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-
-import java.util.List;
-
-
 public class AccommodationResponseDto {
+
 	@AllArgsConstructor
 	@Getter
 	@Builder
@@ -28,12 +29,45 @@ public class AccommodationResponseDto {
 	@AllArgsConstructor
 	@Getter
 	@Builder
+	public static class AddressInfoDto {
+		private String city;
+		private String district;
+		private String streetAddress;
+		private double latitude;
+		private double longitude;
+	}
+
+	@AllArgsConstructor
+	@Getter
+	@Builder
+	public static class ReviewListDto {
+		private double avgRating;
+		private int reviewSize;
+		private List<ReviewInfoDto> comments;
+	}
+
+	@AllArgsConstructor
+	@Getter
+	@Builder
 	public static class AccommodationListDto {
 		private Integer page;
 		private Integer size;
 		private Integer totalPages;
 		private Integer totalElements;
 		private List<AccommodationInfo> accommodations;
+	}
+
+	@AllArgsConstructor
+	@Getter
+	@Builder
+	public static class HostAccommodationDto {
+		private Long id;
+		private String name;
+		private String imageUrl;
+		private String city;
+		private String district;
+		private String streetAddress;
+
 	}
 
 	@AllArgsConstructor
@@ -59,25 +93,5 @@ public class AccommodationResponseDto {
 	public static class AmenityInfo {
 		private Long id;
 		private String name;
-	}
-
-	@AllArgsConstructor
-	@Getter
-	@Builder
-	public static class AddressInfoDto {
-		private String city;
-		private String district;
-		private String streetAddress;
-		private double latitude;
-		private double longitude;
-	}
-
-	@AllArgsConstructor
-	@Getter
-	@Builder
-	public static class ReviewListDto {
-		private double avgRating;
-		private int reviewSize;
-		private List<ReviewInfoDto> comments;
 	}
 }
