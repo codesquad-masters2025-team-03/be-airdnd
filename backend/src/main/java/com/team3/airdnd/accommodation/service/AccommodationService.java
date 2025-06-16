@@ -228,6 +228,7 @@ public class AccommodationService {
 		}
 	}
 
+	@Transactional
 	public void deleteAccommodation(Long accommodationId, Long hostId) {
 		Accommodation accommodation = getAccommodation(accommodationId);
 		User host = validateHostUser(hostId);
