@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
-public interface AccommodationRepository extends JpaRepository<Accommodation, Long> {
+public interface AccommodationRepository extends JpaRepository<Accommodation, Long>, AccommodationQueryRepository  {
     @Query("""
         SELECT DISTINCT a FROM Accommodation a
         JOIN FETCH a.address

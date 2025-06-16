@@ -25,40 +25,21 @@ public class AccommodationResponseDto {
 		private ReviewListDto reviews;
 	}
 
-    @AllArgsConstructor
-    @Getter
-    @Builder
-    public static class AddressInfoDto {
-        private String city;
-        private String district;
-        private String streetAddress;
-        private double latitude;
-        private double longitude;
-    }
-
-    @AllArgsConstructor
-    @Getter
-    @Builder
-    public static class ReviewListDto {
-        private double avgRating;
-        private int reviewSize;
-        private List<ReviewInfoDto> comments;
-    }
-
 	@AllArgsConstructor
 	@Getter
 	@Builder
-	public static class AccommodationListDto{
+	public static class AccommodationListDto {
 		private Integer page;
 		private Integer size;
 		private Integer totalPages;
 		private Integer totalElements;
 		private List<AccommodationInfo> accommodations;
 	}
+
 	@AllArgsConstructor
 	@Getter
 	@Builder
-	public static class AccommodationInfo{
+	public static class AccommodationInfo {
 		private Long id;
 		private String name;
 		private String imageUrl;
@@ -66,8 +47,8 @@ public class AccommodationResponseDto {
 		private String description;
 		private int maxGuests;
 		private int bedCount;
-		private String addressId;
-		private List<AmenityInfo> amenity;
+		private String address;
+		private List<AmenityInfoDto> amenity;
 		private double latitude;
 		private double longitude;
 	}
@@ -75,9 +56,28 @@ public class AccommodationResponseDto {
 	@AllArgsConstructor
 	@Getter
 	@Builder
-	public static class AmenityInfo{
+	public static class AmenityInfo {
 		private Long id;
 		private String name;
 	}
 
+	@AllArgsConstructor
+	@Getter
+	@Builder
+	public static class AddressInfoDto {
+		private String city;
+		private String district;
+		private String streetAddress;
+		private double latitude;
+		private double longitude;
+	}
+
+	@AllArgsConstructor
+	@Getter
+	@Builder
+	public static class ReviewListDto {
+		private double avgRating;
+		private int reviewSize;
+		private List<ReviewInfoDto> comments;
+	}
 }

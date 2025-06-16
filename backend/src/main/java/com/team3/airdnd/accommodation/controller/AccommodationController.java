@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/accommodations")
 public class AccommodationController {
 
-	private final AccommodationService accommodationService;
+    private final AccommodationService accommodationService;
 
 	@GetMapping("/{accommodation-id}")
 	public ResponseDto<AccommodationResponseDto.AccommodationDetailDto> getAccommodationDetail(
@@ -33,15 +33,15 @@ public class AccommodationController {
 		return ResponseDto.ok(accommodationService.getPriceHistogram(request));
 	}
 
-	/*
+	//속소 목록 페이징 조회 기능
 	@GetMapping("")
 	public ResponseDto<AccommodationResponseDto.AccommodationListDto> getAccommodationList(
 		@RequestParam(required = false, defaultValue = "1") int page,
 		@RequestParam(required = false, defaultValue = "5") int size
 	){
-		//AccommodationResponseDto.AccommodationListDto accommodations = accommodationService.getAccommodations(page, size);
-		//return ResponseDto.ok(accommodations);
+		AccommodationResponseDto.AccommodationListDto accommodations = accommodationService.getAccommodations(page, size);
+		return ResponseDto.ok(accommodations);
 	}
 
-	 */
+
 }
