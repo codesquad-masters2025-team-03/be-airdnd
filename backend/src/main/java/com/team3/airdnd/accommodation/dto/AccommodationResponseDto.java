@@ -9,21 +9,21 @@ import java.util.List;
 
 
 public class AccommodationResponseDto {
-    @AllArgsConstructor
-    @Getter
-    @Builder
-    public static class AccommodationDetailDto {
-        private String name;
-        private List<ImageUrlDto> imageUrls;
-        private List<AmenityInfoDto> amenities;
-        private Long hostId;
-        private String description;
-        private long pricePerNight;
-        private int maxGuests;
-        private int bedCount;
-        private AddressInfoDto address;
-        private ReviewListDto reviews;
-    }
+	@AllArgsConstructor
+	@Getter
+	@Builder
+	public static class AccommodationDetailDto {
+		private String name;
+		private List<ImageUrlDto> imageUrls;
+		private List<AmenityInfoDto> amenities;
+		private Long hostId;
+		private String description;
+		private long pricePerNight;
+		private int maxGuests;
+		private int bedCount;
+		private AddressInfoDto address;
+		private ReviewListDto reviews;
+	}
 
     @AllArgsConstructor
     @Getter
@@ -44,42 +44,40 @@ public class AccommodationResponseDto {
         private int reviewSize;
         private List<ReviewInfoDto> comments;
     }
-    @AllArgsConstructor
-    @Getter
-    @Builder
-    public static class AccommodationListDto{
-        private Integer page;
-        private Integer size;
-        private Integer totalPages;
-        private Integer totalElements;
-        private List<AccommodationInfo> accommodations;
-    }
-    @AllArgsConstructor
-    @Getter
-    @Builder
-    public static class AccommodationInfo{
-        private Long id;
-        private String name;
-        private String imageUrl;
-        private int pricePerNight;
-        private String description;
-        private int maxGuests;
-        private int bedCount;
-        private String addressId;
-        private List<AmenityInfo> amenity;
-        private double latitude;
-        private double longitude;
-    }
 
-    @AllArgsConstructor
-    @Getter
-    @Builder
-    public static class AmenityInfo{
-        private Long id;
-        private String name;
-    }
+	@AllArgsConstructor
+	@Getter
+	@Builder
+	public static class AccommodationListDto{
+		private Integer page;
+		private Integer size;
+		private Integer totalPages;
+		private Integer totalElements;
+		private List<AccommodationInfo> accommodations;
+	}
+	@AllArgsConstructor
+	@Getter
+	@Builder
+	public static class AccommodationInfo{
+		private Long id;
+		private String name;
+		private String imageUrl;
+		private int pricePerNight;
+		private String description;
+		private int maxGuests;
+		private int bedCount;
+		private String addressId;
+		private List<AmenityInfo> amenity;
+		private double latitude;
+		private double longitude;
+	}
 
-
-
+	@AllArgsConstructor
+	@Getter
+	@Builder
+	public static class AmenityInfo{
+		private Long id;
+		private String name;
+	}
 
 }
