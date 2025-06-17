@@ -5,6 +5,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.team3.airdnd.global.exception.ErrorCode;
+import com.team3.airdnd.global.exception.ErrorCode;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
@@ -30,5 +32,14 @@ public record ResponseDto<T>(@JsonIgnore HttpStatus httpStatus,
 	public static <T> ResponseEntity<ResponseDto<T>> noContent() {
 		return ResponseEntity.status(HttpStatus.NO_CONTENT)
 			.body(new ResponseDto<>(HttpStatus.NO_CONTENT, true, null, null));
+	}
+
+	public static <T> ResponseDto<T> fail(HttpStatus status, String message) {
+		return new ResponseDto<>(status, false, null,
+			new ExceptionDto(ErrorCode.INTERNAL_SERVER_ERROR.getCode(), message));
+	}
+
+	public static <T> ResponseDto<T> fail(ErrorCode errorCode) {
+		return new ResponseDto<>(errorCode.getHttpStatus(), false, null, ExceptionDto.of(errorCode));
 	}
 }
