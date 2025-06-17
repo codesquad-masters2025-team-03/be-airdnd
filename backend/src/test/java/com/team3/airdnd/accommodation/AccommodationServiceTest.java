@@ -69,15 +69,14 @@ public class AccommodationServiceTest extends AbstractIntegrationTest {
 			accommodationService.getAccommodationDetail(accommodationId);
 
 		// then
-		assertThat(result.getName()).isEqualTo("제주 오션뷰 하우스");
-		assertThat(result.getImageUrls()).hasSize(2);
+		assertThat(result.getName()).isEqualTo("숙소 1");
 		assertThat(result.getAmenities()).containsExactlyInAnyOrder(
 			AmenityType.AIR_CONDITIONER.name(),
 			AmenityType.TV.name(),
 			AmenityType.HEATER.name()
 		);
-		assertThat(result.getHostId()).isEqualTo(1L);
-		assertThat(result.getAddress().getCity()).isEqualTo("제주도");
+		assertThat(result.getHostId()).isEqualTo(2L);
+		assertThat(result.getAddress().getCity()).isEqualTo("울산광역시");
 		assertThat(result.getReviews().getComments()).hasSize(2);
 		assertThat(result.getReviews().getAvgRating()).isEqualTo(4.5);
 	}
@@ -112,7 +111,7 @@ public class AccommodationServiceTest extends AbstractIntegrationTest {
 	@DisplayName("숙소를 생성하면 주소, 숙소, 편의시설, 이미지가 모두 저장된다")
 	void createAccommodation_success() {
 		// given
-		User host = userRepository.findByLoginId("host01")
+		User host = userRepository.findByLoginId("user06")
 			.orElseThrow(() -> new RuntimeException("기존 호스트가 없습니다"));
 
 		AccommodationRequestDto.CreateAccommodationDto request = AccommodationTestFactory.createDto(host.getId());
@@ -173,10 +172,10 @@ public class AccommodationServiceTest extends AbstractIntegrationTest {
 	@DisplayName("숙소를 수정하면 정보와 이미지가 변경된다")
 	void updateAccommodation_success() {
 		// given
-		User host = userRepository.findByLoginId("host01")
+		User host = userRepository.findByLoginId("user07")
 			.orElseThrow(() -> new RuntimeException("호스트 없음"));
 
-		Accommodation original = accommodationRepository.findById(1L).orElseThrow();
+		Accommodation original = accommodationRepository.findById(6L).orElseThrow();
 
 		AccommodationRequestDto.UpdateAccommodationDto request = AccommodationRequestDto.UpdateAccommodationDto.builder()
 			.name("수정된 숙소 이름")
@@ -215,8 +214,8 @@ public class AccommodationServiceTest extends AbstractIntegrationTest {
 	@DisplayName("숙소 수정 시 이미지를 전달하지 않아도 기존 이미지는 유지된다")
 	void updateAccommodation_keepExistingImages() {
 		// given
-		User host = userRepository.findByLoginId("host01").orElseThrow();
-		Accommodation accommodation = accommodationRepository.findById(1L).orElseThrow();
+		User host = userRepository.findByLoginId("user07").orElseThrow();
+		Accommodation accommodation = accommodationRepository.findById(6L).orElseThrow();
 
 		var request = AccommodationRequestDto.UpdateAccommodationDto.builder()
 			.name("이미지 없는 수정")
@@ -241,10 +240,10 @@ public class AccommodationServiceTest extends AbstractIntegrationTest {
 	@DisplayName("숙소를 삭제하면 관련 데이터도 함께 삭제된다")
 	void deleteAccommodation_success() {
 		// given
-		User host = userRepository.findByLoginId("host02")
+		User host = userRepository.findByLoginId("user03")
 			.orElseThrow(() -> new RuntimeException("호스트 없음"));
 
-		Accommodation target = accommodationRepository.findById(3L)
+		Accommodation target = accommodationRepository.findById(2L)
 			.orElseThrow();
 
 		Long accommodationId = target.getId();
@@ -268,7 +267,7 @@ public class AccommodationServiceTest extends AbstractIntegrationTest {
 	@DisplayName("호스트는 자신의 숙소 목록을 조회할 수 있다")
 	void getMyAccommodations_success() {
 		// given
-		User host = userRepository.findByLoginId("host01")
+		User host = userRepository.findByLoginId("user07")
 			.orElseThrow();
 
 		// when
@@ -279,6 +278,6 @@ public class AccommodationServiceTest extends AbstractIntegrationTest {
 		assertThat(results).isNotEmpty();
 		assertThat(results)
 			.extracting(AccommodationResponseDto.HostAccommodationDto::getName)
-			.contains("제주 오션뷰 하우스", "리뷰 없는 숙소");
+			.contains("숙소 6");
 	}
 }
