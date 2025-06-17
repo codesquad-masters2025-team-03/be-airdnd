@@ -5,10 +5,6 @@ import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import com.team3.airdnd.accommodation.dto.AccommodationResponseDto;
-import com.team3.airdnd.accommodation.service.AccommodationService;
-import com.team3.airdnd.global.dto.ResponseDto;
-import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -20,12 +16,17 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.team3.airdnd.accommodation.dto.PriceHistogramConditionDto;
 import com.team3.airdnd.accommodation.dto.AccommodationRequestDto;
+import com.team3.airdnd.accommodation.dto.AccommodationResponseDto;
+import com.team3.airdnd.accommodation.dto.PriceHistogramConditionDto;
+import com.team3.airdnd.accommodation.dto.PriceHistogramResponseDto;
+import com.team3.airdnd.accommodation.service.AccommodationService;
+import com.team3.airdnd.global.dto.ResponseDto;
 import com.team3.airdnd.global.exception.CommonException;
 import com.team3.airdnd.global.exception.ErrorCode;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
@@ -80,7 +81,7 @@ public class AccommodationController {
 	}
 
 	@GetMapping("/price-range")
-	public ResponseDto<?> getAccommodationPriceRange(
+	public ResponseEntity<ResponseDto<PriceHistogramResponseDto>> getAccommodationPriceRange(
 		@Valid @ModelAttribute PriceHistogramConditionDto request
 	) {
 		return ResponseDto.ok(accommodationService.getPriceHistogram(request));

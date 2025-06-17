@@ -6,13 +6,6 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.querydsl.core.BooleanBuilder;
@@ -25,13 +18,15 @@ import com.team3.airdnd.accommodation.domain.Address;
 import com.team3.airdnd.accommodation.domain.Amenity;
 import com.team3.airdnd.accommodation.domain.AmenityType;
 import com.team3.airdnd.accommodation.domain.QAccommodation;
+import com.team3.airdnd.accommodation.domain.QAddress;
 import com.team3.airdnd.accommodation.domain.QReservation;
+import com.team3.airdnd.accommodation.domain.Reservation;
 import com.team3.airdnd.accommodation.dto.AccommodationRequestDto;
 import com.team3.airdnd.accommodation.dto.AccommodationResponseDto;
-import com.team3.airdnd.accommodation.dto.AmenityInfoDto;
 import com.team3.airdnd.accommodation.dto.HostAccommodationQueryDto;
-import com.team3.airdnd.accommodation.dto.PriceHistogramRequestDto;
+import com.team3.airdnd.accommodation.dto.PriceHistogramConditionDto;
 import com.team3.airdnd.accommodation.dto.PriceHistogramResponseDto;
+import com.team3.airdnd.accommodation.dto.ReviewDto;
 import com.team3.airdnd.accommodation.repository.AccommodationAmenityRepository;
 import com.team3.airdnd.accommodation.repository.AccommodationRepository;
 import com.team3.airdnd.accommodation.repository.AddressRepository;
@@ -48,14 +43,6 @@ import com.team3.airdnd.user.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 @Service
 @RequiredArgsConstructor
 public class AccommodationService {
@@ -68,7 +55,7 @@ public class AccommodationService {
 	private final UserRepository userRepository;
 	private final AmenityRepository amenityRepository;
 	private final ReservationRepository reservationRepository;
-	;
+
 	private final JPAQueryFactory queryFactory;
 	private final StoredFileService storedFileService;
 	// 에어비엔비 기준으로 범위를 50으로 정했습니다.
