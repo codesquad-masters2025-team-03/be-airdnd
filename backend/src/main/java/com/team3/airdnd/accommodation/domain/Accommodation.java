@@ -1,8 +1,8 @@
 package com.team3.airdnd.accommodation.domain;
 
-import java.time.LocalDateTime;
-
 import com.team3.airdnd.user.domain.User;
+
+import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
