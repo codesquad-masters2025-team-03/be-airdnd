@@ -254,6 +254,8 @@ public class AccommodationService {
 		if (hasReservation) {
 			throw new CommonException(ErrorCode.ACCOMMODATION_HAS_RESERVATIONS);
 		}
+		
+		storedFileService.deleteFilesByAccommodationId(accommodationId);
 
 		accommodationAmenityRepository.deleteByAccommodationId(accommodationId);
 		addressRepository.delete(accommodation.getAddress());
