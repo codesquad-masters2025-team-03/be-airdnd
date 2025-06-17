@@ -20,13 +20,12 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.team3.airdnd.accommodation.dto.PriceHistogramConditionDto;
 import com.team3.airdnd.accommodation.dto.AccommodationRequestDto;
-import com.team3.airdnd.accommodation.dto.PriceHistogramRequestDto;
 import com.team3.airdnd.global.exception.CommonException;
 import com.team3.airdnd.global.exception.ErrorCode;
 
 import jakarta.validation.Valid;
-
 
 @RestController
 @RequiredArgsConstructor
@@ -34,7 +33,6 @@ import jakarta.validation.Valid;
 public class AccommodationController {
 
 	private final AccommodationService accommodationService;
-
 
 	@GetMapping("/{accommodation-id}")
 	public ResponseEntity<ResponseDto<AccommodationResponseDto.AccommodationDetailDto>> getAccommodationDetail(
@@ -83,7 +81,7 @@ public class AccommodationController {
 
 	@GetMapping("/price-range")
 	public ResponseDto<?> getAccommodationPriceRange(
-		@Valid @ModelAttribute PriceHistogramRequestDto request
+		@Valid @ModelAttribute PriceHistogramConditionDto request
 	) {
 		return ResponseDto.ok(accommodationService.getPriceHistogram(request));
 	}
