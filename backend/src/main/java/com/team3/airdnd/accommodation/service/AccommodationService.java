@@ -6,6 +6,13 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.querydsl.core.BooleanBuilder;
@@ -21,10 +28,10 @@ import com.team3.airdnd.accommodation.domain.QAccommodation;
 import com.team3.airdnd.accommodation.domain.QReservation;
 import com.team3.airdnd.accommodation.dto.AccommodationRequestDto;
 import com.team3.airdnd.accommodation.dto.AccommodationResponseDto;
+import com.team3.airdnd.accommodation.dto.AmenityInfoDto;
 import com.team3.airdnd.accommodation.dto.HostAccommodationQueryDto;
 import com.team3.airdnd.accommodation.dto.PriceHistogramRequestDto;
 import com.team3.airdnd.accommodation.dto.PriceHistogramResponseDto;
-import com.team3.airdnd.accommodation.dto.ReviewDto;
 import com.team3.airdnd.accommodation.repository.AccommodationAmenityRepository;
 import com.team3.airdnd.accommodation.repository.AccommodationRepository;
 import com.team3.airdnd.accommodation.repository.AddressRepository;
@@ -41,6 +48,14 @@ import com.team3.airdnd.user.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class AccommodationService {
@@ -56,6 +71,8 @@ public class AccommodationService {
 	;
 	private final JPAQueryFactory queryFactory;
 	private final StoredFileService storedFileService;
+	// 에어비엔비 기준으로 범위를 50으로 정했습니다.
+	private static final int DEFAULT_BIN_COUNT = 50;
 
 	public AccommodationResponseDto.AccommodationDetailDto getAccommodationDetail(Long id) {
 		Accommodation accommodation = findAccommodationOrThrow(id);
@@ -275,68 +292,94 @@ public class AccommodationService {
 		}
 	}
 
-	public PriceHistogramResponseDto getPriceHistogram(PriceHistogramRequestDto request) {
+	@Transactional(readOnly = true)
+	public PriceHistogramResponseDto getPriceHistogram(PriceHistogramConditionDto request) {
 		QAccommodation a = QAccommodation.accommodation;
 		QReservation r = QReservation.reservation;
+		QAddress addr = QAddress.address;
 
-		final int binCount = 50;
+		BooleanExpression noOverlap = noOverlapCondition(a, r, request);
 
-		// 예약 겹침 없는 숙소만
-		BooleanExpression noOverlap = JPAExpressions
-			.selectOne()
-			.from(r)
-			.where(
-				r.accommodation.eq(a),
-				r.checkIn.lt(request.checkOut()),
-				r.checkOut.gt(request.checkIn())
-				//                r.status.eq(ReservationStatus.RESERVED)
-			)
-			.notExists();
+		BooleanBuilder condition = searchCondition(a, addr, request);
 
-		// 지역, 인원 조건
-		BooleanBuilder condition = new BooleanBuilder();
-		if (request.location() != null && !request.location().isBlank()) {
-			condition.and(
-				a.address.city.containsIgnoreCase(request.location())
-					.or(a.address.district.containsIgnoreCase(request.location()))
-					.or(a.address.streetAddress.containsIgnoreCase(request.location()))
-			);
-		}
-		if (request.guests() != null) {
-			condition.and(a.maxGuests.goe(request.guests()));
-		}
-
-		// 가격만 추출
 		List<Integer> prices = queryFactory
 			.select(a.pricePerNight)
 			.from(a)
+			.join(a.address, addr)
 			.where(condition.and(noOverlap))
 			.fetch();
 
 		if (prices.isEmpty()) {
-			return new PriceHistogramResponseDto(0, 0, Collections.nCopies(binCount, 0));
+			return new PriceHistogramResponseDto(0, 0, Collections.nCopies(DEFAULT_BIN_COUNT, 0));
 		}
 
+		return calculatePriceHistogram(prices);
+	}
+
+	private BooleanExpression noOverlapCondition(QAccommodation a, QReservation r,
+		PriceHistogramConditionDto request) {
+		return JPAExpressions
+			.selectOne()
+			.from(r)
+			.where(
+				r.accommodation.eq(a),
+				r.checkIn.lt(request.getCheckOut()),
+				r.checkOut.gt(request.getCheckIn())
+					.and(
+						r.status.eq(Reservation.Status.CONFIRMED)
+							.or(r.status.eq(Reservation.Status.PENDING))
+					)
+			)
+			.notExists();
+	}
+
+	private BooleanBuilder searchCondition(QAccommodation a, QAddress addr, PriceHistogramConditionDto request) {
+		BooleanBuilder condition = new BooleanBuilder();
+
+		if (request.getLocation() != null && !request.getLocation().isBlank()) {
+			condition.and(
+				addr.city.containsIgnoreCase(request.getLocation())
+					.or(addr.district.containsIgnoreCase(request.getLocation()))
+					.or(addr.streetAddress.containsIgnoreCase(request.getLocation()))
+					.or(a.name.containsIgnoreCase(request.getLocation()))
+			);
+		}
+		if (request.getGuests() != null) {
+			condition.and(a.maxGuests.goe(request.getGuests()));
+		}
+		return condition;
+	}
+
+	private PriceHistogramResponseDto calculatePriceHistogram(List<Integer> prices) {
 		int min = Collections.min(prices);
 		int max = Collections.max(prices);
 
 		if (min == max) {
-			List<Integer> histogram = new ArrayList<>(Collections.nCopies(binCount, 0));
-			histogram.set(0, prices.size());
-			return new PriceHistogramResponseDto(min, max, histogram);
+			List<Integer> histogram = new ArrayList<>(Collections.nCopies(DEFAULT_BIN_COUNT, 0));
+			int centerBin = DEFAULT_BIN_COUNT / 2;
+			histogram.set(centerBin, prices.size());
+
+			int priceRangeStart = min;
+			int priceRangeEnd = max;
+
+			return new PriceHistogramResponseDto(priceRangeStart, priceRangeEnd, histogram);
 		}
 
-		double binWidth = (max - min) / (double)binCount;
-		List<Integer> histogram = new ArrayList<>(Collections.nCopies(binCount, 0));
+		double binWidth = (max - min) / (double)DEFAULT_BIN_COUNT;
+
+		List<Integer> histogram = new ArrayList<>(Collections.nCopies(DEFAULT_BIN_COUNT, 0));
 
 		for (Integer price : prices) {
-			int binIndex = (int)((price - min) / binWidth);
-			if (binIndex >= binCount)
-				binIndex = binCount - 1;
+			int binIndex = (int)Math.floor((price - min) / binWidth);
+			binIndex = Math.min(binIndex, DEFAULT_BIN_COUNT - 1);
+
 			histogram.set(binIndex, histogram.get(binIndex) + 1);
 		}
 
-		return new PriceHistogramResponseDto(min, max, histogram);
+		int priceRangeStart = min;
+		int priceRangeEnd = max;
+
+		return new PriceHistogramResponseDto(priceRangeStart, priceRangeEnd, histogram);
 	}
 
 	public List<AccommodationResponseDto.HostAccommodationDto> getMyAccommodations(Long hostId) {
