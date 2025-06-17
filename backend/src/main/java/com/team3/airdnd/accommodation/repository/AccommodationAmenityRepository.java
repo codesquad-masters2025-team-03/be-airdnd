@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.team3.airdnd.accommodation.domain.AccommodationAmenity;
-import com.team3.airdnd.accommodation.dto.AmenityDto;
 
 public interface AccommodationAmenityRepository extends JpaRepository<AccommodationAmenity, Long> {
 
@@ -17,7 +16,7 @@ public interface AccommodationAmenityRepository extends JpaRepository<Accommodat
 			JOIN aa.amenity am
 			WHERE aa.accommodation.id = :accommodationId
 		""")
-	List<AmenityDto> findAmenityByAccommodationId(
+	List<String> findAmenityByAccommodationId(
 		@Param("accommodationId") Long accommodationId
 	);
 

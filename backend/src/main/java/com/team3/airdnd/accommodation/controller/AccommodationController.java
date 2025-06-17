@@ -18,7 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.team3.airdnd.accommodation.dto.AccommodationRequestDto;
 import com.team3.airdnd.accommodation.dto.AccommodationResponseDto;
-import com.team3.airdnd.accommodation.dto.PriceHistogramRequestDto;
+import com.team3.airdnd.accommodation.dto.PriceHistogramConditionDto;
 import com.team3.airdnd.accommodation.dto.PriceHistogramResponseDto;
 import com.team3.airdnd.accommodation.service.AccommodationService;
 import com.team3.airdnd.global.dto.ResponseDto;
@@ -82,7 +82,8 @@ public class AccommodationController {
 
 	@GetMapping("/price-range")
 	public ResponseEntity<ResponseDto<PriceHistogramResponseDto>> getAccommodationPriceRange(
-		@Valid @ModelAttribute PriceHistogramRequestDto request) {
+		@Valid @ModelAttribute PriceHistogramConditionDto request
+	) {
 		return ResponseDto.ok(accommodationService.getPriceHistogram(request));
 	}
 
