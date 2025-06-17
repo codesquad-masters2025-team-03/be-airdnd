@@ -34,4 +34,15 @@ public class StoredFileService {
 		}
 	}
 
+	public void deleteFilesByAccommodationId(Long accommodationId) {
+		List<StoredFile> files = storedFileRepository.findByTargetTypeAndTargetId(
+			StoredFile.TargetType.ACCOMMODATION, accommodationId
+		);
+
+		for (StoredFile file : files) {
+			s3FileService.delete(file.getFileUrl());  // S3에서 삭제
+			storedFileRepository.delete(file);        // DB에서 삭제
+		}
+	}
+
 }

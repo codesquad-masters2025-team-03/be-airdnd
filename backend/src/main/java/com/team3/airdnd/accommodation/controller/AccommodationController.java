@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -58,10 +57,17 @@ public class AccommodationController {
 	@PatchMapping("/{accommodation-id}")
 	public ResponseEntity<ResponseDto<Void>> updateAccommodation(
 		@PathVariable("accommodation-id") Long accommodationId,
-		@RequestBody AccommodationRequestDto.UpdateAccommodationDto request,
-		@RequestParam Long hostId
+		@RequestPart AccommodationRequestDto.UpdateAccommodationDto request,
+		@RequestParam Long hostId,
+		@RequestPart(value = "files", required = false) List<MultipartFile> files
 	) {
-		accommodationService.updateAccommodation(accommodationId, request, hostId);
+		if (files != null) {
+			if (files.size() < 1 || files.size() > 5) {
+				throw new CommonException(ErrorCode.INVALID_IMAGE);
+			}
+		}
+
+		accommodationService.updateAccommodation(accommodationId, request, hostId, files);
 		return ResponseDto.ok(null);
 	}
 

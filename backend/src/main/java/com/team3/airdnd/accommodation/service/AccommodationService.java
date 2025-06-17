@@ -185,11 +185,10 @@ public class AccommodationService {
 
 		updateAmenities(updated, request.getAmenityTypes());
 
-		// 기존 이미지 삭제 후
-		storedFileService.deleteFilesByAccommodationId(accommodationId);
-
-		// 새 이미지 저장
-		storedFileService.saveFiles(files, updated);
+		if (files != null) {
+			storedFileService.deleteFilesByAccommodationId(accommodationId);
+			storedFileService.saveFiles(files, updated);
+		}
 	}
 
 	private Accommodation getAccommodation(Long accommodationId) {

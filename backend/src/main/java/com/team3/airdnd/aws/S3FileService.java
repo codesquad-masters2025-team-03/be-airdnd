@@ -13,6 +13,7 @@ import com.team3.airdnd.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 @Service
@@ -55,4 +56,18 @@ public class S3FileService {
 			.toString();
 	}
 
+	public void delete(String fileUrl) {
+		String key = extractKeyFromUrl(fileUrl);
+
+		DeleteObjectRequest deleteRequest = DeleteObjectRequest.builder()
+			.bucket(bucket)
+			.key(key)
+			.build();
+
+		s3Client.deleteObject(deleteRequest);
+	}
+
+	private String extractKeyFromUrl(String fileUrl) {
+		return fileUrl.substring(fileUrl.lastIndexOf("/") + 1);
+	}
 }
