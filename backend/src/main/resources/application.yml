@@ -1,4 +1,9 @@
 spring:
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 100MB
+
   springdoc:
     swagger-ui:
       path: /api/swagger-ui.html
@@ -12,12 +17,18 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
+    defer-datasource-initialization: true
     hibernate:
-      ddl-auto: update
+      ddl-auto: create          # or update
     show-sql: true
     properties:
       hibernate:
         format_sql: true
+  sql:
+    init:
+      mode: always               # data.sql 실행을 항상 보장
+      data-locations:
+        - classpath:data.sql
 
 cloud:
   aws:
