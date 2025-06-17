@@ -25,7 +25,6 @@ import com.team3.airdnd.accommodation.domain.AccommodationAmenity;
 import com.team3.airdnd.accommodation.domain.AmenityType;
 import com.team3.airdnd.accommodation.dto.AccommodationRequestDto;
 import com.team3.airdnd.accommodation.dto.AccommodationResponseDto;
-import com.team3.airdnd.accommodation.dto.AmenityDto;
 import com.team3.airdnd.accommodation.repository.AccommodationAmenityRepository;
 import com.team3.airdnd.accommodation.repository.AccommodationRepository;
 import com.team3.airdnd.accommodation.service.AccommodationService;
@@ -73,9 +72,9 @@ public class AccommodationServiceTest extends AbstractIntegrationTest {
 		assertThat(result.getName()).isEqualTo("제주 오션뷰 하우스");
 		assertThat(result.getImageUrls()).hasSize(2);
 		assertThat(result.getAmenities()).containsExactlyInAnyOrder(
-			new AmenityDto(1L, AmenityType.AIR_CONDITIONER),
-			new AmenityDto(2L, AmenityType.TV),
-			new AmenityDto(3L, AmenityType.HEATER)
+			AmenityType.AIR_CONDITIONER.name(),
+			AmenityType.TV.name(),
+			AmenityType.HEATER.name()
 		);
 		assertThat(result.getHostId()).isEqualTo(1L);
 		assertThat(result.getAddress().getCity()).isEqualTo("제주도");

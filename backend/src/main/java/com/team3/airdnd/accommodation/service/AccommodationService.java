@@ -21,7 +21,6 @@ import com.team3.airdnd.accommodation.domain.QAccommodation;
 import com.team3.airdnd.accommodation.domain.QReservation;
 import com.team3.airdnd.accommodation.dto.AccommodationRequestDto;
 import com.team3.airdnd.accommodation.dto.AccommodationResponseDto;
-import com.team3.airdnd.accommodation.dto.AmenityDto;
 import com.team3.airdnd.accommodation.dto.HostAccommodationQueryDto;
 import com.team3.airdnd.accommodation.dto.PriceHistogramRequestDto;
 import com.team3.airdnd.accommodation.dto.PriceHistogramResponseDto;
@@ -61,7 +60,7 @@ public class AccommodationService {
 	public AccommodationResponseDto.AccommodationDetailDto getAccommodationDetail(Long id) {
 		Accommodation accommodation = findAccommodationOrThrow(id);
 		List<String> imageUrls = findAllImageUrlsByAccommodationId(id);
-		List<AmenityDto> amenities = findAmenityNamesByAccommodationId(id);
+		List<String> amenities = findAmenityNamesByAccommodationId(id);
 		AccommodationResponseDto.ReviewListDto reviewLists = buildReviewLists(id);
 		AccommodationResponseDto.AddressInfoDto address = buildAddress(accommodation.getAddress());
 
@@ -89,7 +88,7 @@ public class AccommodationService {
 			StoredFile.TargetType.ACCOMMODATION, id);
 	}
 
-	private List<AmenityDto> findAmenityNamesByAccommodationId(Long id) {
+	private List<String> findAmenityNamesByAccommodationId(Long id) {
 		return accommodationAmenityRepository.findAmenityByAccommodationId(id);
 	}
 

@@ -14,7 +14,7 @@ public class AccommodationResponseDto {
 	public static class AccommodationDetailDto {
 		private String name;
 		private List<String> imageUrls;
-		private List<AmenityDto> amenities;
+		private List<String> amenities;
 		private Long hostId;
 		private String description;
 		private long pricePerNight;
