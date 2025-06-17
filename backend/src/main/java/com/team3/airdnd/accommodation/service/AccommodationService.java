@@ -21,12 +21,11 @@ import com.team3.airdnd.accommodation.domain.QAccommodation;
 import com.team3.airdnd.accommodation.domain.QReservation;
 import com.team3.airdnd.accommodation.dto.AccommodationRequestDto;
 import com.team3.airdnd.accommodation.dto.AccommodationResponseDto;
-import com.team3.airdnd.accommodation.dto.AmenityInfoDto;
+import com.team3.airdnd.accommodation.dto.AmenityDto;
 import com.team3.airdnd.accommodation.dto.HostAccommodationQueryDto;
 import com.team3.airdnd.accommodation.dto.PriceHistogramRequestDto;
-import com.team3.airdnd.accommodation.dto.PriceHistogramRequestDto;
 import com.team3.airdnd.accommodation.dto.PriceHistogramResponseDto;
-import com.team3.airdnd.accommodation.dto.ReviewInfoDto;
+import com.team3.airdnd.accommodation.dto.ReviewDto;
 import com.team3.airdnd.accommodation.repository.AccommodationAmenityRepository;
 import com.team3.airdnd.accommodation.repository.AccommodationRepository;
 import com.team3.airdnd.accommodation.repository.AddressRepository;
@@ -37,15 +36,11 @@ import com.team3.airdnd.global.exception.CommonException;
 import com.team3.airdnd.global.exception.ErrorCode;
 import com.team3.airdnd.storedFile.StoredFileService;
 import com.team3.airdnd.storedFile.domain.StoredFile;
-import com.team3.airdnd.storedFile.dto.ImageUrlDto;
 import com.team3.airdnd.storedFile.repository.StoredFileRepository;
 import com.team3.airdnd.user.domain.User;
 import com.team3.airdnd.user.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
-
-import java.util.ArrayList;
-import java.util.Collections;
 
 @Service
 @RequiredArgsConstructor
@@ -58,50 +53,51 @@ public class AccommodationService {
 	private final AddressRepository addressRepository;
 	private final UserRepository userRepository;
 	private final AmenityRepository amenityRepository;
-	private final ReservationRepository reservationRepository;;
+	private final ReservationRepository reservationRepository;
+	;
 	private final JPAQueryFactory queryFactory;
 	private final StoredFileService storedFileService;
 
-    public AccommodationResponseDto.AccommodationDetailDto getAccommodationDetail(Long id) {
-        Accommodation accommodation = findAccommodationOrThrow(id);
-        List<ImageUrlDto> imageUrls = findAllImageUrlsByAccommodationId(id);
-        List<AmenityInfoDto> amenities = findAmenityNamesByAccommodationId(id);
-        AccommodationResponseDto.ReviewListDto reviewLists = buildReviewLists(id);
-        AccommodationResponseDto.AddressInfoDto address = buildAddress(accommodation.getAddress());
+	public AccommodationResponseDto.AccommodationDetailDto getAccommodationDetail(Long id) {
+		Accommodation accommodation = findAccommodationOrThrow(id);
+		List<String> imageUrls = findAllImageUrlsByAccommodationId(id);
+		List<AmenityDto> amenities = findAmenityNamesByAccommodationId(id);
+		AccommodationResponseDto.ReviewListDto reviewLists = buildReviewLists(id);
+		AccommodationResponseDto.AddressInfoDto address = buildAddress(accommodation.getAddress());
 
-        return AccommodationResponseDto.AccommodationDetailDto.builder()
-                .name(accommodation.getName())
-                .imageUrls(imageUrls)
-                .amenities(amenities)
-                .hostId(accommodation.getHost().getId())
-                .description(accommodation.getDescription())
-                .pricePerNight(accommodation.getPricePerNight())
-                .maxGuests(accommodation.getMaxGuests())
-                .bedCount(accommodation.getBedCount())
-                .address(address)
-                .reviews(reviewLists)
-                .build();
-    }
+		return AccommodationResponseDto.AccommodationDetailDto.builder()
+			.name(accommodation.getName())
+			.imageUrls(imageUrls)
+			.amenities(amenities)
+			.hostId(accommodation.getHost().getId())
+			.description(accommodation.getDescription())
+			.pricePerNight(accommodation.getPricePerNight())
+			.maxGuests(accommodation.getMaxGuests())
+			.bedCount(accommodation.getBedCount())
+			.address(address)
+			.reviews(reviewLists)
+			.build();
+	}
 
-    private Accommodation findAccommodationOrThrow(Long id) {
-        return accommodationRepository.findDetailById(id)
-                .orElseThrow(() -> new CommonException(ErrorCode.NOT_FOUND_RESOURCE));
-    }
+	private Accommodation findAccommodationOrThrow(Long id) {
+		return accommodationRepository.findDetailById(id)
+			.orElseThrow(() -> new CommonException(ErrorCode.NOT_FOUND_RESOURCE));
+	}
 
-	private List<ImageUrlDto> findAllImageUrlsByAccommodationId(Long id) {
+	private List<String> findAllImageUrlsByAccommodationId(Long id) {
 		return storedFileRepository.findByTargetTypeAndTargetIdOrderByFileOrderAsc(
 			StoredFile.TargetType.ACCOMMODATION, id);
 	}
 
-	private List<AmenityInfoDto> findAmenityNamesByAccommodationId(Long id) {
+	private List<AmenityDto> findAmenityNamesByAccommodationId(Long id) {
 		return accommodationAmenityRepository.findAmenityByAccommodationId(id);
 	}
 
 	private AccommodationResponseDto.ReviewListDto buildReviewLists(Long id) {
-		List<ReviewInfoDto> reviews = reviewRepository.findReviewByAccommodationId(id);
+		List<ReviewDto> reviews = reviewRepository.findReviewByAccommodationId(id);
 
 		double avg = reviews.stream()
-			.mapToDouble(ReviewInfoDto::rating)
+			.mapToDouble(ReviewDto::rating)
 			.average()
 			.orElse(0.0);
 
@@ -254,7 +250,7 @@ public class AccommodationService {
 		if (hasReservation) {
 			throw new CommonException(ErrorCode.ACCOMMODATION_HAS_RESERVATIONS);
 		}
-		
+
 		storedFileService.deleteFilesByAccommodationId(accommodationId);
 
 		accommodationAmenityRepository.deleteByAccommodationId(accommodationId);
@@ -349,12 +345,11 @@ public class AccommodationService {
 			hostId);
 		return accommodations.stream()
 			.map(accommodation -> {
-				List<ImageUrlDto> images = storedFileRepository.findByTargetTypeAndTargetIdOrderByFileOrderAsc(
-					StoredFile.TargetType.ACCOMMODATION,
-					accommodation.id()
-				);
-
-				String imageUrl = images.isEmpty() ? null : images.get(0).imageUrl(); // fileOrder = 1
+				String imageUrl = storedFileRepository
+					.findFirstFileUrlByTargetTypeAndTargetId(
+						StoredFile.TargetType.ACCOMMODATION,
+						accommodation.id()
+					);
 
 				return AccommodationResponseDto.HostAccommodationDto.builder()
 					.id(accommodation.id())

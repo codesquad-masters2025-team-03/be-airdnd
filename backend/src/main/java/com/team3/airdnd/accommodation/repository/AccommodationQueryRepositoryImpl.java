@@ -12,13 +12,11 @@ import org.springframework.data.domain.PageRequest;
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.team3.airdnd.accommodation.domain.Accommodation;
-
 import com.team3.airdnd.accommodation.domain.QAccommodation;
 import com.team3.airdnd.accommodation.domain.QAccommodationAmenity;
 import com.team3.airdnd.accommodation.domain.QAmenity;
 import com.team3.airdnd.accommodation.dto.AccommodationResponseDto;
-import com.team3.airdnd.accommodation.dto.AmenityInfoDto;
-
+import com.team3.airdnd.accommodation.dto.AmenityDto;
 import com.team3.airdnd.storedFile.domain.QStoredFile;
 import com.team3.airdnd.storedFile.domain.StoredFile;
 
@@ -35,7 +33,7 @@ public class AccommodationQueryRepositoryImpl implements AccommodationQueryRepos
 	private final QStoredFile storedFile = QStoredFile.storedFile;
 
 	@Override
-	public  AccommodationResponseDto.AccommodationListDto getAccommodationListByPage(int page, int size) {
+	public AccommodationResponseDto.AccommodationListDto getAccommodationListByPage(int page, int size) {
 		PageRequest pageRequest = PageRequest.of(page - 1, size);
 
 		// 1. 페이징된 숙소 가져오기
@@ -77,10 +75,10 @@ public class AccommodationQueryRepositoryImpl implements AccommodationQueryRepos
 			.where(accommodationAmenity.accommodation.id.in(accommodationIds))
 			.fetch();
 
-		Map<Long, List<AmenityInfoDto>> amenityMap = new HashMap<>();
+		Map<Long, List<AmenityDto>> amenityMap = new HashMap<>();
 		for (Tuple tuple : amenityTuples) {
 			Long accId = tuple.get(accommodationAmenity.accommodation.id);
-			AmenityInfoDto dto = new AmenityInfoDto(
+			AmenityDto dto = new AmenityDto(
 				tuple.get(amenity.id),
 				tuple.get(amenity.name)
 			);
@@ -91,7 +89,7 @@ public class AccommodationQueryRepositoryImpl implements AccommodationQueryRepos
 		List<AccommodationResponseDto.AccommodationInfo> accommodationInfos = accommodations.stream()
 			.map(acc -> {
 				String imageUrl = imageMap.getOrDefault(acc.getId(), null);
-				List<AmenityInfoDto> amenities = amenityMap.getOrDefault(acc.getId(), Collections.emptyList());
+				List<AmenityDto> amenities = amenityMap.getOrDefault(acc.getId(), Collections.emptyList());
 				return AccommodationResponseDto.AccommodationInfo.builder()
 					.id(acc.getId())
 					.name(acc.getName())
@@ -115,11 +113,10 @@ public class AccommodationQueryRepositoryImpl implements AccommodationQueryRepos
 		return AccommodationResponseDto.AccommodationListDto.builder()
 			.page(page)
 			.size(size)
-			.totalPages((int) Math.ceil((double) total / size))
-			.totalElements((int) total)
+			.totalPages((int)Math.ceil((double)total / size))
+			.totalElements((int)total)
 			.accommodations(accommodationInfos)
 			.build();
 	}
-
 
 }

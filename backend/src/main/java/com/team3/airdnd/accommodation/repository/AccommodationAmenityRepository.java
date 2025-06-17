@@ -7,12 +7,12 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.team3.airdnd.accommodation.domain.AccommodationAmenity;
-import com.team3.airdnd.accommodation.dto.AmenityInfoDto;
+import com.team3.airdnd.accommodation.dto.AmenityDto;
 
 public interface AccommodationAmenityRepository extends JpaRepository<AccommodationAmenity, Long> {
 
 	@Query("""
-		      SELECT new com.team3.airdnd.accommodation.dto.AmenityInfoDto(
+		      SELECT new com.team3.airdnd.accommodation.dto.AmenityDto(
 		        am.id,
 		        am.name
 		      )
@@ -20,7 +20,7 @@ public interface AccommodationAmenityRepository extends JpaRepository<Accommodat
 		      JOIN aa.amenity am
 		      WHERE aa.accommodation.id = :accommodationId
 		""")
-	List<AmenityInfoDto> findAmenityByAccommodationId(
+	List<AmenityDto> findAmenityByAccommodationId(
 		@Param("accommodationId") Long accommodationId
 	);
 

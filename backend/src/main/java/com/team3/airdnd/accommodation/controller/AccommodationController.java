@@ -1,6 +1,5 @@
 package com.team3.airdnd.accommodation.controller;
-import com.team3.airdnd.global.dto.ResponseDto;
-import lombok.RequiredArgsConstructor;
+
 import java.util.List;
 import java.util.Map;
 
@@ -27,13 +26,14 @@ import com.team3.airdnd.global.exception.CommonException;
 import com.team3.airdnd.global.exception.ErrorCode;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/accommodations")
 public class AccommodationController {
 
-    private final AccommodationService accommodationService;
+	private final AccommodationService accommodationService;
 
 	@GetMapping("/{accommodation-id}")
 	public ResponseEntity<ResponseDto<AccommodationResponseDto.AccommodationDetailDto>> getAccommodationDetail(
@@ -88,15 +88,14 @@ public class AccommodationController {
 
 	//속소 목록 페이징 조회 기능
 	@GetMapping("")
-	public ResponseDto<AccommodationResponseDto.AccommodationListDto> getAccommodationList(
+	public ResponseEntity<ResponseDto<AccommodationResponseDto.AccommodationListDto>> getAccommodationList(
 		@RequestParam(required = false, defaultValue = "1") int page,
 		@RequestParam(required = false, defaultValue = "5") int size
-	){
-		AccommodationResponseDto.AccommodationListDto accommodations = accommodationService.getAccommodations(page, size);
+	) {
+		AccommodationResponseDto.AccommodationListDto accommodations = accommodationService.getAccommodations(page,
+			size);
 		return ResponseDto.ok(accommodations);
 	}
-
-
 
 	@GetMapping("/host")
 	public ResponseEntity<ResponseDto<Map<String, Object>>> getMyAccommodations(@RequestParam Long hostId) {

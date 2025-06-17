@@ -1,5 +1,6 @@
 package com.team3.airdnd.accommodation.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -9,7 +10,7 @@ import org.springframework.data.repository.query.Param;
 import com.team3.airdnd.accommodation.domain.Accommodation;
 import com.team3.airdnd.accommodation.dto.HostAccommodationQueryDto;
 
-public interface AccommodationRepository extends JpaRepository<Accommodation, Long> {
+public interface AccommodationRepository extends JpaRepository<Accommodation, Long>, AccommodationQueryRepository {
 	Optional<Accommodation> findByName(String name);
 
 	@Query("""
