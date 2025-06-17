@@ -10,6 +10,8 @@ import com.team3.airdnd.accommodation.domain.Accommodation;
 import com.team3.airdnd.accommodation.dto.HostAccommodationQueryDto;
 
 public interface AccommodationRepository extends JpaRepository<Accommodation, Long> {
+	Optional<Accommodation> findByName(String name);
+
 	@Query("""
 		    SELECT DISTINCT a FROM Accommodation a
 		    JOIN FETCH a.address
@@ -30,4 +32,5 @@ public interface AccommodationRepository extends JpaRepository<Accommodation, Lo
 		    WHERE a.host.id = :hostId
 		""")
 	List<HostAccommodationQueryDto> findAccommodationListByHostId(@Param("hostId") Long hostId);
+
 }
