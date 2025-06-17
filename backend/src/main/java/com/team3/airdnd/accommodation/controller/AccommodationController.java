@@ -14,13 +14,18 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.team3.airdnd.accommodation.dto.AccommodationRequestDto;
 import com.team3.airdnd.accommodation.dto.AccommodationResponseDto;
 import com.team3.airdnd.accommodation.dto.PriceHistogramRequestDto;
 import com.team3.airdnd.accommodation.dto.PriceHistogramResponseDto;
 import com.team3.airdnd.accommodation.service.AccommodationService;
+import com.team3.airdnd.global.dto.ResponseDto;
+import com.team3.airdnd.global.exception.CommonException;
+import com.team3.airdnd.global.exception.ErrorCode;
 
 import jakarta.validation.Valid;
 
@@ -40,8 +45,13 @@ public class AccommodationController {
 
 	@PostMapping("/create")
 	public ResponseEntity<ResponseDto<Void>> createAccommodation(
-		@RequestBody @Valid AccommodationRequestDto.CreateAccommodationDto request) {
-		accommodationService.createAccommodation(request);
+		@RequestPart @Valid AccommodationRequestDto.CreateAccommodationDto request,
+		@RequestPart("files") List<MultipartFile> files) {
+		if (files == null || files.size() < 1 || files.size() > 5) {
+			throw new CommonException(ErrorCode.INVALID_IMAGE);
+		}
+
+		accommodationService.createAccommodation(request, files);
 		return ResponseDto.created();
 	}
 

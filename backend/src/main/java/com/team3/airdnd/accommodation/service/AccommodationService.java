@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -34,6 +35,7 @@ import com.team3.airdnd.accommodation.repository.ReservationRepository;
 import com.team3.airdnd.accommodation.repository.ReviewRepository;
 import com.team3.airdnd.global.exception.CommonException;
 import com.team3.airdnd.global.exception.ErrorCode;
+import com.team3.airdnd.storedFile.StoredFileService;
 import com.team3.airdnd.storedFile.domain.StoredFile;
 import com.team3.airdnd.storedFile.dto.ImageUrlDto;
 import com.team3.airdnd.storedFile.repository.StoredFileRepository;
@@ -58,6 +60,7 @@ public class AccommodationService {
 	private final AmenityRepository amenityRepository;
 	private final ReservationRepository reservationRepository;;
 	private final JPAQueryFactory queryFactory;
+	private final StoredFileService storedFileService;
 
     public AccommodationResponseDto.AccommodationDetailDto getAccommodationDetail(Long id) {
         Accommodation accommodation = findAccommodationOrThrow(id);
@@ -85,45 +88,48 @@ public class AccommodationService {
                 .orElseThrow(() -> new CommonException(ErrorCode.NOT_FOUND_RESOURCE));
     }
 
-    private List<ImageUrlDto> findAllImageUrlsByAccommodationId(Long id) {
-        return storedFileRepository.findImageByTargetTypeAndTargetIdOrderByFileOrderAsc(
-                StoredFile.TargetType.ACCOMMODATION, id);
-    }
-    private List<AmenityInfoDto> findAmenityNamesByAccommodationId(Long id) {
-        return accommodationAmenityRepository.findAmenityByAccommodationId(id);
-    }
+	private List<ImageUrlDto> findAllImageUrlsByAccommodationId(Long id) {
+		return storedFileRepository.findByTargetTypeAndTargetIdOrderByFileOrderAsc(
+			StoredFile.TargetType.ACCOMMODATION, id);
+	}
 
-    private AccommodationResponseDto.ReviewListDto buildReviewLists(Long id) {
-        List<ReviewInfoDto> reviews = reviewRepository.findReviewByAccommodationId(id);
+	private List<AmenityInfoDto> findAmenityNamesByAccommodationId(Long id) {
+		return accommodationAmenityRepository.findAmenityByAccommodationId(id);
+	}
 
-        double avg = reviews.stream()
-                .mapToDouble(ReviewInfoDto::rating)
-                .average()
-                .orElse(0.0);
+	private AccommodationResponseDto.ReviewListDto buildReviewLists(Long id) {
+		List<ReviewInfoDto> reviews = reviewRepository.findReviewByAccommodationId(id);
 
-        return AccommodationResponseDto.ReviewListDto.builder()
-                .avgRating(avg)
-                .reviewSize(reviews.size())
-                .comments(reviews)
-                .build();
-    }
+		double avg = reviews.stream()
+			.mapToDouble(ReviewInfoDto::rating)
+			.average()
+			.orElse(0.0);
 
-    private AccommodationResponseDto.AddressInfoDto buildAddress(Address address) {
-        return new AccommodationResponseDto.AddressInfoDto(
-                address.getCity(),
-                address.getDistrict(),
-                address.getStreetAddress(),
-                address.getLatitude(),
-                address.getLongitude()
-        );
-    }
+		return AccommodationResponseDto.ReviewListDto.builder()
+			.avgRating(avg)
+			.reviewSize(reviews.size())
+			.comments(reviews)
+			.build();
+	}
+
+	private AccommodationResponseDto.AddressInfoDto buildAddress(Address address) {
+		return new AccommodationResponseDto.AddressInfoDto(
+			address.getCity(),
+			address.getDistrict(),
+			address.getStreetAddress(),
+			address.getLatitude(),
+			address.getLongitude()
+		);
+	}
 
 	@Transactional
-	public void createAccommodation(AccommodationRequestDto.CreateAccommodationDto request) {
+	public void createAccommodation(AccommodationRequestDto.CreateAccommodationDto request,
+		List<MultipartFile> files) {
 		User host = validateHostUser(request.getHostId());
 		Address address = saveAdderss(request);
 		Accommodation accommodation = saveAccommodation(request, address, host);
 		saveAmenities(request.getAmenityTypes(), accommodation);
+		storedFileService.saveFiles(files, accommodation);
 	}
 
 	private Address saveAdderss(AccommodationRequestDto.CreateAccommodationDto request) {
@@ -169,7 +175,7 @@ public class AccommodationService {
 
 	@Transactional
 	public void updateAccommodation(Long accommodationId, AccommodationRequestDto.UpdateAccommodationDto request,
-		Long hostId) {
+		Long hostId, List<MultipartFile> files) {
 		Accommodation old = getAccommodation(accommodationId);
 		User host = validateHostUser(hostId);
 		validateOwnership(old, host); //본인 소유 숙소인지 확인
@@ -178,6 +184,12 @@ public class AccommodationService {
 		Accommodation updated = updateAccommodationFields(old, updatedAddress, request);
 
 		updateAmenities(updated, request.getAmenityTypes());
+
+		// 기존 이미지 삭제 후
+		storedFileService.deleteFilesByAccommodationId(accommodationId);
+
+		// 새 이미지 저장
+		storedFileService.saveFiles(files, updated);
 	}
 
 	private Accommodation getAccommodation(Long accommodationId) {
@@ -266,6 +278,7 @@ public class AccommodationService {
 			throw new CommonException(ErrorCode.NOT_AUTHORIZED_TO_DELETE);
 		}
 	}
+
 	public PriceHistogramResponseDto getPriceHistogram(PriceHistogramRequestDto request) {
 		QAccommodation a = QAccommodation.accommodation;
 		QReservation r = QReservation.reservation;
@@ -335,7 +348,7 @@ public class AccommodationService {
 			hostId);
 		return accommodations.stream()
 			.map(accommodation -> {
-				List<ImageUrlDto> images = storedFileRepository.findImageByTargetTypeAndTargetIdOrderByFileOrderAsc(
+				List<ImageUrlDto> images = storedFileRepository.findByTargetTypeAndTargetIdOrderByFileOrderAsc(
 					StoredFile.TargetType.ACCOMMODATION,
 					accommodation.id()
 				);
