@@ -1,21 +1,20 @@
 package com.team3.airdnd.accommodation.dto;
 
-import com.team3.airdnd.storedFile.dto.ImageUrlDto;
+import java.util.List;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.util.List;
-
-
 public class AccommodationResponseDto {
+
 	@AllArgsConstructor
 	@Getter
 	@Builder
 	public static class AccommodationDetailDto {
 		private String name;
-		private List<ImageUrlDto> imageUrls;
-		private List<AmenityInfoDto> amenities;
+		private List<String> imageUrls;
+		private List<String> amenities;
 		private Long hostId;
 		private String description;
 		private long pricePerNight;
@@ -23,42 +22,6 @@ public class AccommodationResponseDto {
 		private int bedCount;
 		private AddressInfoDto address;
 		private ReviewListDto reviews;
-	}
-
-	@AllArgsConstructor
-	@Getter
-	@Builder
-	public static class AccommodationListDto {
-		private Integer page;
-		private Integer size;
-		private Integer totalPages;
-		private Integer totalElements;
-		private List<AccommodationInfo> accommodations;
-	}
-
-	@AllArgsConstructor
-	@Getter
-	@Builder
-	public static class AccommodationInfo {
-		private Long id;
-		private String name;
-		private String imageUrl;
-		private int pricePerNight;
-		private String description;
-		private int maxGuests;
-		private int bedCount;
-		private String address;
-		private List<AmenityInfoDto> amenity;
-		private double latitude;
-		private double longitude;
-	}
-
-	@AllArgsConstructor
-	@Getter
-	@Builder
-	public static class AmenityInfo {
-		private Long id;
-		private String name;
 	}
 
 	@AllArgsConstructor
@@ -78,6 +41,47 @@ public class AccommodationResponseDto {
 	public static class ReviewListDto {
 		private double avgRating;
 		private int reviewSize;
-		private List<ReviewInfoDto> comments;
+		private List<ReviewDto> comments;
+	}
+
+	@AllArgsConstructor
+	@Getter
+	@Builder
+	public static class AccommodationListDto {
+		private Integer page;
+		private Integer size;
+		private Integer totalPages;
+		private Integer totalElements;
+		private List<AccommodationInfo> accommodations;
+	}
+
+	@AllArgsConstructor
+	@Getter
+	@Builder
+	public static class HostAccommodationDto {
+		private Long id;
+		private String name;
+		private String imageUrl;
+		private String city;
+		private String district;
+		private String streetAddress;
+
+	}
+
+	@AllArgsConstructor
+	@Getter
+	@Builder
+	public static class AccommodationInfo {
+		private Long id;
+		private String name;
+		private String imageUrl;
+		private int pricePerNight;
+		private String description;
+		private int maxGuests;
+		private int bedCount;
+		private String address;
+		private List<AmenityDto> amenity;
+		private double latitude;
+		private double longitude;
 	}
 }
