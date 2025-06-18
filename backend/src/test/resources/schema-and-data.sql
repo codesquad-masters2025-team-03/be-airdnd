@@ -1,11 +1,15 @@
 -- 테이블 삭제
 DROP TABLE IF EXISTS stored_file;
 DROP TABLE IF EXISTS review;
+DROP TABLE IF EXISTS message;
+DROP TABLE IF EXISTS chat_room;
+DROP TABLE IF EXISTS payment;
 DROP TABLE IF EXISTS reservation;
 DROP TABLE IF EXISTS accommodation_amenity;
 DROP TABLE IF EXISTS amenity;
 DROP TABLE IF EXISTS accommodation;
 DROP TABLE IF EXISTS address;
+DROP TABLE IF EXISTS payment_method;
 DROP TABLE IF EXISTS user;
 
 -- 유저 테이블
@@ -274,4 +278,4 @@ VALUES (1, '정말 깨끗하고 호스트도 친절했어요.', '2025-06-11 10:2
        (1, '위치가 너무 좋았어요.', '2025-06-10 18:01:00', 4.5);
 
 INSERT INTO stored_file (file_url, file_order, target_type, target_id)
-VALUES ('image1.jep', 1, 'ACCOMMODATION', 6)
+VALUES ('image1.jep', 1, 'ACCOMMODATION', 6);

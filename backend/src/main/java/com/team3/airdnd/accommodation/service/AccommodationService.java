@@ -305,6 +305,11 @@ public class AccommodationService {
 
 	private BooleanExpression noOverlapCondition(QAccommodation a, QReservation r,
 		PriceHistogramConditionDto request) {
+
+		if (request.getCheckIn() == null || request.getCheckOut() == null) {
+			return null;
+		}
+
 		return JPAExpressions
 			.selectOne()
 			.from(r)

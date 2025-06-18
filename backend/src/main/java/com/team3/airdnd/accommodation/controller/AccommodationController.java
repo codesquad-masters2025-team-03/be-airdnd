@@ -84,6 +84,7 @@ public class AccommodationController {
 	public ResponseEntity<ResponseDto<PriceHistogramResponseDto>> getAccommodationPriceRange(
 		@Valid @ModelAttribute PriceHistogramConditionDto request
 	) {
+		System.out.println("location: " + request.getLocation());
 		return ResponseDto.ok(accommodationService.getPriceHistogram(request));
 	}
 
