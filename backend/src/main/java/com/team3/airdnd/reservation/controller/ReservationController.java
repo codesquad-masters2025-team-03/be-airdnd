@@ -1,6 +1,9 @@
 package com.team3.airdnd.reservation.controller;
 
+import java.time.LocalDate;
+
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,13 +24,25 @@ import lombok.RequiredArgsConstructor;
 public class ReservationController {
 	private final ReservationService reservationService;
 
-	// 예약 생성 (PENDING)
-	@PostMapping
+	@GetMapping("/{accommodation-id}")
+	public ResponseEntity<ReservationResponseDto.ReservationInfoResponseDto> getReservationInfo(
+		@PathVariable("accommodation-id") Long accommodationId,
+		@RequestParam LocalDate checkIn,
+		@RequestParam LocalDate checkOut
+	) {
+		return ResponseEntity.ok(
+			reservationService.getReservationInfo(accommodationId, checkIn, checkOut)
+		);
+	}
+
+	// 예약 요청 (PENDING)
+	@PostMapping("/{accommodation-id}")
 	public ResponseEntity<ReservationResponseDto.CreateReservationResponseDto> createReservation(
+		@PathVariable("accommodation-id") Long accommodationId,
 		@RequestBody ReservationRequestDto.CreateReservationRequestDto request,
 		@RequestParam("guestId") Long guestId // TODO: 로그인 기능 구현 시 guestId 제거하고 인증 유저로 대체
 	) {
-		var response = reservationService.createReservation(request, guestId);
+		var response = reservationService.createReservation(accommodationId, request, guestId);
 		return ResponseEntity.ok(response);
 	}
 

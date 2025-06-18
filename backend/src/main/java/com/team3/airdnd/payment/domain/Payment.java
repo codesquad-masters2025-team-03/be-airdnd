@@ -40,7 +40,7 @@ public class Payment {
 	@Column(name = "order_id", nullable = false, unique = true, length = 100)
 	private String orderId;
 
-	private Long amount;
+	private Long amount; //숙박비 + 수수료
 
 	@Column(name = "paid_at", nullable = false)
 	private LocalDateTime paidAt;

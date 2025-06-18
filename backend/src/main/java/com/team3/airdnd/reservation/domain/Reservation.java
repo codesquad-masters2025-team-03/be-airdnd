@@ -40,6 +40,9 @@ public class Reservation {
 	@JoinColumn(name = "accommodation_id", nullable = false)
 	private Accommodation accommodation;
 
+	@Column(name = "order_id", nullable = false, unique = true, length = 100)
+	private String orderId;
+
 	@Column(name = "check_in", nullable = false)
 	private LocalDate checkIn;
 
@@ -56,7 +59,7 @@ public class Reservation {
 	private Long serviceFee;
 
 	@Column(name = "total_price", nullable = false)
-	private Long totalPrice;
+	private Long totalPrice; //순수 숙박비
 
 	public enum Status {
 		PENDING, CONFIRMED, CANCELLED

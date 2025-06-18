@@ -3,6 +3,7 @@ package com.team3.airdnd.reservation.service;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,10 +34,31 @@ public class ReservationService {
 	private final ReservedDateRepository reservedDateRepository;
 	private final PaymentRepository paymentRepository;
 
-	public ReservationResponseDto.CreateReservationResponseDto createReservation(
-		ReservationRequestDto.CreateReservationRequestDto request, Long guestId) {
+	public ReservationResponseDto.ReservationInfoResponseDto getReservationInfo(Long accommodationId, LocalDate checkIn,
+		LocalDate checkOut) {
+		Accommodation acc = accommodationRepository.findById(accommodationId)
+			.orElseThrow(() -> new CommonException(ErrorCode.NOT_FOUND_RESOURCE));
 
-		Accommodation acc = accommodationRepository.findById(request.getAccommodationId())
+		validateReservationDate(checkIn, checkOut);
+		boolean available = isAvailable(accommodationId, checkIn, checkOut);
+
+		// 가격 계산
+		Price price = calculatePrice(acc, checkIn, checkOut);
+
+		return ReservationResponseDto.ReservationInfoResponseDto.builder()
+			.available(available)
+			.nights(price.nights())
+			.pricePerNight(acc.getPricePerNight())
+			.totalPrice(price.total())
+			.serviceFee(price.fee())
+			.finalPrice(price.total() + price.fee())
+			.build();
+	}
+
+	public ReservationResponseDto.CreateReservationResponseDto createReservation(
+		Long accommodationId, ReservationRequestDto.CreateReservationRequestDto request, Long guestId) {
+
+		Accommodation acc = accommodationRepository.findById(accommodationId)
 			.orElseThrow(() -> new CommonException(ErrorCode.NOT_FOUND_RESOURCE));
 
 		User user = userRepository.findById(guestId)
@@ -50,6 +72,7 @@ public class ReservationService {
 		Reservation reservation = Reservation.builder()
 			.guest(user)
 			.accommodation(acc)
+			.orderId(UUID.randomUUID().toString())
 			.checkIn(request.getCheckIn())
 			.checkOut(request.getCheckOut())
 			.guestCount(request.getGuestCount())
@@ -62,7 +85,7 @@ public class ReservationService {
 
 		return ReservationResponseDto.CreateReservationResponseDto.builder()
 			.reservationId(reservation.getId())
-			.orderId(reservation.getId().toString())
+			.orderId(reservation.getOrderId())
 			.status(reservation.getStatus().name())
 			.amount(price.total())
 			.build();
@@ -135,9 +158,17 @@ public class ReservationService {
 		int days = (int)ChronoUnit.DAYS.between(checkIn, checkOut);
 		long totalPrice = days * acc.getPricePerNight();
 		long serviceFee = (long)(totalPrice * 0.1); // 수수료 10%
-		return new Price(totalPrice, serviceFee);
+		return new Price(days, totalPrice, serviceFee);
 	}
 
-	private record Price(long total, long fee) {
+	//예약 가능 여부 확인 (예외 x, Boolean)
+	private boolean isAvailable(Long accId, LocalDate checkIn, LocalDate checkOut) {
+		List<ReservedDate> conflicts = reservedDateRepository.findOverlappingDates(
+			accId, checkIn, checkOut.minusDays(1)
+		);
+		return conflicts.isEmpty();
+	}
+
+	private record Price(int nights, long total, long fee) {
 	}
 }

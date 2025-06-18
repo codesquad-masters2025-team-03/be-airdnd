@@ -16,4 +16,16 @@ public class ReservationResponseDto {
 		private Long amount;
 	}
 
+	@Getter
+	@Builder
+	@AllArgsConstructor
+	public static class ReservationInfoResponseDto {
+		private boolean available;
+		private int nights; //숙박일수
+		private int pricePerNight;
+		private long totalPrice;
+		private long serviceFee;
+		private long finalPrice;
+	}
+
 }
