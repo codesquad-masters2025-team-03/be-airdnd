@@ -1,4 +1,4 @@
-package com.team3.airdnd.payment.domain;
+package com.team3.airdnd.review.domain;
 
 import java.time.LocalDateTime;
 
@@ -12,7 +12,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,31 +19,32 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Builder
 @Getter
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class Payment {
+public class Review {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@OneToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "reservation_id", nullable = false)
 	private Reservation reservation;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "payment_method_id", nullable = false)
-	private PaymentMethod paymentMethod;
+	@Column(nullable = false)
+	private Double rating;
 
-	private Long amount;
+	@Column(length = 500)
+	private String content;
 
-	@Column(name = "paid_at", nullable = false)
-	private LocalDateTime paidAt;
+	@Column(name = "created_at", nullable = false)
+	private LocalDateTime createdAt;
 
 	@PrePersist
 	public void prePersist() {
-		this.paidAt = LocalDateTime.now();
+		this.createdAt = LocalDateTime.now();
 	}
 
 }
+
