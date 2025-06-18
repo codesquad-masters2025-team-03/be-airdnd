@@ -37,6 +37,9 @@ public class Payment {
 	@JoinColumn(name = "payment_method_id", nullable = false)
 	private PaymentMethod paymentMethod;
 
+	@Column(name = "order_id", nullable = false, unique = true, length = 100)
+	private String orderId;
+
 	private Long amount;
 
 	@Column(name = "paid_at", nullable = false)

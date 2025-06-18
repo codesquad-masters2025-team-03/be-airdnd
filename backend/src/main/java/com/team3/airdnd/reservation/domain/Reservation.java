@@ -50,6 +50,9 @@ public class Reservation {
 	@Enumerated(EnumType.STRING)
 	private Status status;
 
+	@Column(name = "service_fee", nullable = false)
+	private Long serviceFee;
+
 	@Column(name = "total_price", nullable = false)
 	private Long totalPrice;
 
