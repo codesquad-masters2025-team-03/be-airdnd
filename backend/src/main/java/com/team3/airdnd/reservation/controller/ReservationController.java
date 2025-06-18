@@ -16,6 +16,7 @@ import com.team3.airdnd.reservation.dto.ReservationRequestDto;
 import com.team3.airdnd.reservation.dto.ReservationResponseDto;
 import com.team3.airdnd.reservation.service.ReservationService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -39,7 +40,7 @@ public class ReservationController {
 	@PostMapping("/{accommodation-id}")
 	public ResponseEntity<ReservationResponseDto.CreateReservationResponseDto> createReservation(
 		@PathVariable("accommodation-id") Long accommodationId,
-		@RequestBody ReservationRequestDto.CreateReservationRequestDto request,
+		@RequestBody @Valid ReservationRequestDto.CreateReservationRequestDto request,
 		@RequestParam("guestId") Long guestId // TODO: 로그인 기능 구현 시 guestId 제거하고 인증 유저로 대체
 	) {
 		var response = reservationService.createReservation(accommodationId, request, guestId);

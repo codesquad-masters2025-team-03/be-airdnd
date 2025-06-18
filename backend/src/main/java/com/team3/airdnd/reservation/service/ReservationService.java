@@ -39,7 +39,6 @@ public class ReservationService {
 		Accommodation acc = accommodationRepository.findById(accommodationId)
 			.orElseThrow(() -> new CommonException(ErrorCode.NOT_FOUND_RESOURCE));
 
-		validateReservationDate(checkIn, checkOut);
 		boolean available = isAvailable(accommodationId, checkIn, checkOut);
 
 		// 가격 계산
@@ -64,8 +63,8 @@ public class ReservationService {
 		User user = userRepository.findById(guestId)
 			.orElseThrow(() -> new CommonException(ErrorCode.NOT_FOUND_USER));
 
-		validateReservationDate(request.getCheckIn(), request.getCheckOut());
 		validateAvailability(acc.getId(), request.getCheckIn(), request.getCheckOut());
+		validateGuestCount(request.getGuests(), acc.getMaxGuests());
 
 		Price price = calculatePrice(acc, request.getCheckIn(), request.getCheckOut());
 
@@ -75,7 +74,7 @@ public class ReservationService {
 			.orderId(UUID.randomUUID().toString())
 			.checkIn(request.getCheckIn())
 			.checkOut(request.getCheckOut())
-			.guestCount(request.getGuestCount())
+			.guestCount(request.getGuests())
 			.totalPrice(price.total())
 			.serviceFee(price.fee())
 			.status(Reservation.Status.PENDING)
@@ -136,13 +135,6 @@ public class ReservationService {
 			.orElseThrow(() -> new CommonException(ErrorCode.NOT_FOUND_RESERVATION));
 	}
 
-	//날짜 유효성 검사 (체크인-체크아웃 순서 검사)
-	private void validateReservationDate(LocalDate checkIn, LocalDate checkOut) {
-		if (!checkIn.isBefore(checkOut)) {
-			throw new CommonException(ErrorCode.INVALID_RESERVATION_DATE_RANGE);
-		}
-	}
-
 	//예약 가능 날짜 검사
 	private void validateAvailability(Long accId, LocalDate checkIn, LocalDate checkOut) {
 		List<ReservedDate> conflicts = reservedDateRepository.findOverlappingDates(
@@ -167,6 +159,13 @@ public class ReservationService {
 			accId, checkIn, checkOut.minusDays(1)
 		);
 		return conflicts.isEmpty();
+	}
+
+	//인원 수 검사 - 애초에 프론트에서 잘못된 값이 넘어왔다고 판단
+	private void validateGuestCount(int guestCount, int maxGuests) {
+		if (guestCount > maxGuests) {
+			throw new CommonException(ErrorCode.EXCEEDS_MAX_GUESTS);
+		}
 	}
 
 	private record Price(int nights, long total, long fee) {

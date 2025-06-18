@@ -22,6 +22,7 @@ public enum ErrorCode {
 	DUPLICATE_RESERVATION_DATE(40003, HttpStatus.BAD_REQUEST, "해당 날짜에는 이미 예약이 존재합니다."),
 	NOT_FOUND_RESERVATION(40004, HttpStatus.BAD_REQUEST, "예약 정보를 찾을 수 없습니다."),
 	CANNOT_CANCEL_AFTER_CHECKOUT(40006, HttpStatus.BAD_REQUEST, "체크아웃이 지난 예약은 취소할 수 없습니다."),
+	EXCEEDS_MAX_GUESTS(40007, HttpStatus.BAD_REQUEST, "예약 인원이 최대 허용 인원을 초과했습니다."),
 
 	INTERNAL_SERVER_ERROR(50000, HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 에러입니다."),
 	INVALID_IMAGE(40001, HttpStatus.BAD_REQUEST, "이미지는 최소 1개 이상 최대 5개 이하로 업로드해야 합니다."),
