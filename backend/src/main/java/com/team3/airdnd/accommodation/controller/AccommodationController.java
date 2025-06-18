@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.team3.airdnd.accommodation.dto.AccommodationListConditionDto;
 import com.team3.airdnd.accommodation.dto.AccommodationRequestDto;
 import com.team3.airdnd.accommodation.dto.AccommodationResponseDto;
 import com.team3.airdnd.accommodation.dto.PriceHistogramConditionDto;
@@ -91,10 +92,12 @@ public class AccommodationController {
 	//속소 목록 페이징 조회 기능
 	@GetMapping("")
 	public ResponseEntity<ResponseDto<AccommodationResponseDto.AccommodationListDto>> getAccommodationList(
+		@Valid @ModelAttribute AccommodationListConditionDto request,
 		@RequestParam(required = false, defaultValue = "1") int page,
 		@RequestParam(required = false, defaultValue = "5") int size
 	) {
-		AccommodationResponseDto.AccommodationListDto accommodations = accommodationService.getAccommodations(page,
+		AccommodationResponseDto.AccommodationListDto accommodations = accommodationService.getAccommodations(request,
+			page,
 			size);
 		return ResponseDto.ok(accommodations);
 	}

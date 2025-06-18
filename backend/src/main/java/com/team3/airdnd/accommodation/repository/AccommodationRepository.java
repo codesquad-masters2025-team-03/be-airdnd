@@ -10,7 +10,7 @@ import org.springframework.data.repository.query.Param;
 import com.team3.airdnd.accommodation.domain.Accommodation;
 import com.team3.airdnd.accommodation.dto.HostAccommodationQueryDto;
 
-public interface AccommodationRepository extends JpaRepository<Accommodation, Long>, AccommodationQueryRepository {
+public interface AccommodationRepository extends JpaRepository<Accommodation, Long> {
 	Optional<Accommodation> findByName(String name);
 
 	@Query("""
