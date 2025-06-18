@@ -29,6 +29,7 @@ CREATE TABLE address
     city           VARCHAR(100),
     district       VARCHAR(100),
     street_address VARCHAR(255),
+    detail_address VARCHAR(255),
     latitude       DOUBLE NOT NULL,
     longitude      DOUBLE NOT NULL
 );
