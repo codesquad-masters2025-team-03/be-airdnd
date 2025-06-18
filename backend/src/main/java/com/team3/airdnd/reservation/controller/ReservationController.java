@@ -30,12 +30,18 @@ public class ReservationController {
 		var response = reservationService.createReservation(request, guestId);
 		return ResponseEntity.ok(response);
 	}
-	
+
 	@PatchMapping("/{reservation-id}/confirm")
 	public ResponseEntity<String> confirmReservation(
 		@PathVariable("reservation-id") Long reservationId
 	) {
 		reservationService.confirmReservation(reservationId);
+		return ResponseEntity.ok(null);
+	}
+
+	@PatchMapping("/{reservationId}/cancel")
+	public ResponseEntity<String> cancelReservation(@PathVariable Long reservationId) {
+		reservationService.cancelReservation(reservationId);
 		return ResponseEntity.ok(null);
 	}
 }
