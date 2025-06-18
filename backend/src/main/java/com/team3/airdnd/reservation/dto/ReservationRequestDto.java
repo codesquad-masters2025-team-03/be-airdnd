@@ -19,6 +19,10 @@ public class ReservationRequestDto {
 		private Long userId;
 	}
 
-	public class UpdateReservationStatusRequestDto {
+	@Getter
+	@Builder
+	@AllArgsConstructor
+	public static class UpdateReservationStatusRequestDto {
+		private String status;
 	}
 }

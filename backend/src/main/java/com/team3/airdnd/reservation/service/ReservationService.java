@@ -5,6 +5,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.team3.airdnd.accommodation.domain.Accommodation;
 import com.team3.airdnd.accommodation.repository.AccommodationRepository;
@@ -63,6 +64,24 @@ public class ReservationService {
 			.status(reservation.getStatus().name())
 			.amount(price.total())
 			.build();
+	}
+
+	@Transactional
+	public void confirmReservation(Long reservationId) {
+		Reservation reservation = reservationRepository.findById(reservationId)
+			.orElseThrow(() -> new CommonException(ErrorCode.NOT_FOUND_RESOURCE));
+
+		reservation.setStatus(Reservation.Status.CONFIRMED);
+
+		// 예약 날짜 등록
+		for (LocalDate d = reservation.getCheckIn(); d.isBefore(reservation.getCheckOut()); d = d.plusDays(1)) {
+			reservedDateRepository.save(
+				ReservedDate.builder()
+					.accommodation(reservation.getAccommodation())
+					.reservedDate(d)
+					.build()
+			);
+		}
 	}
 
 	//날짜 유효성 검사 (체크인-체크아웃 순서 검사)
