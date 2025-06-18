@@ -1,4 +1,4 @@
-package com.team3.airdnd.accommodation.repository;
+package com.team3.airdnd.review.repository;
 
 import java.util.List;
 

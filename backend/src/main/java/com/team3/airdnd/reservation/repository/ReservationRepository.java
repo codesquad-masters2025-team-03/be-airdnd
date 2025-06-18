@@ -1,4 +1,4 @@
-package com.team3.airdnd.accommodation.repository;
+package com.team3.airdnd.reservation.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
