@@ -18,4 +18,7 @@ public class ReservationRequestDto {
 		private int guestCount;
 		private Long userId;
 	}
+
+	public class UpdateReservationStatusRequestDto {
+	}
 }

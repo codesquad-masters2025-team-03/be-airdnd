@@ -13,7 +13,7 @@ public class ReservationResponseDto {
 		private Long reservationId;
 		private String orderId;
 		private String status;
-		private int amount;
+		private Long amount;
 	}
 
 }
