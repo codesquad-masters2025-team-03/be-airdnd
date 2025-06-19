@@ -3,7 +3,9 @@ package com.team3.airdnd.accommodation;
 import static org.assertj.core.api.Assertions.*;
 
 import java.time.LocalDate;
+import java.util.Set;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -13,11 +15,17 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.team3.airdnd.AbstractIntegrationTest;
+import com.team3.airdnd.accommodation.dto.AccommodationListConditionDto;
+import com.team3.airdnd.accommodation.dto.AccommodationResponseDto;
 import com.team3.airdnd.accommodation.dto.PriceHistogramConditionDto;
 import com.team3.airdnd.accommodation.dto.PriceHistogramResponseDto;
 import com.team3.airdnd.accommodation.service.AccommodationService;
 
 import jakarta.persistence.EntityManager;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -30,6 +38,14 @@ class PriceHistogramServiceTest extends AbstractIntegrationTest {
 
 	@Autowired
 	private EntityManager em;
+
+	private Validator validator;
+
+	@BeforeEach
+	void setUpValidator() {
+		ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+		this.validator = factory.getValidator();
+	}
 
 	@Nested
 	@DisplayName("숙소 필터링 기능 테스트")
@@ -50,6 +66,64 @@ class PriceHistogramServiceTest extends AbstractIntegrationTest {
 			int totalCount = result.priceHistogram().stream().mapToInt(Integer::intValue).sum();
 			assertThat(totalCount).isEqualTo(10);
 		}
+
+		@Test
+		@DisplayName("최소 요금이 최대 요금보다 크면 에러가 발생한다")
+		void shouldFailWhenMinPriceGreaterThanMaxPrice() {
+			// given
+			AccommodationListConditionDto request = AccommodationListConditionDto.builder()
+				.location("부산")
+				.checkIn(LocalDate.of(2025, 6, 20))
+				.checkOut(LocalDate.of(2025, 6, 27))
+				.guests(2)
+				.minPrice(100000)
+				.maxPrice(50000)
+				.build();
+
+			// when
+			Set<ConstraintViolation<AccommodationListConditionDto>> violations = validator.validate(request);
+
+			// then
+			assertThat(violations)
+				.extracting(ConstraintViolation::getMessage)
+				.contains("최소 요금은 최대 요금보다 클 수 없습니다.");
+		}
+
+		@Test
+		@DisplayName("체크인 날짜가 체크아웃보다 나중이면 에러 메시지가 발생한다")
+		void shouldFailWhenCheckInIsAfterCheckOut() {
+			// given
+			PriceHistogramConditionDto request = PriceHistogramConditionDto.builder()
+				.location("부산")
+				.checkIn(LocalDate.of(2025, 6, 27))
+				.checkOut(LocalDate.of(2025, 6, 20))
+				.guests(2)
+				.build();
+
+			// when
+			Set<ConstraintViolation<PriceHistogramConditionDto>> violations = validator.validate(request);
+
+			// then
+			assertThat(violations)
+				.extracting(ConstraintViolation::getMessage)
+				.contains("체크인 날짜는 체크아웃 날짜보다 이전이어야 합니다.");
+		}
+
+		@DisplayName("아무 조건도 없이 검색했을 때도 숙소가 반환된다")
+		@Test
+		void search_with_empty_filter_returns_results() {
+			// given
+			AccommodationListConditionDto request = AccommodationListConditionDto.builder()
+				.build(); // 모든 필드 null
+
+			// when
+			AccommodationResponseDto.AccommodationListDto accommodations = accommodationService.getAccommodations(
+				request, 1, 10);
+
+			// then
+			assertThat(accommodations.getAccommodations()).isNotEmpty();
+		}
+
 	}
 
 	@Nested
@@ -57,7 +131,7 @@ class PriceHistogramServiceTest extends AbstractIntegrationTest {
 	class HistogramCalculation {
 
 		@Test
-		@DisplayName("150000원 숙소 10개는 중앙 bin에만 분포된다")
+		@DisplayName("모든 숙소가격이 같다면 히스토그램 중앙에 분포한다.")
 		void shouldDistributeSamePriceIntoCenterBinOnly() {
 
 			PriceHistogramConditionDto request = PriceHistogramConditionDto.builder()
@@ -80,7 +154,7 @@ class PriceHistogramServiceTest extends AbstractIntegrationTest {
 		}
 
 		@Test
-		@DisplayName("최소/최대 가격은 150000으로 동일하다")
+		@DisplayName("가격이 모두 같다면 최소/최대 값이 동일하다")
 		void shouldHaveEqualMinAndMaxWhenAllPricesAreSame() {
 			PriceHistogramConditionDto request = PriceHistogramConditionDto.builder()
 				.location("부산")
