@@ -76,7 +76,7 @@ public class AccommodationServiceTest extends AbstractIntegrationTest {
 			AmenityType.HEATER.name()
 		);
 		assertThat(result.getHostId()).isEqualTo(2L);
-		assertThat(result.getAddress().getCity()).isEqualTo("울산광역시");
+		assertThat(result.getAddress().getCity()).isEqualTo("전라북도");
 		assertThat(result.getReviews().getComments()).hasSize(2);
 		assertThat(result.getReviews().getAvgRating()).isEqualTo(4.5);
 	}

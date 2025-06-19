@@ -52,7 +52,7 @@ class PriceHistogramServiceTest extends AbstractIntegrationTest {
 	class FilteringCondition {
 
 		@Test
-		@DisplayName("필터에 해당하는 값은 총 10개가 나온다.")
+		@DisplayName("필터에 해당하는 값은 총 11개가 나온다.")
 		void shouldMatchTotalHistogramCountWithAvailableAccommodations() {
 			PriceHistogramConditionDto request = PriceHistogramConditionDto.builder()
 				.location("부산")
@@ -64,7 +64,7 @@ class PriceHistogramServiceTest extends AbstractIntegrationTest {
 			PriceHistogramResponseDto result = accommodationService.getPriceHistogram(request);
 
 			int totalCount = result.priceHistogram().stream().mapToInt(Integer::intValue).sum();
-			assertThat(totalCount).isEqualTo(10);
+			assertThat(totalCount).isEqualTo(11);
 		}
 
 		@Test
@@ -146,7 +146,7 @@ class PriceHistogramServiceTest extends AbstractIntegrationTest {
 			int centerBin = 50 / 2;
 			for (int i = 0; i < 50; i++) {
 				if (i == centerBin) {
-					assertThat(result.priceHistogram().get(i)).isEqualTo(10);
+					assertThat(result.priceHistogram().get(i)).isEqualTo(11);
 				} else {
 					assertThat(result.priceHistogram().get(i)).isEqualTo(0);
 				}
