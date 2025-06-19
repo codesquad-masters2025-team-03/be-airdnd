@@ -94,7 +94,7 @@ public class AccommodationController {
 	public ResponseEntity<ResponseDto<AccommodationResponseDto.AccommodationListDto>> getAccommodationList(
 		@Valid @ModelAttribute AccommodationListConditionDto request,
 		@RequestParam(required = false, defaultValue = "1") int page,
-		@RequestParam(required = false, defaultValue = "5") int size
+		@RequestParam(required = false, defaultValue = "10") int size
 	) {
 		AccommodationResponseDto.AccommodationListDto accommodations = accommodationService.getAccommodations(request,
 			page,
