@@ -1,38 +1,37 @@
 package com.team3.airdnd.accommodation.service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.jpa.JPAExpressions;
-import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.team3.airdnd.accommodation.domain.Accommodation;
 import com.team3.airdnd.accommodation.domain.AccommodationAmenity;
 import com.team3.airdnd.accommodation.domain.Address;
 import com.team3.airdnd.accommodation.domain.Amenity;
 import com.team3.airdnd.accommodation.domain.AmenityType;
-import com.team3.airdnd.accommodation.domain.QAccommodation;
-import com.team3.airdnd.accommodation.domain.QAddress;
+import com.team3.airdnd.accommodation.dto.AccommodationListConditionDto;
 import com.team3.airdnd.accommodation.dto.AccommodationRequestDto;
 import com.team3.airdnd.accommodation.dto.AccommodationResponseDto;
+import com.team3.airdnd.accommodation.dto.BaseSearchConditionDto;
 import com.team3.airdnd.accommodation.dto.HostAccommodationQueryDto;
 import com.team3.airdnd.accommodation.dto.PriceHistogramConditionDto;
 import com.team3.airdnd.accommodation.dto.PriceHistogramResponseDto;
 import com.team3.airdnd.accommodation.dto.ReviewDto;
+import com.team3.airdnd.accommodation.query.AccommodationQueryRepository;
 import com.team3.airdnd.accommodation.repository.AccommodationAmenityRepository;
 import com.team3.airdnd.accommodation.repository.AccommodationRepository;
 import com.team3.airdnd.accommodation.repository.AddressRepository;
 import com.team3.airdnd.accommodation.repository.AmenityRepository;
 import com.team3.airdnd.global.exception.CommonException;
 import com.team3.airdnd.global.exception.ErrorCode;
-import com.team3.airdnd.reservation.domain.QReservation;
-import com.team3.airdnd.reservation.domain.Reservation;
 import com.team3.airdnd.reservation.repository.ReservationRepository;
 import com.team3.airdnd.review.repository.ReviewRepository;
 import com.team3.airdnd.storedFile.StoredFileService;
@@ -55,8 +54,9 @@ public class AccommodationService {
 	private final UserRepository userRepository;
 	private final AmenityRepository amenityRepository;
 	private final ReservationRepository reservationRepository;
+	private final AccommodationQueryRepository accommodationQueryRepository;
 
-	private final JPAQueryFactory queryFactory;
+	private final GeometryFactory geometryFactory;
 	private final StoredFileService storedFileService;
 	// 에어비엔비 기준으로 범위를 50으로 정했습니다.
 	private static final int DEFAULT_BIN_COUNT = 50;
@@ -132,13 +132,17 @@ public class AccommodationService {
 	}
 
 	private Address saveAdderss(AccommodationRequestDto.CreateAccommodationDto request) {
+		Point location = geometryFactory.createPoint(
+			new Coordinate(request.getLongitude(), request.getLatitude())
+		);
+		location.setSRID(4326);
+
 		Address address = Address.builder()
 			.city(request.getCity())
 			.district(request.getDistrict())
 			.streetAddress(request.getStreetAddress())
 			.detailAddress(request.getDetailAddress())
-			.latitude(request.getLatitude())
-			.longitude(request.getLongitude())
+			.location(location)
 			.build();
 		return addressRepository.save(address);
 	}
@@ -196,13 +200,18 @@ public class AccommodationService {
 	}
 
 	private Address updateAddress(Address oldAddress, AccommodationRequestDto.UpdateAccommodationDto dto) {
+		double lat = dto.getLatitude() != null ? dto.getLatitude() : oldAddress.getLocation().getY();
+		double lng = dto.getLongitude() != null ? dto.getLongitude() : oldAddress.getLocation().getX();
+
+		Point location = geometryFactory.createPoint(new Coordinate(lng, lat));
+		location.setSRID(4326);
+
 		Address updated = oldAddress.toBuilder()
 			.city(dto.getCity() != null ? dto.getCity() : oldAddress.getCity())
 			.district(dto.getDistrict() != null ? dto.getDistrict() : oldAddress.getDistrict())
 			.streetAddress(dto.getStreetAddress() != null ? dto.getStreetAddress() : oldAddress.getStreetAddress())
 			.detailAddress(dto.getDetailAddress() != null ? dto.getDetailAddress() : oldAddress.getDetailAddress())
-			.latitude(dto.getLatitude() != null ? dto.getLatitude() : oldAddress.getLatitude())
-			.longitude(dto.getLongitude() != null ? dto.getLongitude() : oldAddress.getLongitude())
+			.location(location)
 			.build();
 
 		return addressRepository.save(updated);
@@ -266,7 +275,7 @@ public class AccommodationService {
 		User user = userRepository.findById(hostId)
 			.orElseThrow(() -> new CommonException(ErrorCode.NOT_FOUND_USER));
 
-		if (user.getRole() != User.Role.HOST) {
+		if (!user.isHost()) {
 			throw new CommonException(ErrorCode.ACCESS_DENIED);
 		}
 		return user;
@@ -281,60 +290,14 @@ public class AccommodationService {
 
 	@Transactional(readOnly = true)
 	public PriceHistogramResponseDto getPriceHistogram(PriceHistogramConditionDto request) {
-		QAccommodation a = QAccommodation.accommodation;
-		QReservation r = QReservation.reservation;
-		QAddress addr = QAddress.address;
-
-		BooleanExpression noOverlap = noOverlapCondition(a, r, request);
-
-		BooleanBuilder condition = searchCondition(a, addr, request);
-
-		List<Integer> prices = queryFactory
-			.select(a.pricePerNight)
-			.from(a)
-			.join(a.address, addr)
-			.where(condition.and(noOverlap))
-			.fetch();
+		request = applyDefaultFilterCondition(request);
+		List<Integer> prices = accommodationQueryRepository.findAvailableAccommodationPrices(request);
 
 		if (prices.isEmpty()) {
 			return new PriceHistogramResponseDto(0, 0, Collections.nCopies(DEFAULT_BIN_COUNT, 0));
 		}
 
 		return calculatePriceHistogram(prices);
-	}
-
-	private BooleanExpression noOverlapCondition(QAccommodation a, QReservation r,
-		PriceHistogramConditionDto request) {
-		return JPAExpressions
-			.selectOne()
-			.from(r)
-			.where(
-				r.accommodation.eq(a),
-				r.checkIn.lt(request.getCheckOut()),
-				r.checkOut.gt(request.getCheckIn())
-					.and(
-						r.status.eq(Reservation.Status.CONFIRMED)
-							.or(r.status.eq(Reservation.Status.PENDING))
-					)
-			)
-			.notExists();
-	}
-
-	private BooleanBuilder searchCondition(QAccommodation a, QAddress addr, PriceHistogramConditionDto request) {
-		BooleanBuilder condition = new BooleanBuilder();
-
-		if (request.getLocation() != null && !request.getLocation().isBlank()) {
-			condition.and(
-				addr.city.containsIgnoreCase(request.getLocation())
-					.or(addr.district.containsIgnoreCase(request.getLocation()))
-					.or(addr.streetAddress.containsIgnoreCase(request.getLocation()))
-					.or(a.name.containsIgnoreCase(request.getLocation()))
-			);
-		}
-		if (request.getGuests() != null) {
-			condition.and(a.maxGuests.goe(request.getGuests()));
-		}
-		return condition;
 	}
 
 	private PriceHistogramResponseDto calculatePriceHistogram(List<Integer> prices) {
@@ -392,8 +355,38 @@ public class AccommodationService {
 			.toList();
 	}
 
-	//숙소 목록 페이징 구현
-	public AccommodationResponseDto.AccommodationListDto getAccommodations(int page, int size) {
-		return accommodationRepository.getAccommodationListByPage(page, size);
+	@Transactional(readOnly = true)
+	public AccommodationResponseDto.AccommodationListDto getAccommodations(AccommodationListConditionDto request,
+		int page, int size) {
+		request = applyDefaultFilterCondition(request);
+		return accommodationQueryRepository.findAccommodationListWithFilter(request, page, size);
+	}
+
+	private BaseSearchConditionDto applyBaseDefaults(BaseSearchConditionDto request) {
+		LocalDate checkIn = request.getCheckIn() != null ? request.getCheckIn() : LocalDate.now();
+		LocalDate checkOut = request.getCheckOut() != null ? request.getCheckOut() : checkIn.plusDays(1);
+
+		request.setCheckIn(checkIn);
+		request.setCheckOut(checkOut);
+		request.setGuests(request.getGuests() != null ? request.getGuests() : 1);
+
+		return request;
+	}
+
+	private PriceHistogramConditionDto applyDefaultFilterCondition(PriceHistogramConditionDto request) {
+		applyBaseDefaults(request); // 공통 필드 보정
+		return request;
+	}
+
+	private AccommodationListConditionDto applyDefaultFilterCondition(AccommodationListConditionDto request) {
+		applyBaseDefaults(request); // 공통 필드 보정
+
+		Integer minPrice = request.getMinPrice() != null ? request.getMinPrice() : 1000;
+		Integer maxPrice = request.getMaxPrice() != null ? request.getMaxPrice() : 10_000_000;
+
+		request.setMinPrice(minPrice);
+		request.setMaxPrice(maxPrice);
+
+		return request;
 	}
 }

@@ -1,5 +1,7 @@
 package com.team3.airdnd.accommodation.domain;
 
+import org.locationtech.jts.geom.Point;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -30,9 +32,14 @@ public class Address {
 	@Column(name = "detail_address")
 	private String detailAddress;
 
-	@Column(nullable = false)
-	private Double latitude;
+	@Column(columnDefinition = "POINT SRID 4326", nullable = true)
+	private Point location;
 
-	@Column(nullable = false)
-	private Double longitude;
+	public double getLatitude() {
+		return location.getY();
+	}
+
+	public double getLongitude() {
+		return location.getX();
+	}
 }

@@ -1,12 +1,14 @@
 package com.team3.airdnd.global.config;
 
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.PrecisionModel;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class QueryDslConfig {
@@ -17,5 +19,10 @@ public class QueryDslConfig {
 	@Bean
 	public JPAQueryFactory jpaQueryFactory() {
 		return new JPAQueryFactory(em);
+	}
+
+	@Bean
+	public GeometryFactory geometryFactory() {
+		return new GeometryFactory(new PrecisionModel(), 4326);
 	}
 }

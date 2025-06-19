@@ -12,10 +12,14 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@SuperBuilder
 public abstract class BaseSearchConditionDto {
 
 	@NotBlank(message = "지역은 필수입니다.")
@@ -29,7 +33,6 @@ public abstract class BaseSearchConditionDto {
 	@Future(message = "체크아웃 날짜는 미래여야 합니다.")
 	protected LocalDate checkOut;
 
-	@NotNull(message = "인원 수는 필수입니다.")
 	@Min(value = 1, message = "인원 수는 1명 이상이어야 합니다.")
 	@Max(value = 20, message = "인원 수는 20명 이하여야 합니다.")
 	protected Integer guests;

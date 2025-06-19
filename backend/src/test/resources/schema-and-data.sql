@@ -1,11 +1,16 @@
 -- 테이블 삭제
 DROP TABLE IF EXISTS stored_file;
 DROP TABLE IF EXISTS review;
+DROP TABLE IF EXISTS message;
+DROP TABLE IF EXISTS chat_room;
+DROP TABLE IF EXISTS payment;
 DROP TABLE IF EXISTS reservation;
 DROP TABLE IF EXISTS accommodation_amenity;
 DROP TABLE IF EXISTS amenity;
+DROP TABLE IF EXISTS reserved_date;
 DROP TABLE IF EXISTS accommodation;
 DROP TABLE IF EXISTS address;
+DROP TABLE IF EXISTS payment_method;
 DROP TABLE IF EXISTS user;
 
 -- 유저 테이블
@@ -30,8 +35,7 @@ CREATE TABLE address
     district       VARCHAR(100),
     street_address VARCHAR(255),
     detail_address VARCHAR(255),
-    latitude       DOUBLE NOT NULL,
-    longitude      DOUBLE NOT NULL
+    location       POINT SRID 4326
 );
 
 -- 숙소 테이블
@@ -91,7 +95,7 @@ CREATE TABLE review
     reservation_id BIGINT   NOT NULL,
     content        VARCHAR(500),
     created_at     DATETIME NOT NULL,
-    rating         DOUBLE   NOT NULL,
+    rating DOUBLE NOT NULL,
     FOREIGN KEY (reservation_id) REFERENCES reservation (id)
 );
 
@@ -147,65 +151,65 @@ VALUES (1, 'ggim@dreamwiz.com', '안성민', 'user01', 'pw7311', 'GUEST', '063-5
        (20, 'dohyeon24@hotmail.com', '최정희', 'user20', 'pw6458', 'HOST', '063-118-0132',
         'https://www.lorempixel.com/83/615', '2025-06-17 04:03:06');
 
-INSERT INTO address (city, district, street_address, latitude, longitude)
-VALUES ('충청북도', '삼성', '충청북도 예산군 영동대688로', 33.730279, 126.703643),
-       ('울산광역시', '오금', '울산광역시 북구 양재천가', 33.062984, 126.917019),
-       ('경기도', '개포', '경기도 태안군 역삼거리', 33.221704, 126.803345),
-       ('세종특별자치시', '삼성', '세종특별자치시 남구 양재천66로', 33.142494, 126.54299),
-       ('충청남도', '가락', '충청남도 하남시 도산대7가', 33.091216, 126.993222),
-       ('대구광역시', '서초중앙', '대구광역시 동구 선릉9가', 33.875087, 126.997972),
-       ('부산광역시', '반포대', '부산광역시 강서구 압구정로', 33.489287, 126.301447),
-       ('부산광역시', '가락', '부산광역시 강남구 논현71로 (수빈심윤마을)', 33.291091, 126.124811),
-       ('전라북도', '테헤란', '전라북도 진천군 서초대길 (은서박읍)', 33.332751, 126.92225),
-       ('서울특별시', '영동대', '서울특별시 북구 서초중앙거리', 33.203202, 126.799427),
-       ('충청남도', '서초대', '충청남도 안양시 만안구 서초대12가', 33.54723, 126.287657),
-       ('울산광역시', '학동', '울산광역시 용산구 선릉길', 33.091632, 126.797935),
-       ('경상북도', '반포대', '경상북도 수원시 팔달구 삼성415로 (종수김면)', 33.317047, 126.242107),
-       ('전라남도', '압구정', '전라남도 성남시 분당구 논현로', 33.183869, 126.821467),
-       ('서울특별시', '오금', '서울특별시 도봉구 압구정322가', 33.032972, 126.9813),
-       ('광주광역시', '서초중앙', '광주광역시 광진구 논현거리 (경자이심마을)', 33.260056, 126.069085),
-       ('부산광역시', '역삼', '부산광역시 금천구 역삼22길', 33.678724, 126.130224),
-       ('충청남도', '서초대', '충청남도 괴산군 양재천거리', 33.14955, 126.038642),
-       ('대구광역시', '오금', '대구광역시 동작구 개포로', 33.080248, 126.699323),
-       ('전라북도', '테헤란', '전라북도 천안시 서북구 테헤란645로 (진호이마을)', 33.829361, 126.683498),
-       ('부산광역시', '해운대구', '해운대로 1', 35.1587, 129.1603),
-       ('부산광역시', '해운대구', '해운대로 2', 35.1587, 129.1603),
-       ('부산광역시', '수영구', '수영로 1', 35.1535, 129.1186),
-       ('부산광역시', '수영구', '수영로 2', 35.1535, 129.1186),
-       ('부산광역시', '중구', '중앙대로 1', 35.1065, 129.0323),
-       ('부산광역시', '중구', '중앙대로 2', 35.1065, 129.0323),
-       ('부산광역시', '남구', '용호로 1', 35.1294, 129.1071),
-       ('부산광역시', '남구', '용호로 2', 35.1294, 129.1071),
-       ('부산광역시', '동래구', '충렬대로 1', 35.2052, 129.0836),
-       ('부산광역시', '동래구', '충렬대로 2', 35.2052, 129.0836),
-       ('부산광역시', '테스트구1', '테스트로 1길', 35.0, 129.0),
-       ('부산광역시', '테스트구2', '테스트로 2길', 35.0, 129.0),
-       ('부산광역시', '테스트구3', '테스트로 3길', 35.0, 129.0),
-       ('부산광역시', '테스트구4', '테스트로 4길', 35.0, 129.0),
-       ('부산광역시', '테스트구5', '테스트로 5길', 35.0, 129.0),
-       ('부산광역시', '테스트구6', '테스트로 6길', 35.0, 129.0),
-       ('부산광역시', '테스트구7', '테스트로 7길', 35.0, 129.0),
-       ('부산광역시', '테스트구8', '테스트로 8길', 35.0, 129.0),
-       ('부산광역시', '테스트구9', '테스트로 9길', 35.0, 129.0),
-       ('부산광역시', '테스트구10', '테스트로 10길', 35.0, 129.0);
+INSERT INTO address (city, district, street_address, location)
+VALUES ('부산광역시', '수영구', '수영로 533', ST_GeomFromText('POINT(35.157 129.113)', 4326)),
+       ('전라북도', '전주시', '완산구 전라감영5길 5', ST_GeomFromText('POINT(35.821694 127.145752)', 4326)),
+       ('부산광역시', '해운대구', '좌동로 175', ST_GeomFromText('POINT(35.171 129.165)', 4326)),
+       ('부산광역시', '동래구', '중앙대로 1285', ST_GeomFromText('POINT(35.204 129.089)', 4326)),
+       ('부산광역시', '연제구', '연산대로 50', ST_GeomFromText('POINT(35.188 129.083)', 4326)),
+       ('세종특별자치시', '어진동', '세종로 123', ST_GeomFromText('POINT(36.480126 127.289583)', 4326)),
+       ('부산광역시', '사상구', '감전로 77', ST_GeomFromText('POINT(35.157 128.99)', 4326)),
+       ('부산광역시', '해운대구', '달맞이길 123', ST_GeomFromText('POINT(35.166 129.167)', 4326)),
+       ('충청남도', '논산시', '중앙로 45', ST_GeomFromText('POINT(36.1861 127.09812)', 4326)),
+       ('부산광역시', '사상구', '괘감로 150', ST_GeomFromText('POINT(35.157 128.983)', 4326)),
+       ('부산광역시', '중구', '중앙대로 33', ST_GeomFromText('POINT(35.106 129.036)', 4326)),
+       ('부산광역시', '영도구', '태종로 275', ST_GeomFromText('POINT(35.083 129.068)', 4326)),
+       ('경상북도', '포항시', '북구 죽도시장로 88', ST_GeomFromText('POINT(36.019 129.365)', 4326)),
+       ('부산광역시', '중구', '광복로 58', ST_GeomFromText('POINT(35.10094 129.03589)', 4326)),
+       ('부산광역시', '금정구', '서동로 99', ST_GeomFromText('POINT(35.242 129.092)', 4326)),
+       ('충청남도', '천안시', '서북구 백석로 10', ST_GeomFromText('POINT(36.815872 127.123123)', 4326)),
+       ('부산광역시', '남구', '수영로 90', ST_GeomFromText('POINT(35.136 129.109)', 4326)),
+       ('부산광역시', '해운대구', '해운대로 620', ST_GeomFromText('POINT(35.163 129.158)', 4326)),
+       ('대구광역시', '수성구', '범어천로 80', ST_GeomFromText('POINT(35.8561 128.6235)', 4326)),
+       ('부산광역시', '동구', '범일로 120', ST_GeomFromText('POINT(35.133 129.059)', 4326)),
+       ('부산광역시', '북구', '구포1동 222-1', ST_GeomFromText('POINT(35.206 128.991)', 4326)),
+       ('대구광역시', '중구', '동성로2가 150', ST_GeomFromText('POINT(35.870024 128.603553)', 4326)),
+       ('부산광역시', '강서구', '대저1동 551', ST_GeomFromText('POINT(35.211 128.973)', 4326)),
+       ('부산광역시', '남구', '대연동 120', ST_GeomFromText('POINT(35.133 129.11)', 4326)),
+       ('부산광역시', '기장군', '기장해안로 321', ST_GeomFromText('POINT(35.244 129.263)', 4326)),
+       ('부산광역시', '연제구', '거제천로 256', ST_GeomFromText('POINT(35.184 129.087)', 4326)),
+       ('서울특별시', '도봉구', '방학로 120', ST_GeomFromText('POINT(37.668853 127.031754)', 4326)),
+       ('부산광역시', '동래구', '온천천로 95', ST_GeomFromText('POINT(35.202 129.075)', 4326)),
+       ('서울특별시', '마포구', '월드컵북로 396', ST_GeomFromText('POINT(37.566323 126.901527)', 4326)),
+       ('충청북도', '청주시', '흥덕구 가로수로 10', ST_GeomFromText('POINT(36.642 127.478)', 4326)),
+       ('경기도', '수원시', '영통구 봉영로 161', ST_GeomFromText('POINT(37.255141 127.057185)', 4326)),
+       ('부산광역시', '수영구', '광안해변로 229', ST_GeomFromText('POINT(35.15313 129.11734)', 4326)),
+       ('울산광역시', '남구', '삼산로 123', ST_GeomFromText('POINT(35.538377 129.311224)', 4326)),
+       ('부산광역시', '사하구', '하신번영로 12', ST_GeomFromText('POINT(35.093 128.976)', 4326)),
+       ('서울특별시', '은평구', '불광로 22', ST_GeomFromText('POINT(37.619 126.9273)', 4326)),
+       ('전라남도', '목포시', '평화로 33', ST_GeomFromText('POINT(34.811835 126.394942)', 4326)),
+       ('부산광역시', '기장군', '장안읍 좌천리 333', ST_GeomFromText('POINT(35.31 129.253)', 4326)),
+       ('광주광역시', '북구', '용봉로 100', ST_GeomFromText('POINT(35.1741 126.91246)', 4326)),
+       ('부산광역시', '북구', '화명로 44', ST_GeomFromText('POINT(35.213 129.01)', 4326)),
+       ('서울특별시', '강남구', '테헤란로 212', ST_GeomFromText('POINT(37.497942 127.027621)', 4326));
 
 INSERT INTO accommodation (id, name, description, price_per_night, max_guests, bed_count, bedroom_count, bathroom_count,
                            address_id, host_id, created_at)
 VALUES (1, '숙소 1', 'Fugiat ab vitae temporibus.', 250000, 3, 3, 1, 1, 2, 2, '2025-06-17 04:03:06'),
-       (2, '숙소 2', 'At libero vero molestiae illo odio accusantium.', 250000, 4, 3, 2, 2, 3, 3, '2025-06-17 04:03:06'),
-       (3, '숙소 3', 'Ipsam quia explicabo sit perferendis deserunt.', 200000, 6, 3, 2, 1, 4, 4, '2025-06-17 04:03:06'),
+       (2, '숙소 2', 'At libero vero molestiae illo odio accusantium.', 150000, 4, 3, 2, 2, 3, 3, '2025-06-17 04:03:06'),
+       (3, '숙소 3', 'Ipsam quia explicabo sit perferendis deserunt.', 150000, 6, 3, 2, 1, 4, 4, '2025-06-17 04:03:06'),
        (4, '숙소 4', 'Occaecati minus illum odio illo quod ratione.', 150000, 5, 1, 2, 2, 5, 5, '2025-06-17 04:03:06'),
        (5, '숙소 5', 'Ab aliquam nulla voluptatum sit praesentium.', 120000, 2, 1, 2, 1, 6, 6, '2025-06-17 04:03:06'),
        (6, '숙소 6', 'Cumque in tempore ipsa ipsum quae.', 120000, 3, 1, 2, 2, 7, 7, '2025-06-17 04:03:06'),
        (7, '숙소 7', 'Recusandae ipsa dignissimos quae temporibus.', 80000, 1, 1, 1, 1, 8, 8, '2025-06-17 04:03:06'),
        (8, '숙소 8', 'Quia perspiciatis doloremque error.', 250000, 6, 3, 1, 1, 9, 9, '2025-06-17 04:03:06'),
-       (9, '숙소 9', 'Illum amet possimus pariatur officiis molestias.', 80000, 6, 1, 1, 2, 10, 10,
+       (9, '숙소 9', 'Illum amet possimus pariatur officiis molestias.', 150000, 6, 1, 1, 2, 10, 10,
         '2025-06-17 04:03:06'),
-       (10, '숙소 10', 'Expedita enim ab aperiam.', 80000, 3, 1, 1, 1, 11, 11, '2025-06-17 04:03:06'),
-       (11, '숙소 11', 'Non assumenda eum modi.', 120000, 2, 3, 1, 2, 12, 12, '2025-06-17 04:03:06'),
+       (10, '숙소 10', 'Expedita enim ab aperiam.', 150000, 3, 1, 1, 1, 11, 11, '2025-06-17 04:03:06'),
+       (11, '숙소 11', 'Non assumenda eum modi.', 150000, 2, 3, 1, 2, 12, 12, '2025-06-17 04:03:06'),
        (12, '숙소 12', 'Dolorum quas error maxime harum.', 120000, 6, 1, 1, 2, 13, 13, '2025-06-17 04:03:06'),
        (13, '숙소 13', 'Totam impedit laudantium.', 250000, 1, 2, 1, 1, 14, 14, '2025-06-17 04:03:06'),
-       (14, '숙소 14', 'Nostrum repellendus nam suscipit hic vero.', 80000, 6, 2, 2, 2, 15, 15, '2025-06-17 04:03:06'),
+       (14, '숙소 14', 'Nostrum repellendus nam suscipit hic vero.', 150000, 6, 2, 2, 2, 15, 15, '2025-06-17 04:03:06'),
        (15, '숙소 15', 'Autem tempore nostrum ratione quae quod.', 120000, 1, 3, 2, 1, 16, 16, '2025-06-17 04:03:06'),
        (16, '숙소 16', 'Dolorum eligendi quasi optio quia maiores.', 250000, 1, 3, 2, 1, 17, 17, '2025-06-17 04:03:06'),
        (17, '숙소 17', 'Consequatur dignissimos totam libero.', 150000, 3, 3, 2, 1, 18, 18, '2025-06-17 04:03:06'),
@@ -274,4 +278,4 @@ VALUES (1, '정말 깨끗하고 호스트도 친절했어요.', '2025-06-11 10:2
        (1, '위치가 너무 좋았어요.', '2025-06-10 18:01:00', 4.5);
 
 INSERT INTO stored_file (file_url, file_order, target_type, target_id)
-VALUES ('image1.jep', 1, 'ACCOMMODATION', 6)
+VALUES ('image1.jep', 1, 'ACCOMMODATION', 6);
