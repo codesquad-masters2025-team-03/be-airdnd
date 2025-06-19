@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.*;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.junit.jupiter.api.DisplayName;
@@ -23,8 +24,10 @@ import com.team3.airdnd.MockAwsConfig;
 import com.team3.airdnd.accommodation.domain.Accommodation;
 import com.team3.airdnd.accommodation.domain.AccommodationAmenity;
 import com.team3.airdnd.accommodation.domain.AmenityType;
+import com.team3.airdnd.accommodation.dto.AccommodationListConditionDto;
 import com.team3.airdnd.accommodation.dto.AccommodationRequestDto;
 import com.team3.airdnd.accommodation.dto.AccommodationResponseDto;
+import com.team3.airdnd.accommodation.query.AccommodationQueryRepository;
 import com.team3.airdnd.accommodation.repository.AccommodationAmenityRepository;
 import com.team3.airdnd.accommodation.repository.AccommodationRepository;
 import com.team3.airdnd.accommodation.service.AccommodationService;
@@ -57,6 +60,8 @@ public class AccommodationServiceTest extends AbstractIntegrationTest {
 
 	@Autowired
 	private StoredFileService storedFileService;
+	@Autowired
+	private AccommodationQueryRepository accommodationQueryRepository;
 
 	@Test
 	@DisplayName("숙소 ID로 상세 정보를 조회할 수 있다")
@@ -279,5 +284,27 @@ public class AccommodationServiceTest extends AbstractIntegrationTest {
 		assertThat(results)
 			.extracting(AccommodationResponseDto.HostAccommodationDto::getName)
 			.contains("숙소 6");
+	}
+
+	@Test
+	@DisplayName("위치를 기반으로 조회한다.")
+	void searchByLocation_masan_shouldReturnTwoAccommodations() {
+		// given
+		AccommodationListConditionDto request = AccommodationListConditionDto.builder()
+			.location("마산")
+			.checkIn(LocalDate.of(2025, 6, 20))
+			.checkOut(LocalDate.of(2025, 6, 27))
+			.guests(2)
+			.northEastLat(35.2375)
+			.northEastLng(128.5950)
+			.southWestLat(35.1850)
+			.southWestLng(128.5700)
+			.build();
+
+		// when
+		AccommodationResponseDto.AccommodationListDto result = accommodationService.getAccommodations(request, 1, 10);
+
+		// then
+		assertThat(result.getAccommodations()).hasSize(1);
 	}
 }

@@ -363,9 +363,12 @@ public class AccommodationService {
 	}
 
 	private BaseSearchConditionDto applyBaseDefaults(BaseSearchConditionDto request) {
+		String location =
+			(request.getLocation() != null && !request.getLocation().isBlank()) ? request.getLocation() : "서울";
 		LocalDate checkIn = request.getCheckIn() != null ? request.getCheckIn() : LocalDate.now();
 		LocalDate checkOut = request.getCheckOut() != null ? request.getCheckOut() : checkIn.plusDays(1);
 
+		request.setLocation(location);
 		request.setCheckIn(checkIn);
 		request.setCheckOut(checkOut);
 		request.setGuests(request.getGuests() != null ? request.getGuests() : 1);
