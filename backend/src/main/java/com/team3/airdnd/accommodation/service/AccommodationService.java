@@ -5,11 +5,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.team3.airdnd.accommodation.domain.Accommodation;
 import com.team3.airdnd.accommodation.domain.AccommodationAmenity;
 import com.team3.airdnd.accommodation.domain.Address;
@@ -23,6 +25,7 @@ import com.team3.airdnd.accommodation.dto.HostAccommodationQueryDto;
 import com.team3.airdnd.accommodation.dto.PriceHistogramConditionDto;
 import com.team3.airdnd.accommodation.dto.PriceHistogramResponseDto;
 import com.team3.airdnd.accommodation.dto.ReviewDto;
+import com.team3.airdnd.accommodation.query.AccommodationQueryRepository;
 import com.team3.airdnd.accommodation.repository.AccommodationAmenityRepository;
 import com.team3.airdnd.accommodation.repository.AccommodationRepository;
 import com.team3.airdnd.accommodation.repository.AddressRepository;
@@ -53,7 +56,7 @@ public class AccommodationService {
 	private final ReservationRepository reservationRepository;
 	private final AccommodationQueryRepository accommodationQueryRepository;
 
-	private final JPAQueryFactory queryFactory;
+	private final GeometryFactory geometryFactory;
 	private final StoredFileService storedFileService;
 	// 에어비엔비 기준으로 범위를 50으로 정했습니다.
 	private static final int DEFAULT_BIN_COUNT = 50;
@@ -129,13 +132,17 @@ public class AccommodationService {
 	}
 
 	private Address saveAdderss(AccommodationRequestDto.CreateAccommodationDto request) {
+		Point location = geometryFactory.createPoint(
+			new Coordinate(request.getLongitude(), request.getLatitude())
+		);
+		location.setSRID(4326);
+
 		Address address = Address.builder()
 			.city(request.getCity())
 			.district(request.getDistrict())
 			.streetAddress(request.getStreetAddress())
 			.detailAddress(request.getDetailAddress())
-			.latitude(request.getLatitude())
-			.longitude(request.getLongitude())
+			.location(location)
 			.build();
 		return addressRepository.save(address);
 	}
@@ -193,13 +200,18 @@ public class AccommodationService {
 	}
 
 	private Address updateAddress(Address oldAddress, AccommodationRequestDto.UpdateAccommodationDto dto) {
+		double lat = dto.getLatitude() != null ? dto.getLatitude() : oldAddress.getLocation().getY();
+		double lng = dto.getLongitude() != null ? dto.getLongitude() : oldAddress.getLocation().getX();
+
+		Point location = geometryFactory.createPoint(new Coordinate(lng, lat));
+		location.setSRID(4326);
+
 		Address updated = oldAddress.toBuilder()
 			.city(dto.getCity() != null ? dto.getCity() : oldAddress.getCity())
 			.district(dto.getDistrict() != null ? dto.getDistrict() : oldAddress.getDistrict())
 			.streetAddress(dto.getStreetAddress() != null ? dto.getStreetAddress() : oldAddress.getStreetAddress())
 			.detailAddress(dto.getDetailAddress() != null ? dto.getDetailAddress() : oldAddress.getDetailAddress())
-			.latitude(dto.getLatitude() != null ? dto.getLatitude() : oldAddress.getLatitude())
-			.longitude(dto.getLongitude() != null ? dto.getLongitude() : oldAddress.getLongitude())
+			.location(location)
 			.build();
 
 		return addressRepository.save(updated);
@@ -263,7 +275,7 @@ public class AccommodationService {
 		User user = userRepository.findById(hostId)
 			.orElseThrow(() -> new CommonException(ErrorCode.NOT_FOUND_USER));
 
-		if (user.getRole() != User.Role.HOST) {
+		if (!user.isHost()) {
 			throw new CommonException(ErrorCode.ACCESS_DENIED);
 		}
 		return user;
