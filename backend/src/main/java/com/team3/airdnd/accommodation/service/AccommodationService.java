@@ -1,5 +1,6 @@
 package com.team3.airdnd.accommodation.service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -17,6 +18,7 @@ import com.team3.airdnd.accommodation.domain.AmenityType;
 import com.team3.airdnd.accommodation.dto.AccommodationListConditionDto;
 import com.team3.airdnd.accommodation.dto.AccommodationRequestDto;
 import com.team3.airdnd.accommodation.dto.AccommodationResponseDto;
+import com.team3.airdnd.accommodation.dto.BaseSearchConditionDto;
 import com.team3.airdnd.accommodation.dto.HostAccommodationQueryDto;
 import com.team3.airdnd.accommodation.dto.PriceHistogramConditionDto;
 import com.team3.airdnd.accommodation.dto.PriceHistogramResponseDto;
@@ -276,6 +278,7 @@ public class AccommodationService {
 
 	@Transactional(readOnly = true)
 	public PriceHistogramResponseDto getPriceHistogram(PriceHistogramConditionDto request) {
+		request = applyDefaultFilterCondition(request);
 		List<Integer> prices = accommodationQueryRepository.findAvailableAccommodationPrices(request);
 
 		if (prices.isEmpty()) {
@@ -343,6 +346,35 @@ public class AccommodationService {
 	@Transactional(readOnly = true)
 	public AccommodationResponseDto.AccommodationListDto getAccommodations(AccommodationListConditionDto request,
 		int page, int size) {
+		request = applyDefaultFilterCondition(request);
 		return accommodationQueryRepository.findAccommodationListWithFilter(request, page, size);
+	}
+
+	private BaseSearchConditionDto applyBaseDefaults(BaseSearchConditionDto request) {
+		LocalDate checkIn = request.getCheckIn() != null ? request.getCheckIn() : LocalDate.now();
+		LocalDate checkOut = request.getCheckOut() != null ? request.getCheckOut() : checkIn.plusDays(1);
+
+		request.setCheckIn(checkIn);
+		request.setCheckOut(checkOut);
+		request.setGuests(request.getGuests() != null ? request.getGuests() : 1);
+
+		return request;
+	}
+
+	private PriceHistogramConditionDto applyDefaultFilterCondition(PriceHistogramConditionDto request) {
+		applyBaseDefaults(request); // 공통 필드 보정
+		return request;
+	}
+
+	private AccommodationListConditionDto applyDefaultFilterCondition(AccommodationListConditionDto request) {
+		applyBaseDefaults(request); // 공통 필드 보정
+
+		Integer minPrice = request.getMinPrice() != null ? request.getMinPrice() : 1000;
+		Integer maxPrice = request.getMaxPrice() != null ? request.getMaxPrice() : 10_000_000;
+
+		request.setMinPrice(minPrice);
+		request.setMaxPrice(maxPrice);
+
+		return request;
 	}
 }
