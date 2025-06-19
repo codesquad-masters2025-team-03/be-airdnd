@@ -45,6 +45,9 @@ dependencies {
 
     implementation 'org.hibernate.validator:hibernate-validator:8.0.1.Final' // 최신 버전 권장
     implementation 'org.glassfish:jakarta.el:4.0.2' // Expression Language 지원 (필수)
+
+    implementation 'org.hibernate:hibernate-spatial:6.6.15.Final'
+    implementation 'org.locationtech.jts:jts-core:1.19.0'
 }
 
 sourceSets {

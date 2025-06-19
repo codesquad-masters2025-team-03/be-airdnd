@@ -15,6 +15,7 @@ import org.springframework.stereotype.Repository;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.team3.airdnd.accommodation.domain.Accommodation;
@@ -22,12 +23,12 @@ import com.team3.airdnd.accommodation.domain.QAccommodation;
 import com.team3.airdnd.accommodation.domain.QAccommodationAmenity;
 import com.team3.airdnd.accommodation.domain.QAddress;
 import com.team3.airdnd.accommodation.domain.QAmenity;
-import com.team3.airdnd.accommodation.domain.QReservation;
-import com.team3.airdnd.accommodation.domain.Reservation;
 import com.team3.airdnd.accommodation.dto.AccommodationListConditionDto;
 import com.team3.airdnd.accommodation.dto.AccommodationResponseDto;
 import com.team3.airdnd.accommodation.dto.AmenityDto;
 import com.team3.airdnd.accommodation.dto.PriceHistogramConditionDto;
+import com.team3.airdnd.reservation.domain.QReservation;
+import com.team3.airdnd.reservation.domain.Reservation;
 import com.team3.airdnd.storedFile.domain.QStoredFile;
 import com.team3.airdnd.storedFile.domain.StoredFile;
 
@@ -148,6 +149,7 @@ public class AccommodationQueryRepository {
 
 		System.out.println("location = " + location + ", guests = " + guests);
 
+		//Todo: 이런거 request 내부에서 검증
 		if (location != null && !location.isBlank()) {
 			condition.and(
 				address.city.containsIgnoreCase(location)
@@ -156,6 +158,8 @@ public class AccommodationQueryRepository {
 					.or(accommodation.name.containsIgnoreCase(location))
 			);
 		}
+
+		//Todo: 이런거 request 내부에서 검증
 		if (guests != null) {
 			condition.and(accommodation.maxGuests.goe(guests));
 		}
@@ -223,9 +227,12 @@ public class AccommodationQueryRepository {
 
 	private BooleanExpression createBoundsCondition(Double neLat, Double neLng, Double swLat, Double swLng) {
 		if (neLat == null || neLng == null || swLat == null || swLng == null) {
-			return null; // 지도의 좌표 정보 없으면 조건 안 걸기
+			return null;
 		}
-		return address.latitude.between(swLat, neLat)
-			.and(address.longitude.between(swLng, neLng));
+
+		return Expressions.booleanTemplate(
+			"MBRContains(ST_MakeEnvelope({0}, {1}, {2}, {3}, 4326), {4})",
+			swLng, swLat, neLng, neLat, address.location
+		);
 	}
 }
