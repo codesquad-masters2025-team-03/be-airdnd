@@ -60,37 +60,57 @@ public class AccommodationQueryRepository {
 
 	public AccommodationResponseDto.AccommodationListDto findAccommodationListWithFilter(
 		AccommodationListConditionDto request, int page, int size) {
+
 		PageRequest pageRequest = PageRequest.of(page - 1, size);
 
+		// 기존 검색 조건
 		BooleanBuilder condition = createSearchCondition(request.getLocation(), request.getGuests());
 
-		// 요금 필터
+		// 요금 조건
 		if (request.getMinPrice() != null && request.getMaxPrice() != null) {
 			condition.and(accommodation.pricePerNight.between(request.getMinPrice(), request.getMaxPrice()));
 		}
 
+		// 예약 겹침 조건
 		BooleanExpression noOverlap = createNoOverlapCondition(request.getCheckIn(), request.getCheckOut());
 
+		// 지도 범위 조건
+		BooleanExpression boundsCondition = createBoundsCondition(
+			request.getNorthEastLat(), request.getNorthEastLng(),
+			request.getSouthWestLat(), request.getSouthWestLng()
+		);
+
+		// 전체 조건 통합
+		BooleanBuilder finalCondition = new BooleanBuilder(condition)
+			.and(noOverlap);
+
+		if (boundsCondition != null) {
+			finalCondition.and(boundsCondition);
+		}
+
+		// 숙소 목록 조회
 		List<Accommodation> accommodations = queryFactory
 			.selectFrom(accommodation)
 			.join(accommodation.address, address).fetchJoin()
-			.where(condition.and(noOverlap))
+			.where(finalCondition)
 			.offset(pageRequest.getOffset())
 			.limit(pageRequest.getPageSize())
 			.fetch();
 
+		// 총 개수 조회
 		long total = queryFactory
 			.select(accommodation.count())
 			.from(accommodation)
 			.join(accommodation.address, address)
-			.where(condition.and(noOverlap))
+			.where(finalCondition)
 			.fetchOne();
 
+		// 추가 정보 매핑
 		List<Long> accommodationIds = accommodations.stream().map(Accommodation::getId).toList();
-
 		Map<Long, String> imageMap = fetchImageMap(accommodationIds);
 		Map<Long, List<AmenityDto>> amenityMap = fetchAmenityMap(accommodationIds);
 
+		// DTO 변환
 		List<AccommodationResponseDto.AccommodationInfo> accommodationInfos = accommodations.stream()
 			.map(acc -> {
 				String imageUrl = imageMap.getOrDefault(acc.getId(), null);
@@ -113,6 +133,7 @@ public class AccommodationQueryRepository {
 			})
 			.toList();
 
+		// 최종 응답
 		return AccommodationResponseDto.AccommodationListDto.builder()
 			.page(page)
 			.size(size)
@@ -198,5 +219,13 @@ public class AccommodationQueryRepository {
 			amenityMap.computeIfAbsent(accId, k -> new ArrayList<>()).add(dto);
 		}
 		return amenityMap;
+	}
+
+	private BooleanExpression createBoundsCondition(Double neLat, Double neLng, Double swLat, Double swLng) {
+		if (neLat == null || neLng == null || swLat == null || swLng == null) {
+			return null; // 지도의 좌표 정보 없으면 조건 안 걸기
+		}
+		return address.latitude.between(swLat, neLat)
+			.and(address.longitude.between(swLng, neLng));
 	}
 }
