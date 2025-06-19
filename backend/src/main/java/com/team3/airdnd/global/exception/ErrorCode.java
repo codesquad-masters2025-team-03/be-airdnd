@@ -1,0 +1,30 @@
+package com.team3.airdnd.global.exception;
+
+import org.springframework.http.HttpStatus;
+
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+@Getter
+@RequiredArgsConstructor
+public enum ErrorCode {
+	INVALID_REQUEST(40000, HttpStatus.BAD_REQUEST, "잘못된 요청입니다."),
+	NOT_FOUND_RESOURCE(40400, HttpStatus.NOT_FOUND, "해당 리소스가 존재하지 않습니다."),
+	NOT_FOUND_USER(40401, HttpStatus.NOT_FOUND, "해당 사용자가 존재하지 않습니다."),
+
+	FAILURE_LOGIN(40100, HttpStatus.UNAUTHORIZED, "잘못된 아이디 또는 비밀번호입니다."),
+	ACCESS_DENIED(40300, HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
+	DUPLICATED_LOGIN_ID(40900, HttpStatus.CONFLICT, "이미 존재하는 로그인 아이디입니다."),
+
+	ACCOMMODATION_HAS_RESERVATIONS(40000, HttpStatus.BAD_REQUEST, "예약이 존재하는 숙소는 삭제할 수 없습니다."),
+	NOT_AUTHORIZED_TO_DELETE(40301, HttpStatus.BAD_REQUEST, "해당 숙소에 대한 삭제 권한이 없습니다."),
+
+	INTERNAL_SERVER_ERROR(50000, HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 에러입니다."),
+	INVALID_IMAGE(40001, HttpStatus.BAD_REQUEST, "이미지는 최소 1개 이상 최대 5개 이하로 업로드해야 합니다."),
+
+	S3_UPLOAD_FAILED(50001, HttpStatus.INTERNAL_SERVER_ERROR, "S3 파일 업로드에 실패했습니다.");
+
+	private final Integer code;
+	private final HttpStatus httpStatus;
+	private final String message;
+}
