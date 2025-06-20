@@ -280,6 +280,11 @@ public class AccommodationService {
 	@Transactional(readOnly = true)
 	public PriceHistogramResponseDto getPriceHistogram(PriceHistogramConditionDto request) {
 		request = applyDefaultFilterCondition(request);
+
+		if (request.getLocation() == null || request.getLocation().isBlank()) {
+			request.setLocation("서울");
+		}
+
 		List<Integer> prices = accommodationQueryRepository.findAvailableAccommodationPrices(request);
 
 		if (prices.isEmpty()) {
@@ -337,9 +342,6 @@ public class AccommodationService {
 	@Transactional(readOnly = true)
 	public AccommodationResponseDto.AccommodationListDto getAccommodations(AccommodationListConditionDto request,
 		int page, int size) {
-		if (request.getLocation() == null || request.getLocation().isBlank()) {
-			request.setLocation("서울");
-		}
 		request = applyDefaultFilterCondition(request);
 		return accommodationQueryRepository.findAccommodationListWithFilter(request, page, size);
 	}
@@ -371,10 +373,11 @@ public class AccommodationService {
 
 	private AccommodationListConditionDto applyDefaultFilterCondition(AccommodationListConditionDto request) {
 		applyBaseDefaults(request); // 공통 필드 보정
-
+		String location = request.getLocation() != null ? request.getLocation() : "서울";
 		Integer minPrice = request.getMinPrice() != null ? request.getMinPrice() : 1000;
 		Integer maxPrice = request.getMaxPrice() != null ? request.getMaxPrice() : 10_000_000;
 
+		request.setLocation(location);
 		request.setMinPrice(minPrice);
 		request.setMaxPrice(maxPrice);
 
@@ -382,14 +385,11 @@ public class AccommodationService {
 	}
 
 	private MapBoundAccommodationSearchDto applyDefaultMapBounds(MapBoundAccommodationSearchDto request) {
-		LocalDate checkIn = request.getCheckIn() != null ? request.getCheckIn() : LocalDate.now();
-		LocalDate checkOut = request.getCheckOut() != null ? request.getCheckOut() : checkIn.plusDays(1);
+		applyBaseDefaults(request);
 		Integer guests = request.getGuests() != null ? request.getGuests() : 1;
 		Integer minPrice = request.getMinPrice() != null ? request.getMinPrice() : 1000;
 		Integer maxPrice = request.getMaxPrice() != null ? request.getMaxPrice() : 10_000_000;
 
-		request.setCheckIn(checkIn);
-		request.setCheckOut(checkOut);
 		request.setGuests(guests);
 		request.setMinPrice(minPrice);
 		request.setMaxPrice(maxPrice);
