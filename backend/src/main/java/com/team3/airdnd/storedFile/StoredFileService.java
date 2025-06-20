@@ -3,6 +3,8 @@ package com.team3.airdnd.storedFile;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.team3.airdnd.accommodation.domain.Accommodation;
@@ -18,6 +20,7 @@ public class StoredFileService {
 	private final StoredFileRepository storedFileRepository;
 	private final S3FileService s3FileService;
 
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public void saveFiles(List<MultipartFile> files, Accommodation accommodation) {
 		for (int i = 0; i < files.size(); i++) {
 			MultipartFile file = files.get(i);
@@ -34,6 +37,7 @@ public class StoredFileService {
 		}
 	}
 
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public void deleteFilesByAccommodationId(Long accommodationId) {
 		List<StoredFile> files = storedFileRepository.findByTargetTypeAndTargetId(
 			StoredFile.TargetType.ACCOMMODATION, accommodationId
