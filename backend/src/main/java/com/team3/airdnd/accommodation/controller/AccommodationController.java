@@ -39,10 +39,11 @@ public class AccommodationController {
 
 	private final AccommodationService accommodationService;
 
-	@GetMapping("/{accommodation-id}")
+	@GetMapping("/{accommodationId}")
 	public ResponseEntity<ResponseDto<AccommodationResponseDto.AccommodationDetailDto>> getAccommodationDetail(
-		@PathVariable("accommodation-id") Long id) {
-		AccommodationResponseDto.AccommodationDetailDto detailDto = accommodationService.getAccommodationDetail(id);
+		@PathVariable Long accommodationId) {
+		AccommodationResponseDto.AccommodationDetailDto detailDto = accommodationService.getAccommodationDetail(
+			accommodationId);
 		return ResponseDto.ok(detailDto);
 	}
 
@@ -58,9 +59,9 @@ public class AccommodationController {
 		return ResponseDto.created();
 	}
 
-	@PatchMapping("/{accommodation-id}")
+	@PatchMapping("/{accommodationId}")
 	public ResponseEntity<ResponseDto<Void>> updateAccommodation(
-		@PathVariable("accommodation-id") Long accommodationId,
+		@PathVariable Long accommodationId,
 		@RequestPart AccommodationRequestDto.UpdateAccommodationDto request,
 		@RequestParam Long hostId,
 		@RequestPart(value = "files", required = false) List<MultipartFile> files
@@ -75,9 +76,9 @@ public class AccommodationController {
 		return ResponseDto.ok(null);
 	}
 
-	@DeleteMapping("/{accommodation-id}")
+	@DeleteMapping("/{accommodationId}")
 	public ResponseEntity<ResponseDto<Void>> deleteAccommodation(
-		@PathVariable("accommodation-id") Long accommodationId,
+		@PathVariable Long accommodationId,
 		@RequestParam Long hostId
 	) {
 		accommodationService.deleteAccommodation(accommodationId, hostId);
