@@ -1,6 +1,5 @@
 package com.team3.airdnd.accommodation.query;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -15,7 +14,6 @@ import org.springframework.stereotype.Repository;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.team3.airdnd.accommodation.domain.Accommodation;
@@ -26,17 +24,23 @@ import com.team3.airdnd.accommodation.domain.QAmenity;
 import com.team3.airdnd.accommodation.dto.AccommodationListConditionDto;
 import com.team3.airdnd.accommodation.dto.AccommodationResponseDto;
 import com.team3.airdnd.accommodation.dto.AmenityDto;
+import com.team3.airdnd.accommodation.dto.BaseSearchConditionDto;
 import com.team3.airdnd.accommodation.dto.PriceHistogramConditionDto;
 import com.team3.airdnd.reservation.domain.QReservation;
 import com.team3.airdnd.reservation.domain.Reservation;
 import com.team3.airdnd.storedFile.domain.QStoredFile;
 import com.team3.airdnd.storedFile.domain.StoredFile;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
 public class AccommodationQueryRepository {
+
+	@PersistenceContext
+	private EntityManager em;
 
 	private final JPAQueryFactory queryFactory;
 
@@ -48,8 +52,8 @@ public class AccommodationQueryRepository {
 	private final QAddress address = QAddress.address;
 
 	public List<Integer> findAvailableAccommodationPrices(PriceHistogramConditionDto request) {
-		BooleanBuilder condition = createSearchCondition(request.getLocation(), request.getGuests());
-		BooleanExpression noOverlap = createNoOverlapCondition(request.getCheckIn(), request.getCheckOut());
+		BooleanBuilder condition = createSearchCondition(request);
+		BooleanExpression noOverlap = createNoOverlapCondition(request);
 
 		return queryFactory
 			.select(accommodation.pricePerNight)
@@ -65,15 +69,15 @@ public class AccommodationQueryRepository {
 		PageRequest pageRequest = PageRequest.of(page - 1, size);
 
 		// 기존 검색 조건
-		BooleanBuilder condition = createSearchCondition(request.getLocation(), request.getGuests());
+		BooleanBuilder condition = createSearchCondition(request);
 
 		// 요금 조건
-		if (request.getMinPrice() != null && request.getMaxPrice() != null) {
+		if (request.hasValidPriceRange()) {
 			condition.and(accommodation.pricePerNight.between(request.getMinPrice(), request.getMaxPrice()));
 		}
 
 		// 예약 겹침 조건
-		BooleanExpression noOverlap = createNoOverlapCondition(request.getCheckIn(), request.getCheckOut());
+		BooleanExpression noOverlap = createNoOverlapCondition(request);
 
 		// 지도 범위 조건
 		BooleanExpression boundsCondition = createBoundsCondition(
@@ -81,7 +85,6 @@ public class AccommodationQueryRepository {
 			request.getSouthWestLat(), request.getSouthWestLng()
 		);
 
-		// 전체 조건 통합
 		BooleanBuilder finalCondition = new BooleanBuilder(condition)
 			.and(noOverlap);
 
@@ -144,49 +147,36 @@ public class AccommodationQueryRepository {
 			.build();
 	}
 
-	private BooleanBuilder createSearchCondition(String location, Integer guests) {
+	private BooleanBuilder createSearchCondition(BaseSearchConditionDto request) {
 		BooleanBuilder condition = new BooleanBuilder();
 
-		System.out.println("location = " + location + ", guests = " + guests);
+		if (request.isLocationValid()) {
+			String keyword = request.getLocation() + "%"; // 접두사 검색
 
-		//Todo: 이런거 request 내부에서 검증
-		if (location != null && !location.isBlank()) {
 			condition.and(
-				address.city.containsIgnoreCase(location)
-					.or(address.district.containsIgnoreCase(location))
-					.or(address.streetAddress.containsIgnoreCase(location))
-					.or(accommodation.name.containsIgnoreCase(location))
+				address.city.like(keyword)
+					.or(address.district.like(keyword))
+					.or(address.streetAddress.like(keyword))
+					.or(accommodation.name.like(keyword))
 			);
 		}
 
-		//Todo: 이런거 request 내부에서 검증
-		if (guests != null) {
-			condition.and(accommodation.maxGuests.goe(guests));
+		if (request.isGuestsValid()) {
+			condition.and(accommodation.maxGuests.goe(request.getGuests()));
 		}
 		return condition;
 	}
 
-	private BooleanExpression createNoOverlapCondition(LocalDate checkIn, LocalDate checkOut) {
-		BooleanBuilder builder = new BooleanBuilder();
-
-		builder.and(reservation.accommodation.eq(accommodation));
-		builder.and(reservation.status.in(Reservation.Status.CONFIRMED, Reservation.Status.PENDING));
-
-		System.out.println("checkIn = " + checkIn + ", checkOut = " + checkOut);
-
-		if (checkIn != null && checkOut != null) {
-			builder.and(reservation.checkOut.gt(checkIn));
-			builder.and(reservation.checkIn.lt(checkOut));
-		} else if (checkIn != null) {
-			builder.and(reservation.checkOut.gt(checkIn));
-		} else if (checkOut != null) {
-			builder.and(reservation.checkIn.lt(checkOut));
-		}
-
+	private BooleanExpression createNoOverlapCondition(BaseSearchConditionDto request) {
 		return JPAExpressions
 			.selectOne()
 			.from(reservation)
-			.where(builder)
+			.where(
+				reservation.accommodation.eq(accommodation)
+					.and(reservation.status.in(Reservation.Status.CONFIRMED, Reservation.Status.PENDING))
+					.and(reservation.checkOut.gt(request.getCheckIn()))
+					.and(reservation.checkIn.lt(request.getCheckOut()))
+			)
 			.notExists();
 	}
 
@@ -230,9 +220,7 @@ public class AccommodationQueryRepository {
 			return null;
 		}
 
-		return Expressions.booleanTemplate(
-			"MBRContains(ST_MakeEnvelope({0}, {1}, {2}, {3}, 4326), {4})",
-			swLng, swLat, neLng, neLat, address.location
-		);
+		return address.latitude.between(swLat, neLat)
+			.and(address.longitude.between(swLng, neLng));
 	}
 }

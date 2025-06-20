@@ -7,8 +7,6 @@ import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,14 +20,11 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 public abstract class BaseSearchConditionDto {
 
-	@NotBlank(message = "지역은 필수입니다.")
 	protected String location;
 
-	@NotNull(message = "체크인 날짜는 필수입니다.")
 	@FutureOrPresent(message = "체크인 날짜는 오늘 이후여야 합니다.")
 	protected LocalDate checkIn;
 
-	@NotNull(message = "체크아웃 날짜는 필수입니다.")
 	@Future(message = "체크아웃 날짜는 미래여야 합니다.")
 	protected LocalDate checkOut;
 
@@ -40,5 +35,13 @@ public abstract class BaseSearchConditionDto {
 	@AssertTrue(message = "체크인 날짜는 체크아웃 날짜보다 이전이어야 합니다.")
 	public boolean isValidDateRange() {
 		return checkIn != null && checkOut != null && checkIn.isBefore(checkOut);
+	}
+
+	public boolean isLocationValid() {
+		return location != null && !location.isBlank();
+	}
+
+	public boolean isGuestsValid() {
+		return guests != null && guests > 0;
 	}
 }
