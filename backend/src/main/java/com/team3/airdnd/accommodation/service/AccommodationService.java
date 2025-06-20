@@ -182,18 +182,18 @@ public class AccommodationService {
 	@Transactional
 	public void updateAccommodation(Long accommodationId, AccommodationRequestDto.UpdateAccommodationDto request,
 		Long hostId, List<MultipartFile> files) {
-		Accommodation old = getAccommodation(accommodationId);
+		Accommodation accommodation = getAccommodation(accommodationId);
 		User host = validateHostUser(hostId);
-		validateOwnership(old, host); //본인 소유 숙소인지 확인
+		validateOwnership(accommodation, host); //본인 소유 숙소인지 확인
 
-		Address updatedAddress = updateAddress(old.getAddress(), request);
-		Accommodation updated = updateAccommodationFields(old, updatedAddress, request);
+		Address updatedAddress = updateAddress(accommodation.getAddress(), request);
+		Accommodation updatedAccommodation = updateAccommodationFields(accommodation, updatedAddress, request);
 
-		updateAmenities(updated, request.getAmenityTypes());
+		updateAmenities(updatedAccommodation, request.getAmenityTypes());
 
 		if (files != null) {
 			storedFileService.deleteFilesByAccommodationId(accommodationId);
-			storedFileService.saveFiles(files, updated);
+			storedFileService.saveFiles(files, updatedAccommodation);
 		}
 	}
 
