@@ -151,8 +151,8 @@ public class AccommodationQueryRepository {
 		BooleanBuilder condition = new BooleanBuilder();
 
 		if (request.isLocationValid()) {
-			String keyword = request.getLocation() + "%"; // 접두사 검색
-
+			String keyword = "%" + request.getLocation() + "%";
+			
 			condition.and(
 				address.city.like(keyword)
 					.or(address.district.like(keyword))
