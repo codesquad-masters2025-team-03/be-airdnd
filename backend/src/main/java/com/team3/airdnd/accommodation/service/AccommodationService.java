@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.locationtech.jts.geom.GeometryFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -55,7 +54,6 @@ public class AccommodationService {
 	private final ReservationRepository reservationRepository;
 	private final AccommodationQueryRepository accommodationQueryRepository;
 
-	private final GeometryFactory geometryFactory;
 	private final StoredFileService storedFileService;
 	// 에어비엔비 기준으로 범위를 50으로 정했습니다.
 	private static final int DEFAULT_BIN_COUNT = 50;
@@ -295,32 +293,22 @@ public class AccommodationService {
 		int min = Collections.min(prices);
 		int max = Collections.max(prices);
 
-		if (min == max) {
-			List<Integer> histogram = new ArrayList<>(Collections.nCopies(DEFAULT_BIN_COUNT, 0));
-			int centerBin = DEFAULT_BIN_COUNT / 2;
-			histogram.set(centerBin, prices.size());
-
-			int priceRangeStart = min;
-			int priceRangeEnd = max;
-
-			return new PriceHistogramResponseDto(priceRangeStart, priceRangeEnd, histogram);
-		}
-
-		double binWidth = (max - min) / (double)DEFAULT_BIN_COUNT;
-
 		List<Integer> histogram = new ArrayList<>(Collections.nCopies(DEFAULT_BIN_COUNT, 0));
 
-		for (Integer price : prices) {
-			int binIndex = (int)Math.floor((price - min) / binWidth);
-			binIndex = Math.min(binIndex, DEFAULT_BIN_COUNT - 1);
+		if (min == max) {
+			int centerBin = DEFAULT_BIN_COUNT / 2;
+			histogram.set(centerBin, prices.size());
+		} else {
+			double binWidth = (max - min) / (double)DEFAULT_BIN_COUNT;
 
-			histogram.set(binIndex, histogram.get(binIndex) + 1);
+			for (Integer price : prices) {
+				int binIndex = (int)Math.floor((price - min) / binWidth);
+				binIndex = Math.min(binIndex, DEFAULT_BIN_COUNT - 1);
+				histogram.set(binIndex, histogram.get(binIndex) + 1);
+			}
 		}
 
-		int priceRangeStart = min;
-		int priceRangeEnd = max;
-
-		return new PriceHistogramResponseDto(priceRangeStart, priceRangeEnd, histogram);
+		return new PriceHistogramResponseDto(min, max, histogram);
 	}
 
 	public List<AccommodationResponseDto.HostAccommodationDto> getMyAccommodations(Long hostId) {
@@ -406,8 +394,8 @@ public class AccommodationService {
 		request.setMinPrice(minPrice);
 		request.setMaxPrice(maxPrice);
 
-		if (request.getNorthEastLat() == null || request.getNorthEastLng() == null ||
-			request.getSouthWestLat() == null || request.getSouthWestLng() == null) {
+		if (request.getNorthEastLat() == null || request.getNorthEastLng() == null
+			|| request.getSouthWestLat() == null || request.getSouthWestLng() == null) {
 			request.setNorthEastLat(37.701);
 			request.setNorthEastLng(127.183);
 			request.setSouthWestLat(37.413);

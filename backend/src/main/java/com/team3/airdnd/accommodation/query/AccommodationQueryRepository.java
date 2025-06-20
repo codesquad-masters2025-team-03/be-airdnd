@@ -32,16 +32,11 @@ import com.team3.airdnd.reservation.domain.Reservation;
 import com.team3.airdnd.storedFile.domain.QStoredFile;
 import com.team3.airdnd.storedFile.domain.StoredFile;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
 public class AccommodationQueryRepository {
-
-	@PersistenceContext
-	private EntityManager em;
 
 	private final JPAQueryFactory queryFactory;
 
@@ -140,12 +135,14 @@ public class AccommodationQueryRepository {
 			.limit(pageRequest.getPageSize())
 			.fetch();
 
-		long total = queryFactory
+		Long count = queryFactory
 			.select(accommodation.count())
 			.from(accommodation)
 			.join(accommodation.address, address)
 			.where(condition)
 			.fetchOne();
+
+		long total = count != null ? count : 0L;
 
 		List<Long> accommodationIds = accommodations.stream().map(Accommodation::getId).toList();
 		Map<Long, String> imageMap = fetchImageMap(accommodationIds);
