@@ -20,8 +20,6 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 public abstract class BaseSearchConditionDto {
 
-	protected String location;
-
 	@FutureOrPresent(message = "체크인 날짜는 오늘 이후여야 합니다.")
 	protected LocalDate checkIn;
 
@@ -35,10 +33,6 @@ public abstract class BaseSearchConditionDto {
 	@AssertTrue(message = "체크인 날짜는 체크아웃 날짜보다 이전이어야 합니다.")
 	public boolean isValidDateRange() {
 		return checkIn != null && checkOut != null && checkIn.isBefore(checkOut);
-	}
-
-	public boolean isLocationValid() {
-		return location != null && !location.isBlank();
 	}
 
 	public boolean isGuestsValid() {

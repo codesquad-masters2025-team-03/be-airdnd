@@ -19,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.team3.airdnd.accommodation.dto.AccommodationListConditionDto;
 import com.team3.airdnd.accommodation.dto.AccommodationRequestDto;
 import com.team3.airdnd.accommodation.dto.AccommodationResponseDto;
+import com.team3.airdnd.accommodation.dto.MapBoundAccommodationSearchDto;
 import com.team3.airdnd.accommodation.dto.PriceHistogramConditionDto;
 import com.team3.airdnd.accommodation.dto.PriceHistogramResponseDto;
 import com.team3.airdnd.accommodation.service.AccommodationService;
@@ -85,7 +86,6 @@ public class AccommodationController {
 	public ResponseEntity<ResponseDto<PriceHistogramResponseDto>> getAccommodationPriceRange(
 		@Valid @ModelAttribute PriceHistogramConditionDto request
 	) {
-		System.out.println("location: " + request.getLocation());
 		return ResponseDto.ok(accommodationService.getPriceHistogram(request));
 	}
 
@@ -99,6 +99,18 @@ public class AccommodationController {
 		AccommodationResponseDto.AccommodationListDto accommodations = accommodationService.getAccommodations(request,
 			page,
 			size);
+		return ResponseDto.ok(accommodations);
+	}
+
+	@GetMapping("/map")
+	public ResponseEntity<ResponseDto<AccommodationResponseDto.AccommodationListDto>> getAccommodationListByMap(
+		@Valid @ModelAttribute MapBoundAccommodationSearchDto request,
+		@RequestParam(required = false, defaultValue = "1") int page,
+		@RequestParam(required = false, defaultValue = "10") int size
+	) {
+		AccommodationResponseDto.AccommodationListDto accommodations =
+			accommodationService.getAccommodationsByMapBounds(request, page, size);
+
 		return ResponseDto.ok(accommodations);
 	}
 

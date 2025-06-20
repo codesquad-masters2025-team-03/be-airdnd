@@ -25,6 +25,7 @@ import com.team3.airdnd.accommodation.dto.AccommodationListConditionDto;
 import com.team3.airdnd.accommodation.dto.AccommodationResponseDto;
 import com.team3.airdnd.accommodation.dto.AmenityDto;
 import com.team3.airdnd.accommodation.dto.BaseSearchConditionDto;
+import com.team3.airdnd.accommodation.dto.MapBoundAccommodationSearchDto;
 import com.team3.airdnd.accommodation.dto.PriceHistogramConditionDto;
 import com.team3.airdnd.reservation.domain.QReservation;
 import com.team3.airdnd.reservation.domain.Reservation;
@@ -53,6 +54,18 @@ public class AccommodationQueryRepository {
 
 	public List<Integer> findAvailableAccommodationPrices(PriceHistogramConditionDto request) {
 		BooleanBuilder condition = createSearchCondition(request);
+
+		if (request.isLocationValid()) {
+			String keyword = "%" + request.getLocation() + "%";
+
+			condition.and(
+				address.city.like(keyword)
+					.or(address.district.like(keyword))
+					.or(address.streetAddress.like(keyword))
+					.or(accommodation.name.like(keyword))
+			);
+		}
+
 		BooleanExpression noOverlap = createNoOverlapCondition(request);
 
 		return queryFactory
@@ -66,55 +79,78 @@ public class AccommodationQueryRepository {
 	public AccommodationResponseDto.AccommodationListDto findAccommodationListWithFilter(
 		AccommodationListConditionDto request, int page, int size) {
 
-		PageRequest pageRequest = PageRequest.of(page - 1, size);
-
-		// 기존 검색 조건
 		BooleanBuilder condition = createSearchCondition(request);
 
-		// 요금 조건
+		if (request.isLocationValid()) {
+			String keyword = "%" + request.getLocation() + "%";
+			condition.and(
+				address.city.like(keyword)
+					.or(address.district.like(keyword))
+					.or(address.streetAddress.like(keyword))
+					.or(accommodation.name.like(keyword))
+			);
+		}
+
 		if (request.hasValidPriceRange()) {
 			condition.and(accommodation.pricePerNight.between(request.getMinPrice(), request.getMaxPrice()));
 		}
 
-		// 예약 겹침 조건
 		BooleanExpression noOverlap = createNoOverlapCondition(request);
+		condition.and(noOverlap);
 
-		// 지도 범위 조건
-		BooleanExpression boundsCondition = createBoundsCondition(
+		return buildAccommodationListResponse(condition, page, size);
+	}
+
+	public AccommodationResponseDto.AccommodationListDto findAccommodationListWithinBounds(
+		MapBoundAccommodationSearchDto request, int page, int size) {
+
+		BooleanBuilder condition = new BooleanBuilder();
+
+		BooleanExpression bounds = createBoundsCondition(
 			request.getNorthEastLat(), request.getNorthEastLng(),
 			request.getSouthWestLat(), request.getSouthWestLng()
 		);
-
-		BooleanBuilder finalCondition = new BooleanBuilder(condition)
-			.and(noOverlap);
-
-		if (boundsCondition != null) {
-			finalCondition.and(boundsCondition);
+		if (bounds != null) {
+			condition.and(bounds);
 		}
 
-		// 숙소 목록 조회
+		if (request.isGuestsValid()) {
+			condition.and(accommodation.maxGuests.goe(request.getGuests()));
+		}
+		if (request.isValidPriceRange()) {
+			condition.and(accommodation.pricePerNight.between(request.getMinPrice(), request.getMaxPrice()));
+		}
+
+		BooleanExpression noOverlap = createNoOverlapCondition(request);
+		condition.and(noOverlap);
+
+		return buildAccommodationListResponse(condition, page, size);
+	}
+
+	private AccommodationResponseDto.AccommodationListDto buildAccommodationListResponse(
+		BooleanBuilder condition, int page, int size
+	) {
+		PageRequest pageRequest = PageRequest.of(page - 1, size);
+
 		List<Accommodation> accommodations = queryFactory
 			.selectFrom(accommodation)
 			.join(accommodation.address, address).fetchJoin()
-			.where(finalCondition)
+			.where(condition)
 			.offset(pageRequest.getOffset())
 			.limit(pageRequest.getPageSize())
 			.fetch();
 
-		// 총 개수 조회
 		long total = queryFactory
 			.select(accommodation.count())
 			.from(accommodation)
 			.join(accommodation.address, address)
-			.where(finalCondition)
+			.where(condition)
 			.fetchOne();
 
-		// 추가 정보 매핑
 		List<Long> accommodationIds = accommodations.stream().map(Accommodation::getId).toList();
 		Map<Long, String> imageMap = fetchImageMap(accommodationIds);
 		Map<Long, List<AmenityDto>> amenityMap = fetchAmenityMap(accommodationIds);
 
-		// DTO 변환
 		List<AccommodationResponseDto.AccommodationInfo> accommodationInfos = accommodations.stream()
 			.map(acc -> {
 				String imageUrl = imageMap.getOrDefault(acc.getId(), null);
@@ -137,7 +173,6 @@ public class AccommodationQueryRepository {
 			})
 			.toList();
 
-		// 최종 응답
 		return AccommodationResponseDto.AccommodationListDto.builder()
 			.page(page)
 			.size(size)
@@ -149,17 +184,6 @@ public class AccommodationQueryRepository {
 
 	private BooleanBuilder createSearchCondition(BaseSearchConditionDto request) {
 		BooleanBuilder condition = new BooleanBuilder();
-
-		if (request.isLocationValid()) {
-			String keyword = "%" + request.getLocation() + "%";
-			
-			condition.and(
-				address.city.like(keyword)
-					.or(address.district.like(keyword))
-					.or(address.streetAddress.like(keyword))
-					.or(accommodation.name.like(keyword))
-			);
-		}
 
 		if (request.isGuestsValid()) {
 			condition.and(accommodation.maxGuests.goe(request.getGuests()));

@@ -8,4 +8,10 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @SuperBuilder
 public class PriceHistogramConditionDto extends BaseSearchConditionDto {
+
+	private String location;
+
+	public boolean isLocationValid() {
+		return location != null && !location.isBlank();
+	}
 }

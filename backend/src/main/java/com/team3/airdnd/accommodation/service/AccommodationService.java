@@ -20,6 +20,7 @@ import com.team3.airdnd.accommodation.dto.AccommodationRequestDto;
 import com.team3.airdnd.accommodation.dto.AccommodationResponseDto;
 import com.team3.airdnd.accommodation.dto.BaseSearchConditionDto;
 import com.team3.airdnd.accommodation.dto.HostAccommodationQueryDto;
+import com.team3.airdnd.accommodation.dto.MapBoundAccommodationSearchDto;
 import com.team3.airdnd.accommodation.dto.PriceHistogramConditionDto;
 import com.team3.airdnd.accommodation.dto.PriceHistogramResponseDto;
 import com.team3.airdnd.accommodation.dto.ReviewDto;
@@ -348,18 +349,26 @@ public class AccommodationService {
 	@Transactional(readOnly = true)
 	public AccommodationResponseDto.AccommodationListDto getAccommodations(AccommodationListConditionDto request,
 		int page, int size) {
+		if (request.getLocation() == null || request.getLocation().isBlank()) {
+			request.setLocation("서울");
+		}
 		request = applyDefaultFilterCondition(request);
 		return accommodationQueryRepository.findAccommodationListWithFilter(request, page, size);
 	}
 
+	@Transactional(readOnly = true)
+	public AccommodationResponseDto.AccommodationListDto getAccommodationsByMapBounds(
+		MapBoundAccommodationSearchDto request, int page, int size) {
+
+		applyDefaultMapBounds(request);
+		return accommodationQueryRepository.findAccommodationListWithinBounds(request, page, size);
+	}
+
 	private BaseSearchConditionDto applyBaseDefaults(BaseSearchConditionDto request) {
-		String location =
-			(request.getLocation() != null && !request.getLocation().isBlank()) ? request.getLocation() : "서울";
 		LocalDate checkIn = request.getCheckIn() != null ? request.getCheckIn() : LocalDate.now();
 		LocalDate checkOut = request.getCheckOut() != null ? request.getCheckOut() : checkIn.plusDays(1);
 		Integer guests = request.getGuests() != null ? request.getGuests() : 1;
 
-		request.setLocation(location);
 		request.setCheckIn(checkIn);
 		request.setCheckOut(checkOut);
 		request.setGuests(guests);
@@ -380,6 +389,30 @@ public class AccommodationService {
 
 		request.setMinPrice(minPrice);
 		request.setMaxPrice(maxPrice);
+
+		return request;
+	}
+
+	private MapBoundAccommodationSearchDto applyDefaultMapBounds(MapBoundAccommodationSearchDto request) {
+		LocalDate checkIn = request.getCheckIn() != null ? request.getCheckIn() : LocalDate.now();
+		LocalDate checkOut = request.getCheckOut() != null ? request.getCheckOut() : checkIn.plusDays(1);
+		Integer guests = request.getGuests() != null ? request.getGuests() : 1;
+		Integer minPrice = request.getMinPrice() != null ? request.getMinPrice() : 1000;
+		Integer maxPrice = request.getMaxPrice() != null ? request.getMaxPrice() : 10_000_000;
+
+		request.setCheckIn(checkIn);
+		request.setCheckOut(checkOut);
+		request.setGuests(guests);
+		request.setMinPrice(minPrice);
+		request.setMaxPrice(maxPrice);
+
+		if (request.getNorthEastLat() == null || request.getNorthEastLng() == null ||
+			request.getSouthWestLat() == null || request.getSouthWestLng() == null) {
+			request.setNorthEastLat(37.701);
+			request.setNorthEastLng(127.183);
+			request.setSouthWestLat(37.413);
+			request.setSouthWestLng(126.734);
+		}
 
 		return request;
 	}
