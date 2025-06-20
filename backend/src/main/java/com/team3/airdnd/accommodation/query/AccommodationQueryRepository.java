@@ -151,11 +151,13 @@ public class AccommodationQueryRepository {
 		BooleanBuilder condition = new BooleanBuilder();
 
 		if (request.isLocationValid()) {
+			String keyword = request.getLocation() + "%"; // 접두사 검색
+
 			condition.and(
-				address.city.containsIgnoreCase(request.getLocation())
-					.or(address.district.containsIgnoreCase(request.getLocation()))
-					.or(address.streetAddress.containsIgnoreCase(request.getLocation()))
-					.or(accommodation.name.containsIgnoreCase(request.getLocation()))
+				address.city.like(keyword)
+					.or(address.district.like(keyword))
+					.or(address.streetAddress.like(keyword))
+					.or(accommodation.name.like(keyword))
 			);
 		}
 
