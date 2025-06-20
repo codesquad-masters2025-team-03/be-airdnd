@@ -5,10 +5,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.locationtech.jts.geom.GeometryFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.JPAExpressions;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.team3.airdnd.accommodation.domain.Accommodation;
 import com.team3.airdnd.accommodation.domain.AccommodationAmenity;
 import com.team3.airdnd.accommodation.domain.Address;
@@ -30,6 +35,8 @@ import com.team3.airdnd.accommodation.repository.AddressRepository;
 import com.team3.airdnd.accommodation.repository.AmenityRepository;
 import com.team3.airdnd.global.exception.CommonException;
 import com.team3.airdnd.global.exception.ErrorCode;
+import com.team3.airdnd.reservation.domain.QReservation;
+import com.team3.airdnd.reservation.domain.Reservation;
 import com.team3.airdnd.reservation.repository.ReservationRepository;
 import com.team3.airdnd.review.repository.ReviewRepository;
 import com.team3.airdnd.storedFile.StoredFileService;
@@ -54,6 +61,8 @@ public class AccommodationService {
 	private final ReservationRepository reservationRepository;
 	private final AccommodationQueryRepository accommodationQueryRepository;
 
+	private final GeometryFactory geometryFactory;
+	private final JPAQueryFactory queryFactory;
 	private final StoredFileService storedFileService;
 	// 에어비엔비 기준으로 범위를 50으로 정했습니다.
 	private static final int DEFAULT_BIN_COUNT = 50;
@@ -74,6 +83,7 @@ public class AccommodationService {
 			.pricePerNight(accommodation.getPricePerNight())
 			.maxGuests(accommodation.getMaxGuests())
 			.bedCount(accommodation.getBedCount())
+			.roomCount(accommodation.getRoomCount())
 			.address(address)
 			.reviews(reviewLists)
 			.build();
@@ -149,8 +159,7 @@ public class AccommodationService {
 			.description(request.getDescription())
 			.maxGuests(request.getMaxGuests())
 			.bedCount(request.getBedCount())
-			.bedroomCount(request.getBedroomCount())
-			.bathroomCount(request.getBathroomCount())
+			.roomCount(request.getRoomCount())
 			.address(address)
 			.host(host)
 			.build();
@@ -214,8 +223,7 @@ public class AccommodationService {
 			.description(dto.getDescription() != null ? dto.getDescription() : old.getDescription())
 			.maxGuests(dto.getMaxGuests() != null ? dto.getMaxGuests() : old.getMaxGuests())
 			.bedCount(dto.getBedCount() != null ? dto.getBedCount() : old.getBedCount())
-			.bedroomCount(dto.getBedroomCount() != null ? dto.getBedroomCount() : old.getBedroomCount())
-			.bathroomCount(dto.getBathroomCount() != null ? dto.getBathroomCount() : old.getBathroomCount())
+			.roomCount(dto.getRoomCount() != null ? dto.getRoomCount() : old.getRoomCount())
 			.address(address)
 			.host(old.getHost()) // host는 수정 불가
 			.build();
@@ -404,4 +412,11 @@ public class AccommodationService {
 
 		return request;
 	}
+	/*
+	//숙소 목록 페이징 구현
+	public AccommodationResponseDto.AccommodationListDto getAccommodations(int page, int size) {
+		return accommodationRepository.getAccommodationListByPage(page, size);
+	}
+
+	 */
 }

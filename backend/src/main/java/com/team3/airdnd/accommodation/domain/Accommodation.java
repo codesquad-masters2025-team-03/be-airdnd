@@ -14,6 +14,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -32,23 +33,24 @@ public class Accommodation {
 	@Column(nullable = false)
 	private String name;
 
+	@NotNull
 	@Column(name = "price_per_night", nullable = false)
 	private Integer pricePerNight;
 
 	@Column(length = 500)
 	private String description;
 
+	@NotNull
 	@Column(name = "max_guests")
 	private Integer maxGuests;
 
+	@NotNull
 	@Column(name = "bed_count")
 	private Integer bedCount;
 
-	@Column(name = "bedroom_count")
-	private Integer bedroomCount;
-
-	@Column(name = "bathroom_count")
-	private Integer bathroomCount;
+	@NotNull
+	@Column(name = "room_count")
+	private Integer roomCount;
 
 	@OneToOne
 	@JoinColumn(name = "address_id", unique = true)
