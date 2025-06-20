@@ -27,7 +27,9 @@ public enum ErrorCode {
 	INTERNAL_SERVER_ERROR(50000, HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 에러입니다."),
 	INVALID_IMAGE(40001, HttpStatus.BAD_REQUEST, "이미지는 최소 1개 이상 최대 5개 이하로 업로드해야 합니다."),
 
-	S3_UPLOAD_FAILED(50001, HttpStatus.INTERNAL_SERVER_ERROR, "S3 파일 업로드에 실패했습니다.");
+	S3_UPLOAD_FAILED(50001, HttpStatus.INTERNAL_SERVER_ERROR, "S3 파일 업로드에 실패했습니다."),
+	INVALID_IMAGE_TYPE(40008, HttpStatus.BAD_REQUEST, "이미지만 업로드 가능합니다."),
+	IMAGE_TOO_LARGE(40009, HttpStatus.BAD_REQUEST, "업로드 가능한 이미지 용량을 초과했습니다.");
 
 	private final Integer code;
 	private final HttpStatus httpStatus;

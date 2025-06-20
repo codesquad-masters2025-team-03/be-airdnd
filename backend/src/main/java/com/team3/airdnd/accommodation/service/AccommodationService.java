@@ -4,15 +4,13 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.locationtech.jts.geom.GeometryFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.team3.airdnd.accommodation.domain.Accommodation;
 import com.team3.airdnd.accommodation.domain.AccommodationAmenity;
@@ -35,8 +33,6 @@ import com.team3.airdnd.accommodation.repository.AddressRepository;
 import com.team3.airdnd.accommodation.repository.AmenityRepository;
 import com.team3.airdnd.global.exception.CommonException;
 import com.team3.airdnd.global.exception.ErrorCode;
-import com.team3.airdnd.reservation.domain.QReservation;
-import com.team3.airdnd.reservation.domain.Reservation;
 import com.team3.airdnd.reservation.repository.ReservationRepository;
 import com.team3.airdnd.review.repository.ReviewRepository;
 import com.team3.airdnd.storedFile.StoredFileService;
@@ -135,7 +131,7 @@ public class AccommodationService {
 		Address address = saveAdderss(request);
 		Accommodation accommodation = saveAccommodation(request, address, host);
 		saveAmenities(request.getAmenityTypes(), accommodation);
-		storedFileService.saveFiles(files, accommodation);
+		storedFileService.saveFiles(files, accommodation.getId());
 	}
 
 	private Address saveAdderss(AccommodationRequestDto.CreateAccommodationDto request) {
@@ -182,18 +178,18 @@ public class AccommodationService {
 	@Transactional
 	public void updateAccommodation(Long accommodationId, AccommodationRequestDto.UpdateAccommodationDto request,
 		Long hostId, List<MultipartFile> files) {
-		Accommodation old = getAccommodation(accommodationId);
+		Accommodation accommodation = getAccommodation(accommodationId);
 		User host = validateHostUser(hostId);
-		validateOwnership(old, host); //본인 소유 숙소인지 확인
+		validateOwnership(accommodation, host); //본인 소유 숙소인지 확인
 
-		Address updatedAddress = updateAddress(old.getAddress(), request);
-		Accommodation updated = updateAccommodationFields(old, updatedAddress, request);
+		Address updatedAddress = updateAddress(accommodation.getAddress(), request);
+		Accommodation updatedAccommodation = updateAccommodationFields(accommodation, updatedAddress, request);
 
-		updateAmenities(updated, request.getAmenityTypes());
+		updateAmenities(updatedAccommodation, request.getAmenityTypes());
 
 		if (files != null) {
 			storedFileService.deleteFilesByAccommodationId(accommodationId);
-			storedFileService.saveFiles(files, updated);
+			storedFileService.saveFiles(files, updatedAccommodation.getId());
 		}
 	}
 
@@ -327,20 +323,24 @@ public class AccommodationService {
 	public List<AccommodationResponseDto.HostAccommodationDto> getMyAccommodations(Long hostId) {
 		List<HostAccommodationQueryDto> accommodations = accommodationRepository.findAccommodationListByHostId(
 			hostId);
+
+		List<Long> accommodationIds = accommodations.stream()
+			.map(HostAccommodationQueryDto::id)
+			.toList();
+
+		// 대표 이미지 URL을 한 번에 가져옴
+		Map<Long, String> imageUrlMap = storedFileRepository.findFirstImageUrlsForAccommodationIds(accommodationIds);
+
 		return accommodations.stream()
-			.map(accommodation -> {
-				String imageUrl = storedFileRepository
-					.findFirstFileUrlByTargetTypeAndTargetId(
-						StoredFile.TargetType.ACCOMMODATION,
-						accommodation.id()
-					);
+			.map(acc -> {
+				String imageUrl = imageUrlMap.get(acc.id());
 
 				return AccommodationResponseDto.HostAccommodationDto.builder()
-					.id(accommodation.id())
-					.name(accommodation.name())
-					.city(accommodation.city())
-					.district(accommodation.district())
-					.streetAddress(accommodation.streetAddress())
+					.id(acc.id())
+					.name(acc.name())
+					.city(acc.city())
+					.district(acc.district())
+					.streetAddress(acc.streetAddress())
 					.imageUrl(imageUrl)
 					.build();
 			})

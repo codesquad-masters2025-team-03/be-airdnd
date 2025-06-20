@@ -30,4 +30,14 @@ public class GlobalExceptionHandler {
 
 		return ResponseEntity.status(ErrorCode.INVALID_REQUEST.getHttpStatus()).body(response);
 	}
+
+	@ExceptionHandler(CommonException.class)
+	public ResponseEntity<ResponseDto<Void>> handleCommonException(CommonException e) {
+		ResponseDto<Void> response = ResponseDto.fail(
+			e.getErrorCode(),
+			e.getMessage()
+		);
+		return ResponseEntity.status(e.getErrorCode().getHttpStatus()).body(response);
+	}
+
 }

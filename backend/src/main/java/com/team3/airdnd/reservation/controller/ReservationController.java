@@ -25,9 +25,9 @@ import lombok.RequiredArgsConstructor;
 public class ReservationController {
 	private final ReservationService reservationService;
 
-	@GetMapping("/{accommodation-id}")
+	@GetMapping("/{accommodationId}")
 	public ResponseEntity<ReservationResponseDto.ReservationInfoResponseDto> getReservationInfo(
-		@PathVariable("accommodation-id") Long accommodationId,
+		@PathVariable Long accommodationId,
 		@RequestParam LocalDate checkIn,
 		@RequestParam LocalDate checkOut
 	) {
@@ -37,9 +37,9 @@ public class ReservationController {
 	}
 
 	// 예약 요청 (PENDING)
-	@PostMapping("/{accommodation-id}")
+	@PostMapping("/{accommodationId}")
 	public ResponseEntity<ReservationResponseDto.CreateReservationResponseDto> createReservation(
-		@PathVariable("accommodation-id") Long accommodationId,
+		@PathVariable Long accommodationId,
 		@RequestBody @Valid ReservationRequestDto.CreateReservationRequestDto request,
 		@RequestParam("guestId") Long guestId // TODO: 로그인 기능 구현 시 guestId 제거하고 인증 유저로 대체
 	) {
@@ -47,9 +47,9 @@ public class ReservationController {
 		return ResponseEntity.ok(response);
 	}
 
-	@PatchMapping("/{reservation-id}/confirm")
+	@PatchMapping("/{reservationId}/confirm")
 	public ResponseEntity<String> confirmReservation(
-		@PathVariable("reservation-id") Long reservationId
+		@PathVariable Long reservationId
 	) {
 		reservationService.confirmReservation(reservationId);
 		return ResponseEntity.ok(null);
