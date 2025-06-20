@@ -11,9 +11,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.team3.airdnd.accommodation.domain.Accommodation;
 import com.team3.airdnd.accommodation.domain.AccommodationAmenity;
@@ -36,8 +33,6 @@ import com.team3.airdnd.accommodation.repository.AddressRepository;
 import com.team3.airdnd.accommodation.repository.AmenityRepository;
 import com.team3.airdnd.global.exception.CommonException;
 import com.team3.airdnd.global.exception.ErrorCode;
-import com.team3.airdnd.reservation.domain.QReservation;
-import com.team3.airdnd.reservation.domain.Reservation;
 import com.team3.airdnd.reservation.repository.ReservationRepository;
 import com.team3.airdnd.review.repository.ReviewRepository;
 import com.team3.airdnd.storedFile.StoredFileService;
@@ -136,7 +131,7 @@ public class AccommodationService {
 		Address address = saveAdderss(request);
 		Accommodation accommodation = saveAccommodation(request, address, host);
 		saveAmenities(request.getAmenityTypes(), accommodation);
-		storedFileService.saveFiles(files, accommodation);
+		storedFileService.saveFiles(files, accommodation.getId());
 	}
 
 	private Address saveAdderss(AccommodationRequestDto.CreateAccommodationDto request) {
@@ -194,7 +189,7 @@ public class AccommodationService {
 
 		if (files != null) {
 			storedFileService.deleteFilesByAccommodationId(accommodationId);
-			storedFileService.saveFiles(files, updatedAccommodation);
+			storedFileService.saveFiles(files, updatedAccommodation.getId());
 		}
 	}
 
