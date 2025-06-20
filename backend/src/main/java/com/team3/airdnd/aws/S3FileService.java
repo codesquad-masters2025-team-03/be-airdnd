@@ -27,7 +27,7 @@ public class S3FileService {
 	public String upload(MultipartFile file) {
 		String key = generateFileName(file.getOriginalFilename());
 		try {
-			PutObjectRequest request = getRequest(file, key);
+			PutObjectRequest request = createRequest(file, key);
 			s3Client.putObject(request, RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
 
 			return getFileUrl(key);
@@ -41,7 +41,7 @@ public class S3FileService {
 		return UUID.randomUUID() + "-" + originalFilename;
 	}
 
-	private PutObjectRequest getRequest(MultipartFile file, String key) {
+	private PutObjectRequest createRequest(MultipartFile file, String key) {
 		return PutObjectRequest.builder()
 			.bucket(bucket)
 			.key(key)
