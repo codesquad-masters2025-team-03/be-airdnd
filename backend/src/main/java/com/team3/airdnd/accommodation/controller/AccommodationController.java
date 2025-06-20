@@ -26,8 +26,7 @@ import com.team3.airdnd.accommodation.dto.PriceHistogramConditionDto;
 import com.team3.airdnd.accommodation.dto.PriceHistogramResponseDto;
 import com.team3.airdnd.accommodation.service.AccommodationService;
 import com.team3.airdnd.global.dto.ResponseDto;
-import com.team3.airdnd.global.exception.CommonException;
-import com.team3.airdnd.global.exception.ErrorCode;
+import com.team3.airdnd.storedFile.validation.ImageValidator;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +37,7 @@ import lombok.RequiredArgsConstructor;
 public class AccommodationController {
 
 	private final AccommodationService accommodationService;
+	private final ImageValidator imageValidator;
 
 	@GetMapping("/{accommodationId}")
 	public ResponseEntity<ResponseDto<AccommodationResponseDto.AccommodationDetailDto>> getAccommodationDetail(
@@ -51,10 +51,8 @@ public class AccommodationController {
 	public ResponseEntity<ResponseDto<Void>> createAccommodation(
 		@RequestPart @Valid AccommodationRequestDto.CreateAccommodationDto request,
 		@RequestPart("files") List<MultipartFile> files) {
-		if (files == null || files.size() < 1 || files.size() > 5) {
-			throw new CommonException(ErrorCode.INVALID_IMAGE);
-		}
 
+		imageValidator.validate(files);
 		accommodationService.createAccommodation(request, files);
 		return ResponseDto.created();
 	}
@@ -66,12 +64,7 @@ public class AccommodationController {
 		@RequestParam Long hostId,
 		@RequestPart(value = "files", required = false) List<MultipartFile> files
 	) {
-		if (files != null) {
-			if (files.size() < 1 || files.size() > 5) {
-				throw new CommonException(ErrorCode.INVALID_IMAGE);
-			}
-		}
-
+		imageValidator.validate(files);
 		accommodationService.updateAccommodation(accommodationId, request, hostId, files);
 		return ResponseDto.ok(null);
 	}
