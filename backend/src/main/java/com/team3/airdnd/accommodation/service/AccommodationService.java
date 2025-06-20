@@ -126,8 +126,8 @@ public class AccommodationService {
 
 	@Transactional
 	public void createAccommodation(AccommodationRequestDto.CreateAccommodationDto request,
-		List<MultipartFile> files) {
-		User host = validateHostUser(request.getHostId());
+		List<MultipartFile> files, Long hostId) {
+		User host = validateHostUser(hostId);
 		Address address = saveAdderss(request);
 		Accommodation accommodation = saveAccommodation(request, address, host);
 		saveAmenities(request.getAmenityTypes(), accommodation);

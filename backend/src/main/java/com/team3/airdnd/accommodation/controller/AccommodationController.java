@@ -12,9 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-
 import org.springframework.web.bind.annotation.RequestPart;
-
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -50,10 +48,11 @@ public class AccommodationController {
 	@PostMapping("/create")
 	public ResponseEntity<ResponseDto<Void>> createAccommodation(
 		@RequestPart @Valid AccommodationRequestDto.CreateAccommodationDto request,
-		@RequestPart("files") List<MultipartFile> files) {
+		@RequestPart("files") List<MultipartFile> files,
+		@RequestParam Long hostId) {
 
 		imageValidator.validate(files);
-		accommodationService.createAccommodation(request, files);
+		accommodationService.createAccommodation(request, files, hostId);
 		return ResponseDto.created();
 	}
 

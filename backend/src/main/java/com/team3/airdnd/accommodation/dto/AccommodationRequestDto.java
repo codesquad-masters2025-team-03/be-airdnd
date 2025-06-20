@@ -32,8 +32,6 @@ public class AccommodationRequestDto {
 		private int roomCount; //todo 삭제
 		@NotNull
 		private List<AmenityType> amenityTypes;
-		@NotNull
-		private Long hostId;
 		// 주소 정보
 		@NotBlank
 		private String city;

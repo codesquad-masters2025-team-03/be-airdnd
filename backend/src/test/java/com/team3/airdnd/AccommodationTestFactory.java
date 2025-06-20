@@ -14,7 +14,6 @@ public class AccommodationTestFactory {
 			.maxGuests(2)
 			.bedCount(1)
 			.roomCount(1)
-			.hostId(hostId)
 			.amenityTypes(List.of(AmenityType.WIFI, AmenityType.AIR_CONDITIONER))
 			.city("서울")
 			.district("강남구")

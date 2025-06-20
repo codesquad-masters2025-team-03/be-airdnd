@@ -127,7 +127,7 @@ public class AccommodationServiceTest extends AbstractIntegrationTest {
 		);
 
 		// when
-		accommodationService.createAccommodation(request, mockImages);
+		accommodationService.createAccommodation(request, mockImages, host.getId());
 
 		// then
 		Accommodation saved = accommodationRepository.findByName("테스트 숙소")
@@ -168,7 +168,7 @@ public class AccommodationServiceTest extends AbstractIntegrationTest {
 			new MockMultipartFile("images", "test.jpg", "image/jpeg", "file".getBytes()));
 
 		// when & then
-		assertThatThrownBy(() -> accommodationService.createAccommodation(request, images))
+		assertThatThrownBy(() -> accommodationService.createAccommodation(request, images, guest.getId()))
 			.isInstanceOf(CommonException.class)
 			.hasMessageContaining("접근 권한이 없습니다");
 	}
