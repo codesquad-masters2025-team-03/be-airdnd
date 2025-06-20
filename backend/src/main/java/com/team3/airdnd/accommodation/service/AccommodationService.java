@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.locationtech.jts.geom.GeometryFactory;
 import org.springframework.stereotype.Service;
@@ -327,20 +328,24 @@ public class AccommodationService {
 	public List<AccommodationResponseDto.HostAccommodationDto> getMyAccommodations(Long hostId) {
 		List<HostAccommodationQueryDto> accommodations = accommodationRepository.findAccommodationListByHostId(
 			hostId);
+
+		List<Long> accommodationIds = accommodations.stream()
+			.map(HostAccommodationQueryDto::id)
+			.toList();
+
+		// 대표 이미지 URL을 한 번에 가져옴
+		Map<Long, String> imageUrlMap = storedFileRepository.findFirstImageUrlsForAccommodationIds(accommodationIds);
+
 		return accommodations.stream()
-			.map(accommodation -> {
-				String imageUrl = storedFileRepository
-					.findFirstFileUrlByTargetTypeAndTargetId(
-						StoredFile.TargetType.ACCOMMODATION,
-						accommodation.id()
-					);
+			.map(acc -> {
+				String imageUrl = imageUrlMap.get(acc.id());
 
 				return AccommodationResponseDto.HostAccommodationDto.builder()
-					.id(accommodation.id())
-					.name(accommodation.name())
-					.city(accommodation.city())
-					.district(accommodation.district())
-					.streetAddress(accommodation.streetAddress())
+					.id(acc.id())
+					.name(acc.name())
+					.city(acc.city())
+					.district(acc.district())
+					.streetAddress(acc.streetAddress())
 					.imageUrl(imageUrl)
 					.build();
 			})
