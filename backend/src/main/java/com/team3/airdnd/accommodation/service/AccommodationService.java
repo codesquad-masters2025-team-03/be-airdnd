@@ -5,9 +5,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.Point;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -132,17 +130,14 @@ public class AccommodationService {
 	}
 
 	private Address saveAdderss(AccommodationRequestDto.CreateAccommodationDto request) {
-		Point location = geometryFactory.createPoint(
-			new Coordinate(request.getLongitude(), request.getLatitude())
-		);
-		location.setSRID(4326);
 
 		Address address = Address.builder()
 			.city(request.getCity())
 			.district(request.getDistrict())
 			.streetAddress(request.getStreetAddress())
 			.detailAddress(request.getDetailAddress())
-			.location(location)
+			.latitude(request.getLatitude())
+			.longitude(request.getLongitude())
 			.build();
 		return addressRepository.save(address);
 	}
@@ -200,18 +195,13 @@ public class AccommodationService {
 	}
 
 	private Address updateAddress(Address oldAddress, AccommodationRequestDto.UpdateAccommodationDto dto) {
-		double lat = dto.getLatitude() != null ? dto.getLatitude() : oldAddress.getLocation().getY();
-		double lng = dto.getLongitude() != null ? dto.getLongitude() : oldAddress.getLocation().getX();
-
-		Point location = geometryFactory.createPoint(new Coordinate(lng, lat));
-		location.setSRID(4326);
-
 		Address updated = oldAddress.toBuilder()
 			.city(dto.getCity() != null ? dto.getCity() : oldAddress.getCity())
 			.district(dto.getDistrict() != null ? dto.getDistrict() : oldAddress.getDistrict())
 			.streetAddress(dto.getStreetAddress() != null ? dto.getStreetAddress() : oldAddress.getStreetAddress())
 			.detailAddress(dto.getDetailAddress() != null ? dto.getDetailAddress() : oldAddress.getDetailAddress())
-			.location(location)
+			.latitude(dto.getLatitude() != null ? dto.getLatitude() : oldAddress.getLatitude())
+			.longitude(dto.getLongitude() != null ? dto.getLongitude() : oldAddress.getLongitude())
 			.build();
 
 		return addressRepository.save(updated);
@@ -367,11 +357,12 @@ public class AccommodationService {
 			(request.getLocation() != null && !request.getLocation().isBlank()) ? request.getLocation() : "서울";
 		LocalDate checkIn = request.getCheckIn() != null ? request.getCheckIn() : LocalDate.now();
 		LocalDate checkOut = request.getCheckOut() != null ? request.getCheckOut() : checkIn.plusDays(1);
+		Integer guests = request.getGuests() != null ? request.getGuests() : 1;
 
 		request.setLocation(location);
 		request.setCheckIn(checkIn);
 		request.setCheckOut(checkOut);
-		request.setGuests(request.getGuests() != null ? request.getGuests() : 1);
+		request.setGuests(guests);
 
 		return request;
 	}

@@ -79,8 +79,8 @@ public class AccommodationQueryRepository {
 		// 예약 겹침 조건
 		BooleanExpression noOverlap = createNoOverlapCondition(request);
 
-		// 지도 범위 조건 (native SQL로 accommodation ID 조회 후 .in(...) 조건 추가)
-		List<Long> boundsFilteredIds = findAccommodationIdsInBounds(
+		// 지도 범위 조건
+		BooleanExpression boundsCondition = createBoundsCondition(
 			request.getNorthEastLat(), request.getNorthEastLng(),
 			request.getSouthWestLat(), request.getSouthWestLng()
 		);
@@ -88,17 +88,8 @@ public class AccommodationQueryRepository {
 		BooleanBuilder finalCondition = new BooleanBuilder(condition)
 			.and(noOverlap);
 
-		if (!boundsFilteredIds.isEmpty()) {
-			finalCondition.and(accommodation.id.in(boundsFilteredIds));
-		} else if (request.getNorthEastLat() != null) {
-			// 지도가 설정되었는데 조건에 해당하는 숙소가 없으면 빈 결과 반환
-			return AccommodationResponseDto.AccommodationListDto.builder()
-				.page(page)
-				.size(size)
-				.totalPages(0)
-				.totalElements(0)
-				.accommodations(Collections.emptyList())
-				.build();
+		if (boundsCondition != null) {
+			finalCondition.and(boundsCondition);
 		}
 
 		// 숙소 목록 조회
@@ -222,31 +213,12 @@ public class AccommodationQueryRepository {
 		return amenityMap;
 	}
 
-	private List<Long> findAccommodationIdsInBounds(Double neLat, Double neLng, Double swLat, Double swLng) {
+	private BooleanExpression createBoundsCondition(Double neLat, Double neLng, Double swLat, Double swLng) {
 		if (neLat == null || neLng == null || swLat == null || swLng == null) {
-			return Collections.emptyList();
+			return null;
 		}
 
-		String polygon = String.format(
-			"POLYGON((%f %f, %f %f, %f %f, %f %f, %f %f))",
-			swLat, swLng,  // 왼쪽 아래
-			swLat, neLng,  // 오른쪽 아래
-			neLat, neLng,  // 오른쪽 위
-			neLat, swLng,  // 왼쪽 위
-			swLat, swLng   // 닫기
-		);
-
-		String sql = """
-			    SELECT a.id
-			    FROM accommodation a
-			    JOIN address ad ON a.address_id = ad.id
-			    WHERE MBRContains(ST_GeomFromText(:polygon, 4326), ad.location)
-			""";
-
-		List<Long> result = em.createNativeQuery(sql)
-			.setParameter("polygon", polygon)
-			.getResultList();
-
-		return result.stream().map(Number::longValue).toList();
+		return address.latitude.between(swLat, neLat)
+			.and(address.longitude.between(swLng, neLng));
 	}
 }
