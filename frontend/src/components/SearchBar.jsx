@@ -1,9 +1,11 @@
 import React, {useEffect, useRef, useState} from 'react';
 import styled, {css} from 'styled-components';
 import {format} from 'date-fns';
+import {useNavigate} from 'react-router-dom';
 import CalendarDropdown from './CalendarDropdown';
 import PriceDropdown from './PriceDropdown';
 import GuestsDropdown from './GuestsDropdown';
+import axios from 'axios';
 
 const SearchBarContainer = styled.div`
     display: inline-flex;
@@ -32,7 +34,7 @@ const InputSection = styled.div`
         background-color: #f7f7f7;
     }
 
-    ${({active}) => active && css`
+    ${({$active}) => $active && css`
         background-color: white;
         box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
         border: 1px solid #eee;
@@ -79,7 +81,7 @@ const GuestsInputSection = styled.div`
         background-color: #f7f7f7;
     }
 
-    ${({active}) => active && css`
+    ${({$active}) => $active && css`
         background-color: white;
         box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
         border: 1px solid #eee;
@@ -91,7 +93,6 @@ const GuestsInputSection = styled.div`
         text-align: left;
     }
 `;
-
 
 const VerticalDivider = styled.div`
     height: 32px;
@@ -134,22 +135,16 @@ const DropdownContainer = styled.div`
     ${({align}) => {
         switch (align) {
             case 'right':
-                return css`
-                    right: 0;
-                    width: 400px;
-                `;
+                return css`right: 0;
+                    width: 400px;`;
             case 'full-width':
-                return css`
-                    left: 0;
+                return css`left: 0;
                     right: 0;
-                    width: 100%;
-                `;
+                    width: 100%;`;
             default:
-                return css`
-                    left: 50%;
+                return css`left: 50%;
                     transform: translateX(-50%);
-                    width: max-content;
-                `;
+                    width: max-content;`;
         }
     }}
 `;
@@ -164,10 +159,11 @@ const SearchText = styled.span`
 const SearchBar = () => {
     const [activeFilter, setActiveFilter] = useState(null);
     const searchBarRef = useRef(null);
+    const navigate = useNavigate();
 
     const [location, setLocation] = useState('');
     const [dates, setDates] = useState({startDate: null, endDate: null});
-    const [priceRange, setPriceRange] = useState({min: 0, max: 1000000});
+    const [priceRange, setPriceRange] = useState({min: 1000, max: 1000000});
     const [guests, setGuests] = useState({adults: 1, children: 0, infants: 0});
 
     const totalGuests = guests.adults + guests.children + guests.infants;
@@ -198,11 +194,19 @@ const SearchBar = () => {
         };
 
         try {
-            console.log('Searching with params:', params);
-            // const response = await axios.get('/api/accommodations', { params });
-            // console.log('Search results:', response.data);
+            const response = await axios.get('http://localhost:8080/api/accommodations', {
+                params: params
+            });
+
+            navigate('/accommodations', {
+                state: {
+                    initialData: response.data.data,
+                    queryParams: params
+                }
+            });
         } catch (error) {
-            console.error('Failed to fetch accommodations:', error);
+            console.error('검색 중 오류가 발생했습니다:', error);
+            alert('검색 중 오류가 발생했습니다.');
         }
     };
 
@@ -226,7 +230,7 @@ const SearchBar = () => {
         let align = 'center';
 
         switch (activeFilter) {
-            case 'location': // Location doesn't have a dropdown in this design
+            case 'location':
                 return null;
             case 'date':
                 DropdownComponent = <CalendarDropdown dates={dates} setDates={setDates}/>;
@@ -255,29 +259,28 @@ const SearchBar = () => {
 
     return (
         <SearchBarContainer ref={searchBarRef}>
-            <InputSection active={activeFilter === 'location'} onClick={(e) => handleFilterClick('location', e)}>
+            <InputSection $active={activeFilter === 'location'} onClick={(e) => handleFilterClick('location', e)}>
                 <label>여행지</label>
-                <input type="text" value={location} onChange={(e) => setLocation(e.target.value)}
-                       placeholder="여행지 검색"/>
+                <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="여행지 검색"/>
             </InputSection>
             <VerticalDivider/>
-            <InputSection active={activeFilter === 'date'} onClick={(e) => handleFilterClick('date', e)}>
+            <InputSection $active={activeFilter === 'date'} onClick={(e) => handleFilterClick('date', e)}>
                 <label>체크인</label>
                 <input readOnly placeholder="날짜 추가" value={dates.startDate ? format(dates.startDate, 'M월 d일') : ''}/>
             </InputSection>
             <VerticalDivider/>
-            <InputSection active={activeFilter === 'date'} onClick={(e) => handleFilterClick('date', e)}>
+            <InputSection $active={activeFilter === 'date'} onClick={(e) => handleFilterClick('date', e)}>
                 <label>체크아웃</label>
                 <input readOnly placeholder="날짜 추가" value={dates.endDate ? format(dates.endDate, 'M월 d일') : ''}/>
             </InputSection>
             <VerticalDivider/>
-            <InputSection active={activeFilter === 'price'} onClick={(e) => handleFilterClick('price', e)}>
+            <InputSection $active={activeFilter === 'price'} onClick={(e) => handleFilterClick('price', e)}>
                 <label>요금</label>
                 <input readOnly placeholder="요금대 설정"
                        value={(priceRange.min > 0 || priceRange.max < 1000000) ? `₩${priceRange.min.toLocaleString()} - ₩${priceRange.max.toLocaleString()}` : ''}/>
             </InputSection>
             <VerticalDivider/>
-            <GuestsInputSection active={activeFilter === 'guests'} onClick={(e) => handleFilterClick('guests', e)}>
+            <GuestsInputSection $active={activeFilter === 'guests'} onClick={(e) => handleFilterClick('guests', e)}>
                 <div>
                     <label style={{
                         fontSize: '12px',
