@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/dist/style.css';
-import { format } from 'date-fns';
+import { format, isSameDay } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import styled from 'styled-components';
 
 const CalendarWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+
   .rdp {
     --rdp-cell-size: 40px;
     --rdp-accent-color: #000000;
@@ -19,7 +22,7 @@ const CalendarWrapper = styled.div`
   }
 
   .rdp-month {
-    width: 300px;
+    width: 350px;
   }
   
   .rdp-months {
@@ -54,6 +57,7 @@ const CalendarWrapper = styled.div`
   
   .rdp-day_range_middle {
     background-color: #f7f7f7;
+    color: #222;
     border-radius: 0;
   }
 `;
@@ -65,30 +69,40 @@ function formatCaption(date, options) {
 const CalendarDropdown = ({ dates, setDates }) => {
     const [month, setMonth] = useState(dates.startDate || new Date());
 
-    const handleDateSelect = (range) => {
-        let { from: newStart, to: newEnd } = range || {};
-
-        if(newStart && !newEnd) {
-          newEnd = newStart;
+    const handleDayClick = (day, { disabled }) => {
+        if (disabled) {
+            return;
         }
 
-        if (newStart && newEnd) {
-            if (newStart.getTime() === newEnd.getTime()) {
-                newEnd = new Date(newEnd.setDate(newEnd.getDate() + 1));
-            }
-            if (newStart > newEnd) {
-                [newStart, newEnd] = [newEnd, newStart];
+        const { startDate, endDate } = dates;
+
+        if (startDate && isSameDay(day, startDate) && !endDate) {
+            setDates({ startDate: null, endDate: null });
+            return;
+        }
+
+        if (startDate && endDate) {
+            setDates({ startDate: day, endDate: null });
+            return;
+        }
+        
+        if (!startDate) {
+            setDates({ startDate: day, endDate: null });
+        } else {
+            if (day < startDate) {
+                setDates({ startDate: day, endDate: null });
+            } else {
+                setDates({ startDate, endDate: day });
             }
         }
-        setDates({ startDate: newStart, endDate: newEnd });
-    }
+    };
 
     return (
         <CalendarWrapper>
             <DayPicker
                 mode="range"
-                selected={dates.startDate && dates.endDate ? { from: dates.startDate, to: dates.endDate } : undefined}
-                onSelect={handleDateSelect}
+                selected={dates}
+                onDayClick={handleDayClick}
                 numberOfMonths={2}
                 month={month}
                 onMonthChange={setMonth}
@@ -101,4 +115,4 @@ const CalendarDropdown = ({ dates, setDates }) => {
     );
 };
 
-export default CalendarDropdown; 
+export default CalendarDropdown;
