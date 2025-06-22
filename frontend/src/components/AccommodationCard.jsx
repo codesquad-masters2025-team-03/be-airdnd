@@ -1,103 +1,153 @@
 import React from 'react';
 import styled from 'styled-components';
+import { FaRegHeart, FaStar } from 'react-icons/fa';
 
 const CardContainer = styled.div`
-  display: flex;
-  margin-bottom: 20px;
-  border: 1px solid #eee;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  cursor: pointer;
-  transition: transform 0.2s ease-in-out;
-
-  &:hover {
-    transform: scale(1.02);
-  }
+    display: flex;
+    padding: 16px 0;
+    border-bottom: 1px solid #e0e0e0;
+    cursor: pointer;
 `;
 
 const ImageContainer = styled.div`
-  flex-shrink: 0;
-  width: 300px;
-  height: 200px;
-
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
+    width: 300px;
+    height: 200px;
+    flex-shrink: 0;
+    margin-right: 16px;
+    border-radius: 12px;
+    overflow: hidden;
+    
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
 `;
 
 const InfoContainer = styled.div`
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 100%;
+    position: relative;
 `;
 
-const Description = styled.p`
-  font-size: 14px;
-  color: #717171;
-  margin: 0;
+const InfoHeader = styled.div`
+    font-size: 14px;
+    color: #717171;
 `;
 
 const Title = styled.h3`
-  font-size: 18px;
-  margin: 4px 0 0 0;
-  font-weight: 600;
+    font-size: 18px;
+    font-weight: 600;
+    margin: 8px 0;
+    color: #222;
 `;
 
-const PriceContainer = styled.div`
-    text-align: right;
-`;
-
-const Price = styled.p`
-  font-size: 18px;
-  font-weight: bold;
-  margin: 0;
-`;
-
-const RatingContainer = styled.div`
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    margin-top: 8px;
-`;
-
-const StarIcon = styled.span`
-    color: #ff385c;
+const Options = styled.div`
     font-size: 14px;
+    color: #717171;
 `;
 
+const WishlistButton = styled.button`
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 24px;
+    color: #ff385c;
+`;
 
-const AccommodationCard = ({ accommodation }) => {
-  const { name, imageUrl, pricePerNight, description, rating, reviewCount } = accommodation;
+const InfoFooter = styled.div`
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+`;
 
-  return (
-    <CardContainer>
-      <ImageContainer>
-        <img src={imageUrl} alt={name} />
-      </ImageContainer>
-      <InfoContainer>
-        <div>
-          <Description>{description}</Description>
-          <Title>{name}</Title>
-        </div>
-        <div>
-            {rating > 0 && (
-                <RatingContainer>
-                    <StarIcon>★</StarIcon>
-                    <span>{rating.toFixed(2)} ({reviewCount}개)</span>
-                </RatingContainer>
-            )}
-            <PriceContainer>
-                <Price>₩{pricePerNight.toLocaleString()} / 박</Price>
-            </PriceContainer>
-        </div>
-      </InfoContainer>
-    </CardContainer>
-  );
+const Rating = styled.div`
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    
+    svg {
+        color: #ff385c;
+        margin-right: 4px;
+    }
+`;
+
+const Price = styled.div`
+    text-align: right;
+
+    .price-per-night {
+        font-size: 18px;
+        font-weight: 600;
+    }
+
+    .total-price {
+        font-size: 14px;
+        color: #717171;
+        text-decoration: underline;
+    }
+`;
+
+const AccommodationCard = ({ accommodation, queryParams, onClick }) => {
+    const {
+        name,
+        imageUrl,
+        description,
+        pricePerNight,
+        rating,
+        reviewCount,
+    } = accommodation;
+
+    // 날짜 정보를 이용해 총 숙박일수 계산
+    const calculateNights = () => {
+        if (queryParams?.checkIn && queryParams?.checkOut) {
+            const checkIn = new Date(queryParams.checkIn);
+            const checkOut = new Date(queryParams.checkOut);
+            const diffTime = Math.abs(checkOut - checkIn);
+            return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        }
+        return 0;
+    };
+
+    const nights = calculateNights();
+    const totalPrice = nights > 0 ? pricePerNight * nights : 0;
+
+    return (
+        <CardContainer onClick={onClick}>
+            <ImageContainer>
+                <img src={imageUrl || 'https://via.placeholder.com/300x200'} alt={name}/>
+            </ImageContainer>
+            <InfoContainer>
+                <div>
+                    <InfoHeader>{description}</InfoHeader>
+                    <Title>{name}</Title>
+                    <Options>침실 1개 · 침대 1개 · 욕실 1개</Options> {/* Mock Data */}
+                </div>
+                <WishlistButton onClick={(e) => {
+                    e.stopPropagation();
+                    console.log('Wishlist clicked!');
+                }}>
+                    <FaRegHeart />
+                </WishlistButton>
+                <InfoFooter>
+                    <Rating>
+                        <FaStar/>
+                        {rating} ({reviewCount})
+                    </Rating>
+                    <Price>
+                        <div className="price-per-night">₩{pricePerNight.toLocaleString()} / 박</div>
+                        {totalPrice > 0 && (
+                            <div className="total-price">총 ₩{totalPrice.toLocaleString()}</div>
+                        )}
+                    </Price>
+                </InfoFooter>
+            </InfoContainer>
+        </CardContainer>
+    );
 };
 
 export default AccommodationCard;

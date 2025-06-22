@@ -5,7 +5,7 @@ import {useNavigate} from 'react-router-dom';
 import CalendarDropdown from './CalendarDropdown';
 import PriceDropdown from './PriceDropdown';
 import GuestsDropdown from './GuestsDropdown';
-import axios from 'axios';
+import {getAccommodations} from '../api/accommodationApi';
 
 const SearchBarContainer = styled.div`
     display: inline-flex;
@@ -156,7 +156,7 @@ const SearchText = styled.span`
     white-space: nowrap;
 `;
 
-const SearchBar = () => {
+const SearchBar = ({ onSearchComplete }) => {
     const [activeFilter, setActiveFilter] = useState(null);
     const searchBarRef = useRef(null);
     const navigate = useNavigate();
@@ -194,16 +194,21 @@ const SearchBar = () => {
         };
 
         try {
-            const response = await axios.get('http://localhost:8080/api/accommodations', {
-                params: params
-            });
+            const response = await getAccommodations(params);
 
-            navigate('/accommodations', {
+            const searchParams = new URLSearchParams(params).toString();
+            navigate(`/accommodations?${searchParams}`, {
                 state: {
-                    initialData: response.data.data,
+                    initialData: response,
                     queryParams: params
-                }
+                },
+                replace: true
             });
+            
+            if (onSearchComplete) {
+                onSearchComplete();
+            }
+
         } catch (error) {
             console.error('검색 중 오류가 발생했습니다:', error);
             alert('검색 중 오류가 발생했습니다.');

@@ -1,20 +1,28 @@
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {useLocation} from 'react-router-dom';
 import styled from 'styled-components';
 import KakaoMap from '../components/KakaoMap';
 import AccommodationCard from '../components/AccommodationCard';
 import {getAccommodations, getAccommodationsByMap} from '../api/accommodationApi';
+import SearchBar from "../components/SearchBar";
+import {FaSearch} from "react-icons/fa";
 
 const PageContainer = styled.div`
     display: flex;
-    height: 100vh;
+    height: calc(100vh - 80px); /* Adjust based on header height */
+    position: relative;
 `;
 
 const ListContainer = styled.div`
     width: 50%;
+    max-width: 840px;
     padding: 20px;
     overflow-y: auto;
-    border-right: 1px solid #ddd;
+`;
+
+const MapContainer = styled.div`
+    width: 50%;
+    height: 100%;
 `;
 
 const LoadingText = styled.p`
@@ -23,120 +31,164 @@ const LoadingText = styled.p`
     margin-top: 40px;
 `;
 
-const MapContainer = styled.div`
-    width: 50%;
-    height: 100%;
+const Header = styled.header`
+  padding: 16px;
+  border-bottom: 1px solid #ddd;
+`;
+
+const MiniSearchBar = styled.div`
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 16px;
+    border: 1px solid #ddd;
+    border-radius: 40px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    cursor: pointer;
+    
+    span {
+        margin-right: 8px;
+    }
+`;
+
+const FullScreenSearchContainer = styled.div`
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    z-index: 20;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 `;
 
 const AccommodationListPage = () => {
     const location = useLocation();
+    // const navigate = useNavigate(); // Not used yet
+    
     const [accommodations, setAccommodations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const itemRefs = useRef({});
+    const [queryParams, setQueryParams] = useState(null);
+    
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
+    // const [selectedAccommodation, setSelectedAccommodation] = useState(null); // Not used yet
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    
+    // const itemRefs = useRef({}); // Not used yet
 
     useEffect(() => {
-        itemRefs.current = (accommodations || []).reduce((acc, value) => {
-            acc[value.id] = React.createRef();
-            return acc;
-        }, {});
-    }, [accommodations]);
+        const processData = (data, params) => {
+            const accommodationList = data?.data?.accommodations;
+            if (data?.success && Array.isArray(accommodationList)) {
+                setAccommodations(accommodationList);
+                setQueryParams(params);
+            } else {
+                console.error("데이터 처리 실패. 수신된 데이터:", data);
+                throw new Error('숙소 데이터를 불러올 수 없습니다.');
+            }
+        };
 
-    useEffect(() => {
         const fetchInitialData = async () => {
             setLoading(true);
             setError(null);
-
             try {
-                const initial = location?.state?.initialData?.accommodations;
-                if (initial && Array.isArray(initial)) {
-                    setAccommodations(initial);
-                    return;
-                }
-
-                const params = new URLSearchParams(location.search);
-                const response = await getAccommodations(Object.fromEntries(params));
-
-                const accommodationList = response?.data?.accommodations;
-                if (response?.success && Array.isArray(accommodationList)) {
-                    setAccommodations(accommodationList);
+                if (location.state?.initialData) {
+                    processData(location.state.initialData.data, location.state.queryParams);
                 } else {
-                    throw new Error('숙소 데이터를 불러올 수 없습니다.');
+                    const params = new URLSearchParams(location.search);
+                    const paramsObject = Object.fromEntries(params);
+                    const response = await getAccommodations(paramsObject);
+                    processData(response.data, paramsObject);
                 }
             } catch (e) {
-                console.error('숙소 초기 데이터 불러오기 실패:', e);
+                console.error('❌ 숙소 초기 데이터 불러오기 실패:', e);
                 setError(e);
-                setAccommodations([]); // fallback 제거하고 빈 배열
+                setAccommodations([]);
             } finally {
                 setLoading(false);
             }
         };
 
         fetchInitialData();
-    }, [location.search, location?.state?.initialData]);
-
-    const handleBoundsChange = useCallback(async (bounds) => {
+    }, [location.search, location.state]);
+    
+    const handleBoundsChanged = useCallback(async (bounds) => {
+        console.log("🗺️ Map bounds changed:", bounds);
         try {
-            setLoading(true);
-            setError(null);
-            const currentParams = new URLSearchParams(location.search);
-            const params = {
-                ...Object.fromEntries(currentParams),
-                northEastLat: bounds.ne.lat,
-                northEastLng: bounds.ne.lng,
-                southWestLat: bounds.sw.lat,
-                southWestLng: bounds.sw.lng,
-            };
-
-            const response = await getAccommodationsByMap(params);
-            const accommodationList = response?.data?.accommodations;
-            if (response?.success && Array.isArray(accommodationList)) {
+            const response = await getAccommodationsByMap(bounds);
+             const accommodationList = response?.data?.data?.accommodations;
+            if (response?.data?.success && Array.isArray(accommodationList)) {
                 setAccommodations(accommodationList);
-            } else {
-                throw new Error('지도 기반 숙소 데이터를 불러올 수 없습니다.');
             }
-        } catch (e) {
-            console.error('지도 기반 숙소 불러오기 실패:', e);
-            setError(e);
-        } finally {
-            setLoading(false);
+        } catch (error) {
+            console.error("지도 기반 숙소 검색 실패:", error);
         }
-    }, [location.search]);
+    }, []);
 
-    const handleMarkerClick = (accommodationId) => {
-        itemRefs.current[accommodationId]?.current?.scrollIntoView({
-            behavior: 'smooth',
-            block: 'center',
-        });
+    const handleCardClick = (accommodation) => {
+        // setSelectedAccommodation(accommodation);
+        setIsModalOpen(true);
+        console.log("Card clicked:", accommodation);
     };
+    
+    const renderMiniSearchBar = () => (
+        <Header>
+            <MiniSearchBar onClick={() => setIsSearchOpen(true)}>
+                <span>{queryParams?.location || '어디로 여행가세요?'}</span>
+                <span>·</span>
+                <span>{queryParams?.checkIn ? `${queryParams.checkIn} ~ ${queryParams.checkOut}` : '언제 떠나세요?'}</span>
+                <span>·</span>
+                <span>게스트 {queryParams?.guests || 1}명</span>
+                <FaSearch style={{ marginLeft: 8, color: '#ff385c' }} />
+            </MiniSearchBar>
+        </Header>
+    );
 
     return (
-        <PageContainer>
-            <ListContainer>
-                <h2>지도에서 선택한 지역의 숙소</h2>
-                {loading ? (
-                    <LoadingText>숙소를 불러오는 중...</LoadingText>
-                ) : error ? (
-                    <LoadingText>⚠️ 오류: {error.message}</LoadingText>
-                ) : accommodations.length > 0 ? (
-                    accommodations.map(acc => (
-                        <div key={acc.id} ref={itemRefs.current[acc.id]}>
-                            <AccommodationCard accommodation={acc}/>
-                        </div>
-                    ))
-                ) : (
-                    <LoadingText>해당 지역에 숙소가 없습니다.</LoadingText>
-                )}
-            </ListContainer>
+        <>
+            {renderMiniSearchBar()}
+            {isSearchOpen && (
+                 <FullScreenSearchContainer>
+                     <SearchBar onSearchComplete={() => setIsSearchOpen(false)} />
+                     <button onClick={() => setIsSearchOpen(false)}>닫기</button>
+                 </FullScreenSearchContainer>
+            )}
+            <PageContainer>
+                <ListContainer>
+                    {loading ? (
+                        <LoadingText>숙소를 불러오는 중...</LoadingText>
+                    ) : error ? (
+                        <LoadingText>⚠️ 오류: {error.message}</LoadingText>
+                    ) : accommodations.length > 0 ? (
+                        <>
+                            <p>{accommodations.length}개의 숙소</p>
+                            {accommodations.map(acc => (
+                                <AccommodationCard
+                                    key={acc.id}
+                                    accommodation={acc}
+                                    queryParams={queryParams}
+                                    onClick={() => handleCardClick(acc)}
+                                />
+                            ))}
+                        </>
+                    ) : (
+                        <LoadingText>해당 지역에 숙소가 없습니다.</LoadingText>
+                    )}
+                </ListContainer>
 
-            <MapContainer>
-                <KakaoMap
-                    accommodations={accommodations}
-                    onBoundsChanged={handleBoundsChange}
-                    onMarkerClick={handleMarkerClick}
-                />
-            </MapContainer>
-        </PageContainer>
+                <MapContainer>
+                    <KakaoMap
+                        accommodations={accommodations}
+                        onBoundsChanged={handleBoundsChanged}
+                        onMarkerClick={(id) => console.log('Marker clicked', id)}
+                    />
+                </MapContainer>
+            </PageContainer>
+            
+            {isModalOpen && (
+                <div>예약모달</div> /* Placeholder for ReservationModal */
+            )}
+        </>
     );
 };
 
