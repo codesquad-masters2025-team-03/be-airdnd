@@ -3,18 +3,20 @@ import styled from 'styled-components';
 
 const GuestsContainer = styled.div`
     padding: 16px;
+    width: 350px;
 `;
 
 const GuestRow = styled.div`
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 16px;
+    margin-bottom: 24px;
 `;
 
 const GuestType = styled.div`
     display: flex;
     flex-direction: column;
+    align-items: flex-start;
 
     strong {
         font-weight: 600;
@@ -29,7 +31,7 @@ const GuestType = styled.div`
 const GuestCounter = styled.div`
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 15px;
 
     button {
         width: 32px;
@@ -44,6 +46,12 @@ const GuestCounter = styled.div`
             cursor: not-allowed;
             opacity: 0.5;
         }
+    }
+
+    span {
+        font-size: 16px;
+        width: 20px;
+        text-align: center;
     }
 `;
 
@@ -79,8 +87,7 @@ const GuestsDropdown = ({guests, setGuests}) => {
                     <span>만 2-12세</span>
                 </GuestType>
                 <GuestCounter>
-                    <button onClick={() => handleGuestChange('children', -1)} disabled={guests.children === 0}>-
-                    </button>
+                    <button onClick={() => handleGuestChange('children', -1)} disabled={guests.children === 0}>-</button>
                     <span>{guests.children}</span>
                     <button onClick={() => handleGuestChange('children', 1)} disabled={guests.adults === 0}>+</button>
                 </GuestCounter>

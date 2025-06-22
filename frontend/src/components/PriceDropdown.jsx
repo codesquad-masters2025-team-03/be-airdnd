@@ -1,12 +1,14 @@
-import React, {useEffect, useState} from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
+import axios from 'axios';
 
 const PriceContainer = styled.div`
-    padding: 16px;
+    padding: 16px 32px;
     width: 400px;
     margin: 0 auto;
+    box-sizing: border-box;
 `;
 
 const PriceRangeLabel = styled.div`
@@ -49,25 +51,19 @@ const PriceDropdown = ({priceRange, setPriceRange, location, dates, guests}) => 
     const [apiPriceInfo, setApiPriceInfo] = useState({minValue: 0, maxValue: 1000000, priceHistogram: []});
 
     useEffect(() => {
-        const today = new Date();
-        const tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1);
-
         const totalGuests = guests.adults + guests.children + guests.infants;
-        
-        const filters = {
-            location: location || "서울",
-            checkin: (dates.startDate || today).toISOString().split('T')[0],
-            checkout: (dates.endDate || tomorrow).toISOString().split('T')[0],
-            guests: totalGuests > 0 ? totalGuests : 1,
-        };
-        
-        fetchPriceData(filters).then(data => {
-            setApiPriceInfo(data);
-            if(priceRange.min === 0 && priceRange.max === 1000000) { // Only set initial price from API
+        if (location && dates.startDate && dates.endDate && totalGuests > 0) {
+            const filters = {
+                location,
+                checkin: dates.startDate.toISOString().split('T')[0],
+                checkout: dates.endDate.toISOString().split('T')[0],
+                guests: totalGuests,
+            };
+            fetchPriceData(filters).then(data => {
+                setApiPriceInfo(data);
                 setPriceRange({min: data.minValue, max: data.maxValue});
-            }
-        });
+            });
+        }
     }, [location, dates, guests, setPriceRange]);
 
     const maxHistValue = Math.max(...apiPriceInfo.priceHistogram, 1);
