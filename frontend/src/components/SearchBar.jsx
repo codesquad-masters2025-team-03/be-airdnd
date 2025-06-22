@@ -1,56 +1,48 @@
 import React, {useEffect, useRef, useState} from 'react';
 import styled, {css} from 'styled-components';
+import {format} from 'date-fns';
 import CalendarDropdown from './CalendarDropdown';
 import PriceDropdown from './PriceDropdown';
 import GuestsDropdown from './GuestsDropdown';
 
 const SearchBarContainer = styled.div`
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    background-color: #f7f7f7;
+    background-color: #ffffff;
     border-radius: 50px;
-    padding: 10px 10px 10px 20px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    width: 850px;
-    margin: 20px auto;
-    justify-content: space-between;
+    height: 66px;
+    border: 1px solid #ddd;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     position: relative;
-`;
-
-const InputSectionContainer = styled.div`
-    display: flex;
-    flex-grow: 1;
-    border-radius: 50px;
-
-    & > div:first-child {
-        border-top-left-radius: 50px;
-        border-bottom-left-radius: 50px;
-    }
+    margin: 20px auto;
+    width: auto;
 `;
 
 const InputSection = styled.div`
     display: flex;
     flex-direction: column;
+    justify-content: center;
+    height: 100%;
     cursor: pointer;
-    background-color: transparent;
-    padding: 10px 20px;
-    flex-grow: 1;
+    padding: 0 24px;
+    border-radius: 30px;
+    position: relative;
 
     &:hover {
-        background-color: #ebebeb;
-        border-radius: 30px;
+        background-color: #f7f7f7;
     }
 
     ${({active}) => active && css`
         background-color: white;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-        border-radius: 30px;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        border: 1px solid #eee;
     `}
     label {
         font-size: 12px;
         font-weight: bold;
-        margin-bottom: 5px;
+        margin-bottom: 2px;
         pointer-events: none;
+        text-align: left;
     }
 
     input {
@@ -59,6 +51,7 @@ const InputSection = styled.div`
         font-size: 14px;
         outline: none;
         pointer-events: none;
+        color: #222;
 
         &::placeholder {
             color: #717171;
@@ -66,8 +59,42 @@ const InputSection = styled.div`
     }
 `;
 
+const GuestInfo = styled.div`
+    font-size: 14px;
+    color: #222;
+    text-align: left;
+    padding-right: 20px;
+`;
+
+const GuestsInputSection = styled.div`
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 100%;
+    cursor: pointer;
+    padding-left: 24px;
+    border-radius: 30px;
+
+    &:hover {
+        background-color: #f7f7f7;
+    }
+
+    ${({active}) => active && css`
+        background-color: white;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        border: 1px solid #eee;
+    `}
+    & > div {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        text-align: left;
+    }
+`;
+
+
 const VerticalDivider = styled.div`
-    height: 30px;
+    height: 32px;
     width: 1px;
     background-color: #ddd;
     align-self: center;
@@ -77,35 +104,54 @@ const SearchButton = styled.button`
     background-color: #ff385c;
     border: none;
     border-radius: 50px;
+    width: auto;
     min-width: 50px;
     height: 50px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    margin-left: 10px;
-    flex-shrink: 0;
     padding: 0 16px;
+    margin: 0 8px;
 
     svg {
         color: white;
-        width: 20px;
-        height: 20px;
+        width: 16px;
+        height: 16px;
         flex-shrink: 0;
     }
 `;
 
 const DropdownContainer = styled.div`
     position: absolute;
-    top: calc(100% + 10px);
-    left: 50%;
-    transform: translateX(-50%);
+    top: calc(100% + 12px);
     background: white;
     border-radius: 32px;
     box-shadow: 0 16px 32px rgba(0, 0, 0, 0.15);
-    padding: 16px 32px;
+    padding: 20px;
     z-index: 10;
-    width: max-content;
+
+    ${({align}) => {
+        switch (align) {
+            case 'right':
+                return css`
+                    right: 0;
+                    width: 400px;
+                `;
+            case 'full-width':
+                return css`
+                    left: 0;
+                    right: 0;
+                    width: 100%;
+                `;
+            default:
+                return css`
+                    left: 50%;
+                    transform: translateX(-50%);
+                    width: max-content;
+                `;
+        }
+    }}
 `;
 
 const SearchText = styled.span`
@@ -122,13 +168,42 @@ const SearchBar = () => {
     const [location, setLocation] = useState('');
     const [dates, setDates] = useState({startDate: null, endDate: null});
     const [priceRange, setPriceRange] = useState({min: 0, max: 1000000});
-    const [guests, setGuests] = useState({adults: 0, children: 0, infants: 0});
+    const [guests, setGuests] = useState({adults: 1, children: 0, infants: 0});
 
     const totalGuests = guests.adults + guests.children + guests.infants;
-    const isAnyFilterActive = location || dates.startDate || (priceRange.min !== 0 || priceRange.max !== 1000000) || totalGuests > 0;
+    const isAnyFilterActive = location || dates.startDate || (priceRange.min !== 0 && priceRange.max !== 1000000) || totalGuests > 1;
 
-    const handleFilterClick = (filterName) => {
+    const handleFilterClick = (filterName, e) => {
+        if (e) e.stopPropagation();
         setActiveFilter(activeFilter === filterName ? null : filterName);
+    };
+
+    const handleSearch = async (e) => {
+        e.stopPropagation();
+        setActiveFilter(null);
+
+        const today = new Date();
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
+        const params = {
+            page: 1,
+            size: 10,
+            location: location || "서울",
+            checkIn: dates.startDate ? format(dates.startDate, 'yyyy-MM-dd') : format(today, 'yyyy-MM-dd'),
+            checkOut: dates.endDate ? format(dates.endDate, 'yyyy-MM-dd') : format(tomorrow, 'yyyy-MM-dd'),
+            guests: totalGuests > 0 ? totalGuests : 1,
+            minPrice: priceRange.min,
+            maxPrice: priceRange.max,
+        };
+
+        try {
+            console.log('Searching with params:', params);
+            // const response = await axios.get('/api/accommodations', { params });
+            // console.log('Search results:', response.data);
+        } catch (error) {
+            console.error('Failed to fetch accommodations:', error);
+        }
     };
 
     useEffect(() => {
@@ -148,26 +223,31 @@ const SearchBar = () => {
         if (!activeFilter) return null;
 
         let DropdownComponent;
+        let align = 'center';
+
         switch (activeFilter) {
+            case 'location': // Location doesn't have a dropdown in this design
+                return null;
             case 'date':
                 DropdownComponent = <CalendarDropdown dates={dates} setDates={setDates}/>;
+                align = 'full-width';
                 break;
             case 'price':
                 DropdownComponent =
-                    <PriceDropdown priceRange={priceRange} setPriceRange={setPriceRange} location={location}
-                                   dates={dates} guests={guests}/>;
+                    <PriceDropdown priceRange={priceRange} setPriceRange={setPriceRange} dates={dates} guests={guests}
+                                   location={location}/>;
+                align = 'right';
                 break;
             case 'guests':
                 DropdownComponent = <GuestsDropdown guests={guests} setGuests={setGuests}/>;
+                align = 'right';
                 break;
-            case 'location':
-                return null; // Location input is in-place
             default:
                 return null;
         }
 
         return (
-            <DropdownContainer>
+            <DropdownContainer align={align} onClick={(e) => e.stopPropagation()}>
                 {DropdownComponent}
             </DropdownContainer>
         )
@@ -175,37 +255,40 @@ const SearchBar = () => {
 
     return (
         <SearchBarContainer ref={searchBarRef}>
-            <InputSectionContainer>
-                <InputSection active={activeFilter === 'location'} onClick={() => handleFilterClick('location')}>
-                    <label>위치</label>
-                    <input type="text" value={location} onChange={(e) => setLocation(e.target.value)}
-                           placeholder="지역으로 검색"/>
-                </InputSection>
-                <VerticalDivider/>
-                <InputSection active={activeFilter === 'date'} onClick={() => handleFilterClick('date')}>
-                    <label>체크인</label>
-                    <input readOnly placeholder="날짜 추가"
-                           value={dates.startDate ? dates.startDate.toLocaleDateString() : ''}/>
-                </InputSection>
-                <VerticalDivider/>
-                <InputSection active={activeFilter === 'date'} onClick={() => handleFilterClick('date')}>
-                    <label>체크아웃</label>
-                    <input readOnly placeholder="날짜 추가"
-                           value={dates.endDate ? dates.endDate.toLocaleDateString() : ''}/>
-                </InputSection>
-                <VerticalDivider/>
-                <InputSection active={activeFilter === 'price'} onClick={() => handleFilterClick('price')}>
-                    <label>요금</label>
-                    <input readOnly placeholder="요금대 설정"
-                           value={(priceRange.min !== 0 || priceRange.max !== 1000000) ? `₩${priceRange.min.toLocaleString()} - ₩${priceRange.max.toLocaleString()}` : ''}/>
-                </InputSection>
-                <VerticalDivider/>
-                <InputSection active={activeFilter === 'guests'} onClick={() => handleFilterClick('guests')}>
-                    <label>인원</label>
-                    <input readOnly placeholder="게스트 추가" value={totalGuests > 0 ? `총 ${totalGuests}명` : ''}/>
-                </InputSection>
-            </InputSectionContainer>
-            <SearchButton>
+            <InputSection active={activeFilter === 'location'} onClick={(e) => handleFilterClick('location', e)}>
+                <label>여행지</label>
+                <input type="text" value={location} onChange={(e) => setLocation(e.target.value)}
+                       placeholder="여행지 검색"/>
+            </InputSection>
+            <VerticalDivider/>
+            <InputSection active={activeFilter === 'date'} onClick={(e) => handleFilterClick('date', e)}>
+                <label>체크인</label>
+                <input readOnly placeholder="날짜 추가" value={dates.startDate ? format(dates.startDate, 'M월 d일') : ''}/>
+            </InputSection>
+            <VerticalDivider/>
+            <InputSection active={activeFilter === 'date'} onClick={(e) => handleFilterClick('date', e)}>
+                <label>체크아웃</label>
+                <input readOnly placeholder="날짜 추가" value={dates.endDate ? format(dates.endDate, 'M월 d일') : ''}/>
+            </InputSection>
+            <VerticalDivider/>
+            <InputSection active={activeFilter === 'price'} onClick={(e) => handleFilterClick('price', e)}>
+                <label>요금</label>
+                <input readOnly placeholder="요금대 설정"
+                       value={(priceRange.min > 0 || priceRange.max < 1000000) ? `₩${priceRange.min.toLocaleString()} - ₩${priceRange.max.toLocaleString()}` : ''}/>
+            </InputSection>
+            <VerticalDivider/>
+            <GuestsInputSection active={activeFilter === 'guests'} onClick={(e) => handleFilterClick('guests', e)}>
+                <div>
+                    <label style={{
+                        fontSize: '12px',
+                        fontWeight: 'bold',
+                        marginBottom: '2px',
+                        pointerEvents: 'none'
+                    }}>인원</label>
+                    <GuestInfo>{totalGuests > 0 ? `총 ${totalGuests}명` : '게스트 추가'}</GuestInfo>
+                </div>
+            </GuestsInputSection>
+            <SearchButton onClick={handleSearch}>
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" style={{
                     display: 'block',
                     fill: 'none',
