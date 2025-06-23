@@ -1,13 +1,18 @@
 package com.team3.airdnd.payment.service;
 
+import static com.team3.airdnd.payment.dto.PaymentResponseDto.*;
+
 import com.team3.airdnd.payment.domain.Payment;
 import com.team3.airdnd.payment.domain.PaymentMethod;
 import com.team3.airdnd.payment.dto.PaymentRequestDto;
 import com.team3.airdnd.payment.dto.PaymentResponseDto;
+import com.team3.airdnd.payment.query.PaymentQueryRepository;
 import com.team3.airdnd.payment.repository.PaymentMethodRepository;
 import com.team3.airdnd.payment.repository.PaymentRepository;
 import com.team3.airdnd.reservation.domain.Reservation;
 import com.team3.airdnd.reservation.repository.ReservationRepository;
+
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -21,6 +26,7 @@ import org.springframework.web.client.RestTemplate;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.Base64;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +36,7 @@ public class PaymentService {
 	private final PaymentRepository paymentRepository;
 	private final PaymentMethodRepository paymentMethodRepository;
 	private final ReservationRepository reservationRepository;
+	private final PaymentQueryRepository paymentQueryRepository;
 
 	@Value("${toss.secret-key}")
 	private String tossSecretKey;
@@ -97,15 +104,18 @@ public class PaymentService {
 		}
 	}
 
-	public PaymentResponseDto toDto(Payment payment) {
-		return PaymentResponseDto.builder()
-			.id(payment.getId())
-			.reservationId(payment.getReservation().getId())
-			.paymentMethodId(payment.getPaymentMethod().getId())
-			.orderId(payment.getOrderId())
-			.amount(payment.getAmount())
-			.paidAt(payment.getPaidAt())
-			.build();
+	//paymentId로 결제 단건 조회
+	public PaymentResponseDto getPaymentById(Long paymentId) {
+		Payment payment = paymentRepository.findById(paymentId)
+			.orElseThrow(() -> new EntityNotFoundException("해당 결제를 찾을 수 없습니다. ID = " + paymentId));
+		return toDto(payment);
 	}
+
+	//guestId와 예약 상태에 따른 결제 목록 조회
+	public List<Payment> getPaymentsByGuestId(Long guestId, Reservation.Status status) {
+		return paymentQueryRepository.findByGuestIdAndOptionalStatus(guestId, status);
+	}
+
+
 
 }
