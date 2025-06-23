@@ -20,4 +20,15 @@ public class PaymentResponseDto {
 	private String orderId;
 	private Long amount;
 	private LocalDateTime paidAt;
+
+	public static PaymentResponseDto toDto(Payment payment) {
+		return PaymentResponseDto.builder()
+			.id(payment.getId())
+			.reservationId(payment.getReservation().getId())
+			.paymentMethodId(payment.getPaymentMethod().getId())
+			.orderId(payment.getOrderId())
+			.amount(payment.getAmount())
+			.paidAt(payment.getPaidAt())
+			.build();
+	}
 }
