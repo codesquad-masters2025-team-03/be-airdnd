@@ -29,13 +29,9 @@ public class AccommodationRequestDto {
 		@Min(0)
 		private int bedCount;
 		@Min(0)
-		private int bathroomCount; //todo 삭제
-		@Min(0)
-		private int bedroomCount; //todo 삭제
+		private int roomCount; //todo 삭제
 		@NotNull
 		private List<AmenityType> amenityTypes;
-		@NotNull
-		private Long hostId;
 		// 주소 정보
 		@NotBlank
 		private String city;
@@ -57,8 +53,7 @@ public class AccommodationRequestDto {
 		private String description;
 		private Integer maxGuests;
 		private Integer bedCount;
-		private Integer bathroomCount;
-		private Integer bedroomCount;
+		private Integer roomCount;
 		private List<AmenityType> amenityTypes;
 		private String city;
 		private String district;

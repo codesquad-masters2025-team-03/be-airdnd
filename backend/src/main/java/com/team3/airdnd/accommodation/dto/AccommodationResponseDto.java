@@ -20,6 +20,7 @@ public class AccommodationResponseDto {
 		private long pricePerNight;
 		private int maxGuests;
 		private int bedCount;
+		private int roomCount;
 		private AddressInfoDto address;
 		private ReviewListDto reviews;
 	}
@@ -79,6 +80,7 @@ public class AccommodationResponseDto {
 		private String description;
 		private int maxGuests;
 		private int bedCount;
+		private int roomCount;
 		private String address;
 		private List<AmenityDto> amenity;
 		private double latitude;

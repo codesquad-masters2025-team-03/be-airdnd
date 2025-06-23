@@ -1,19 +1,19 @@
 package com.team3.airdnd.accommodation.dto;
 
-import java.time.LocalDate;
-
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 @Getter
+@Setter
 @NoArgsConstructor
+@SuperBuilder
 public class PriceHistogramConditionDto extends BaseSearchConditionDto {
-	@Builder
-	public PriceHistogramConditionDto(String location, LocalDate checkIn, LocalDate checkOut, Integer guests) {
-		this.location = location;
-		this.checkIn = checkIn;
-		this.checkOut = checkOut;
-		this.guests = guests;
+
+	private String location;
+
+	public boolean isLocationValid() {
+		return location != null && !location.isBlank();
 	}
 }

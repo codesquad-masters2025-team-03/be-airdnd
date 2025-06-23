@@ -16,14 +16,15 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.team3.airdnd.accommodation.dto.AccommodationListConditionDto;
 import com.team3.airdnd.accommodation.dto.AccommodationRequestDto;
 import com.team3.airdnd.accommodation.dto.AccommodationResponseDto;
+import com.team3.airdnd.accommodation.dto.MapBoundAccommodationSearchDto;
 import com.team3.airdnd.accommodation.dto.PriceHistogramConditionDto;
 import com.team3.airdnd.accommodation.dto.PriceHistogramResponseDto;
 import com.team3.airdnd.accommodation.service.AccommodationService;
 import com.team3.airdnd.global.dto.ResponseDto;
-import com.team3.airdnd.global.exception.CommonException;
-import com.team3.airdnd.global.exception.ErrorCode;
+import com.team3.airdnd.storedFile.validation.ImageValidator;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -34,46 +35,42 @@ import lombok.RequiredArgsConstructor;
 public class AccommodationController {
 
 	private final AccommodationService accommodationService;
+	private final ImageValidator imageValidator;
 
-	@GetMapping("/{accommodation-id}")
+	@GetMapping("/{accommodationId}")
 	public ResponseEntity<ResponseDto<AccommodationResponseDto.AccommodationDetailDto>> getAccommodationDetail(
-		@PathVariable("accommodation-id") Long id) {
-		AccommodationResponseDto.AccommodationDetailDto detailDto = accommodationService.getAccommodationDetail(id);
+		@PathVariable Long accommodationId) {
+		AccommodationResponseDto.AccommodationDetailDto detailDto = accommodationService.getAccommodationDetail(
+			accommodationId);
 		return ResponseDto.ok(detailDto);
 	}
 
 	@PostMapping("/create")
 	public ResponseEntity<ResponseDto<Void>> createAccommodation(
 		@RequestPart @Valid AccommodationRequestDto.CreateAccommodationDto request,
-		@RequestPart("files") List<MultipartFile> files) {
-		if (files == null || files.size() < 1 || files.size() > 5) {
-			throw new CommonException(ErrorCode.INVALID_IMAGE);
-		}
+		@RequestPart("files") List<MultipartFile> files,
+		@RequestParam Long hostId) {
 
-		accommodationService.createAccommodation(request, files);
+		imageValidator.validate(files);
+		accommodationService.createAccommodation(request, files, hostId);
 		return ResponseDto.created();
 	}
 
-	@PatchMapping("/{accommodation-id}")
+	@PatchMapping("/{accommodationId}")
 	public ResponseEntity<ResponseDto<Void>> updateAccommodation(
-		@PathVariable("accommodation-id") Long accommodationId,
+		@PathVariable Long accommodationId,
 		@RequestPart AccommodationRequestDto.UpdateAccommodationDto request,
 		@RequestParam Long hostId,
 		@RequestPart(value = "files", required = false) List<MultipartFile> files
 	) {
-		if (files != null) {
-			if (files.size() < 1 || files.size() > 5) {
-				throw new CommonException(ErrorCode.INVALID_IMAGE);
-			}
-		}
-
+		imageValidator.validate(files);
 		accommodationService.updateAccommodation(accommodationId, request, hostId, files);
 		return ResponseDto.ok(null);
 	}
 
-	@DeleteMapping("/{accommodation-id}")
+	@DeleteMapping("/{accommodationId}")
 	public ResponseEntity<ResponseDto<Void>> deleteAccommodation(
-		@PathVariable("accommodation-id") Long accommodationId,
+		@PathVariable Long accommodationId,
 		@RequestParam Long hostId
 	) {
 		accommodationService.deleteAccommodation(accommodationId, hostId);
@@ -90,11 +87,25 @@ public class AccommodationController {
 	//속소 목록 페이징 조회 기능
 	@GetMapping("")
 	public ResponseEntity<ResponseDto<AccommodationResponseDto.AccommodationListDto>> getAccommodationList(
+		@Valid @ModelAttribute AccommodationListConditionDto request,
 		@RequestParam(required = false, defaultValue = "1") int page,
-		@RequestParam(required = false, defaultValue = "5") int size
+		@RequestParam(required = false, defaultValue = "10") int size
 	) {
-		AccommodationResponseDto.AccommodationListDto accommodations = accommodationService.getAccommodations(page,
+		AccommodationResponseDto.AccommodationListDto accommodations = accommodationService.getAccommodations(request,
+			page,
 			size);
+		return ResponseDto.ok(accommodations);
+	}
+
+	@GetMapping("/map")
+	public ResponseEntity<ResponseDto<AccommodationResponseDto.AccommodationListDto>> getAccommodationListByMap(
+		@Valid @ModelAttribute MapBoundAccommodationSearchDto request,
+		@RequestParam(required = false, defaultValue = "1") int page,
+		@RequestParam(required = false, defaultValue = "10") int size
+	) {
+		AccommodationResponseDto.AccommodationListDto accommodations =
+			accommodationService.getAccommodationsByMapBounds(request, page, size);
+
 		return ResponseDto.ok(accommodations);
 	}
 
