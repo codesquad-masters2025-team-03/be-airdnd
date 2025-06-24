@@ -2,11 +2,11 @@
 // ✅ 숙소 검색 (검색바 필터 기반)
 // ✅ 숙소 검색 (검색바 필터 기반)
 import axios from 'axios';
-
+// ✅ 지도 범위 기반 숙소 검색
+// accommodationApi.js
 const useMock = process.env.REACT_APP_USE_MOCK === 'true';
 const BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080';
 
-// ✅ 숙소 검색 (검색바 필터 기반)
 export const getAccommodations = async (params) => {
     if (useMock) {
         console.log("📦 [MOCK] getAccommodations 실행");
@@ -33,26 +33,6 @@ export const getAccommodations = async (params) => {
                             rating: 4.9,
                             reviewCount: 45,
                         },
-                    ],
-                },
-                error: null
-            }
-        };
-    }
-
-    const response = await axios.get(`${BASE_URL}/api/accommodations`, {params});
-    return response;
-};
-
-// ✅ 지도 범위 기반 숙소 검색
-export const getAccommodationsByMap = async (params) => {
-    if (useMock) {
-        console.log("📦 [MOCK] getAccommodationsByMap 실행");
-        return {
-            data: {
-                success: true,
-                data: {
-                    accommodations: [
                         {
                             id: 3,
                             name: "제주도 바닷가 숙소",
@@ -62,15 +42,17 @@ export const getAccommodationsByMap = async (params) => {
                             rating: 4.7,
                             reviewCount: 18,
                         },
-                    ]
+                    ],
                 },
-                error: null
-            }
+                error: null,
+            },
         };
     }
 
-    const response = await axios.get(`${BASE_URL}/api/accommodations/map`, {
+    const response = await axios.get(`${BASE_URL}/api/accommodations`, {
         params,
     });
-    return {data: response.data.data}; // 이 부분은 실제 API 구조에 맞게 유지
+    return response;
 };
+
+

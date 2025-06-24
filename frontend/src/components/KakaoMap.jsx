@@ -11,7 +11,7 @@ const KakaoMap = ({accommodations, onBoundsChanged, onMarkerClick}) => {
                 if (!mapContainerRef.current) return;
 
                 const options = {
-                    center: new window.kakao.maps.LatLng(37.566826, 126.9786567), // 서울 중심
+                    center: new window.kakao.maps.LatLng(37.566826, 126.9786567),
                     level: 7,
                 };
                 const map = new window.kakao.maps.Map(mapContainerRef.current, options);
@@ -41,30 +41,25 @@ const KakaoMap = ({accommodations, onBoundsChanged, onMarkerClick}) => {
             script.src = scriptUrl;
             script.async = true;
             document.head.appendChild(script);
-
-            script.onload = () => {
-                initMap();
-            };
+            script.onload = initMap;
         } else if (window.kakao && window.kakao.maps) {
             initMap();
         }
-
     }, [onBoundsChanged]);
 
     useEffect(() => {
         if (!mapRef.current || !window.kakao) return;
 
+        // 기존 마커 제거
         markersRef.current.forEach(marker => marker.setMap(null));
         markersRef.current = [];
 
-        if (accommodations && accommodations.length > 0) {
+        if (accommodations?.length > 0) {
             const {kakao} = window;
             accommodations.forEach((acc) => {
                 if (acc.latitude && acc.longitude) {
                     const markerPosition = new kakao.maps.LatLng(acc.latitude, acc.longitude);
-                    const marker = new kakao.maps.Marker({
-                        position: markerPosition,
-                    });
+                    const marker = new kakao.maps.Marker({position: markerPosition});
 
                     kakao.maps.event.addListener(marker, 'click', () => {
                         if (onMarkerClick) {
@@ -76,28 +71,14 @@ const KakaoMap = ({accommodations, onBoundsChanged, onMarkerClick}) => {
                     markersRef.current.push(marker);
                 }
             });
-
-            // Fit map to markers
-            const bounds = new window.kakao.maps.LatLngBounds();
-            accommodations.forEach(acc => {
-                if (acc.latitude && acc.longitude) {
-                    bounds.extend(new window.kakao.maps.LatLng(acc.latitude, acc.longitude));
-                }
-            });
-            if (!bounds.isEmpty()) {
-                mapRef.current.setBounds(bounds);
-            }
         }
     }, [accommodations, onMarkerClick]);
 
     return (
         <div
             ref={mapContainerRef}
-            style={{
-                width: '100%',
-                height: '100%',
-            }}
-        ></div>
+            style={{width: '100%', height: '100%'}}
+        />
     );
 };
 
