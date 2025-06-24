@@ -1,4 +1,4 @@
-package com.team3.airdnd.review;
+package com.team3.airdnd.review.service;
 
 import java.time.LocalDate;
 
@@ -23,8 +23,8 @@ public class ReviewService {
 	private final ReservationRepository reservationRepository;
 
 	@Transactional
-	public void createReview(ReviewRequestDto request) {
-		Reservation reservation = reservationRepository.findById(request.getReservationId())
+	public void createReview(ReviewRequestDto request, Long guestId) {
+		Reservation reservation = reservationRepository.findById(guestId)
 			.orElseThrow(() -> new CommonException(ErrorCode.NOT_FOUND_RESERVATION));
 
 		if (reviewRepository.existsByReservationId(reservation.getId())) {
@@ -48,9 +48,16 @@ public class ReviewService {
 		reviewRepository.save(review);
 	}
 
-	public void deleteReview(Long reviewId) {
+	public void deleteReview(Long reviewId, Long guestId) {
 		Review review = reviewRepository.findById(reviewId)
 			.orElseThrow(() -> new CommonException(ErrorCode.NOT_FOUND_REVIEW));
+
+		// 본인 여부 확인
+		Long reviewOwnerId = review.getReservation().getGuest().getId();
+		if (!reviewOwnerId.equals(guestId)) {
+			throw new CommonException(ErrorCode.NOT_AUTHOR_OF_REVIEW);
+		}
+
 		reviewRepository.delete(review);
 	}
 }

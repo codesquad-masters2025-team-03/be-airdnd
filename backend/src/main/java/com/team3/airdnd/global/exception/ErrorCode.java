@@ -36,7 +36,9 @@ public enum ErrorCode {
 	ALREADY_WRITTEN_REVIEW(40011, HttpStatus.BAD_REQUEST, "이미 작성된 리뷰가 있습니다."),
 	INVALID_RESERVATION_STATUS(40012, HttpStatus.BAD_REQUEST, "예약이 확정되지 않았습니다."),
 	CHECKOUT_NOT_PASSED(40013, HttpStatus.BAD_REQUEST, "아직 체크아웃이 지나지 않았습니다."),
-	NOT_FOUND_REVIEW(40405, HttpStatus.NOT_FOUND, "리뷰를 찾을 수 없습니다.");
+	NOT_FOUND_REVIEW(40405, HttpStatus.NOT_FOUND, "리뷰를 찾을 수 없습니다."),
+
+	NOT_AUTHOR_OF_REVIEW(40405, HttpStatus.NOT_FOUND, "리뷰를 찾을 수 없습니다.");
 
 	private final Integer code;
 	private final HttpStatus httpStatus;
