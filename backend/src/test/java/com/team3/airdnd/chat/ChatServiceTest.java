@@ -8,6 +8,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.team3.airdnd.chat.domain.ChatRoom;
@@ -16,6 +18,8 @@ import com.team3.airdnd.chat.dto.ChatMessageDto;
 import com.team3.airdnd.chat.repository.ChatMessageRepository;
 import com.team3.airdnd.chat.repository.ChatRoomRepository;
 import com.team3.airdnd.chat.service.ChatService;
+import com.team3.airdnd.config.MockAwsConfig;
+import com.team3.airdnd.config.MockRedisConfig;
 import com.team3.airdnd.reservation.domain.Reservation;
 import com.team3.airdnd.reservation.repository.ReservationRepository;
 import com.team3.airdnd.user.domain.User;
@@ -23,6 +27,8 @@ import com.team3.airdnd.user.repository.UserRepository;
 
 @SpringBootTest
 @Transactional
+@ActiveProfiles("test")
+@Import({MockAwsConfig.class, MockRedisConfig.class})
 class ChatServiceTest {
 
 	@Autowired
