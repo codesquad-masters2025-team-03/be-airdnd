@@ -1,6 +1,7 @@
 package com.team3.airdnd.reservation.controller;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.team3.airdnd.reservation.dto.GuestReservationDto;
 import com.team3.airdnd.reservation.dto.ReservationRequestDto;
 import com.team3.airdnd.reservation.dto.ReservationResponseDto;
 import com.team3.airdnd.reservation.service.ReservationService;
@@ -60,4 +62,11 @@ public class ReservationController {
 		reservationService.cancelReservation(reservationId);
 		return ResponseEntity.ok(null);
 	}
+
+	//게스트 예약 조회
+	@GetMapping("/guest/{guestId}/confirmed")
+	public List<GuestReservationDto> getConfirmedReservationsByGuest(@PathVariable Long guestId) {
+		return reservationService.getConfirmedReservationsByGuest(guestId);
+	}
+
 }
