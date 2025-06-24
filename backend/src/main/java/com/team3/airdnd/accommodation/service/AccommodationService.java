@@ -20,7 +20,6 @@ import com.team3.airdnd.accommodation.domain.AmenityType;
 import com.team3.airdnd.accommodation.dto.AccommodationListConditionDto;
 import com.team3.airdnd.accommodation.dto.AccommodationRequestDto;
 import com.team3.airdnd.accommodation.dto.AccommodationResponseDto;
-import com.team3.airdnd.accommodation.dto.BaseSearchConditionDto;
 import com.team3.airdnd.accommodation.dto.HostAccommodationQueryDto;
 import com.team3.airdnd.accommodation.dto.PriceHistogramConditionDto;
 import com.team3.airdnd.accommodation.dto.PriceHistogramResponseDto;
@@ -350,7 +349,18 @@ public class AccommodationService {
 		return accommodationQueryRepository.findAccommodationListWithinBounds(request, page, size);
 	}
 
-	private BaseSearchConditionDto applyBaseDefaults(BaseSearchConditionDto request) {
+	private PriceHistogramConditionDto applyDefaultFilterCondition(PriceHistogramConditionDto request) {
+		LocalDate checkIn = request.getCheckIn() != null ? request.getCheckIn() : LocalDate.now();
+		LocalDate checkOut = request.getCheckOut() != null ? request.getCheckOut() : checkIn.plusDays(1);
+		Integer guests = request.getGuests() != null ? request.getGuests() : 1;
+
+		request.setCheckIn(checkIn);
+		request.setCheckOut(checkOut);
+		request.setGuests(guests);
+		return request;
+	}
+
+	private AccommodationListConditionDto applyDefaultMapBounds(AccommodationListConditionDto request) {
 		LocalDate checkIn = request.getCheckIn() != null ? request.getCheckIn() : LocalDate.now();
 		LocalDate checkOut = request.getCheckOut() != null ? request.getCheckOut() : checkIn.plusDays(1);
 		Integer guests = request.getGuests() != null ? request.getGuests() : 1;
@@ -359,16 +369,6 @@ public class AccommodationService {
 		request.setCheckOut(checkOut);
 		request.setGuests(guests);
 
-		return request;
-	}
-
-	private PriceHistogramConditionDto applyDefaultFilterCondition(PriceHistogramConditionDto request) {
-		applyBaseDefaults(request); // 공통 필드 보정
-		return request;
-	}
-
-	private AccommodationListConditionDto applyDefaultMapBounds(AccommodationListConditionDto request) {
-		applyBaseDefaults(request);
 		Integer minPrice = request.getMinPrice() != null ? request.getMinPrice() : 1000;
 		Integer maxPrice = request.getMaxPrice() != null ? request.getMaxPrice() : 10_000_000;
 

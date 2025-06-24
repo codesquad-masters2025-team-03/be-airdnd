@@ -24,7 +24,6 @@ import com.team3.airdnd.accommodation.domain.QAmenity;
 import com.team3.airdnd.accommodation.dto.AccommodationListConditionDto;
 import com.team3.airdnd.accommodation.dto.AccommodationResponseDto;
 import com.team3.airdnd.accommodation.dto.AmenityDto;
-import com.team3.airdnd.accommodation.dto.BaseSearchConditionDto;
 import com.team3.airdnd.accommodation.dto.PriceHistogramConditionDto;
 import com.team3.airdnd.reservation.domain.QReservation;
 import com.team3.airdnd.reservation.domain.Reservation;
@@ -47,27 +46,50 @@ public class AccommodationQueryRepository {
 	private final QAddress address = QAddress.address;
 
 	public List<Integer> findAvailableAccommodationPrices(PriceHistogramConditionDto request) {
-		BooleanBuilder condition = createSearchCondition(request);
-
-		BooleanExpression noOverlap = createNoOverlapCondition(request);
+		BooleanBuilder condition = buildHistogramCondition(request);
 
 		return queryFactory
 			.select(accommodation.pricePerNight)
 			.from(accommodation)
 			.join(accommodation.address, address)
-			.where(condition.and(noOverlap))
+			.where(condition)
 			.fetch();
 	}
 
 	public AccommodationResponseDto.AccommodationListDto findAccommodationListWithinBounds(
 		AccommodationListConditionDto request, int page, int size) {
 
-		BooleanBuilder condition = buildCondition(request);
+		BooleanBuilder condition = buildListCondition(request);
 
 		return buildAccommodationListResponse(condition, page, size);
 	}
 
-	private BooleanBuilder buildCondition(AccommodationListConditionDto request) {
+	private BooleanBuilder buildHistogramCondition(PriceHistogramConditionDto request) {
+		BooleanBuilder condition = new BooleanBuilder();
+
+		if (request.getGuests() != null && request.getGuests() > 0) {
+			condition.and(accommodation.maxGuests.goe(request.getGuests()));
+		}
+
+		if (request.getCheckIn() != null && request.getCheckOut() != null) {
+			BooleanExpression noOverlap = JPAExpressions
+				.selectOne()
+				.from(reservation)
+				.where(
+					reservation.accommodation.eq(accommodation)
+						.and(reservation.status.in(Reservation.Status.CONFIRMED, Reservation.Status.PENDING))
+						.and(reservation.checkOut.gt(request.getCheckIn()))
+						.and(reservation.checkIn.lt(request.getCheckOut()))
+				)
+				.notExists();
+
+			condition.and(noOverlap);
+		}
+
+		return condition;
+	}
+
+	private BooleanBuilder buildListCondition(AccommodationListConditionDto request) {
 		BooleanBuilder condition = new BooleanBuilder();
 
 		// 1. 지도 범위
@@ -75,6 +97,7 @@ public class AccommodationQueryRepository {
 			request.getNorthEastLat(), request.getNorthEastLng(),
 			request.getSouthWestLat(), request.getSouthWestLng()
 		);
+
 		if (bounds != null)
 			condition.and(bounds);
 
@@ -89,7 +112,18 @@ public class AccommodationQueryRepository {
 		}
 
 		// 4. 예약 겹침 방지
-		condition.and(createNoOverlapCondition(request));
+		BooleanExpression noOverlap = JPAExpressions
+			.selectOne()
+			.from(reservation)
+			.where(
+				reservation.accommodation.eq(accommodation)
+					.and(reservation.status.in(Reservation.Status.CONFIRMED, Reservation.Status.PENDING))
+					.and(reservation.checkOut.gt(request.getCheckIn()))
+					.and(reservation.checkIn.lt(request.getCheckOut()))
+			)
+			.notExists();
+
+		condition.and(noOverlap);
 
 		return condition;
 	}
@@ -149,28 +183,6 @@ public class AccommodationQueryRepository {
 			.totalElements((int)total)
 			.accommodations(accommodationInfos)
 			.build();
-	}
-
-	private BooleanBuilder createSearchCondition(BaseSearchConditionDto request) {
-		BooleanBuilder condition = new BooleanBuilder();
-
-		if (request.isGuestsValid()) {
-			condition.and(accommodation.maxGuests.goe(request.getGuests()));
-		}
-		return condition;
-	}
-
-	private BooleanExpression createNoOverlapCondition(BaseSearchConditionDto request) {
-		return JPAExpressions
-			.selectOne()
-			.from(reservation)
-			.where(
-				reservation.accommodation.eq(accommodation)
-					.and(reservation.status.in(Reservation.Status.CONFIRMED, Reservation.Status.PENDING))
-					.and(reservation.checkOut.gt(request.getCheckIn()))
-					.and(reservation.checkIn.lt(request.getCheckOut()))
-			)
-			.notExists();
 	}
 
 	private Map<Long, String> fetchImageMap(List<Long> accommodationIds) {
