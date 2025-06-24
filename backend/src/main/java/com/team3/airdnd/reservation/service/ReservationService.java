@@ -20,8 +20,10 @@ import com.team3.airdnd.global.exception.ErrorCode;
 import com.team3.airdnd.payment.repository.PaymentRepository;
 import com.team3.airdnd.reservation.domain.Reservation;
 import com.team3.airdnd.reservation.domain.ReservedDate;
+
 import com.team3.airdnd.reservation.dto.ReservationRequestDto;
 import com.team3.airdnd.reservation.dto.ReservationResponseDto;
+import com.team3.airdnd.reservation.query.ReservationQueryRepository;
 import com.team3.airdnd.reservation.repository.ReservationRepository;
 import com.team3.airdnd.reservation.repository.ReservedDateRepository;
 import com.team3.airdnd.user.domain.User;
@@ -213,5 +215,8 @@ public class ReservationService {
 			}
 		}
 	}
-
+	//게스트 예약 조회
+	//public List<GuestReservationDto> getConfirmedReservationsByGuest(Long guestId) {
+	//	return reservationQueryRepository.findConfirmedReservationsByGuestId(guestId);
+	//}
 }
