@@ -26,7 +26,9 @@ import org.springframework.web.client.RestTemplate;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -41,6 +43,7 @@ public class PaymentService {
 	@Value("${toss.secret-key}")
 	private String tossSecretKey;
 
+	//결제 승인
 	@Transactional
 	public Payment approvePayment(PaymentRequestDto dto) {
 		String url = "https://api.tosspayments.com/v1/payments/confirm";
@@ -84,7 +87,9 @@ public class PaymentService {
 					.paymentMethod(savedPaymentMethod)
 					.orderId(dto.getOrderId())
 					.amount(dto.getAmount())
+					.isCancelled(false)
 					.paidAt(LocalDateTime.now())
+					.paymentKey(dto.getPaymentKey())
 					.build();
 
 				paymentRepository.save(payment);
@@ -116,6 +121,45 @@ public class PaymentService {
 		return paymentQueryRepository.findByGuestIdAndOptionalStatus(guestId, status);
 	}
 
+	//결제 취소
+	@Transactional
+	public void cancelPayment(Long paymentId, String cancelReason) {
+		Payment payment = paymentRepository.findById(paymentId)
+			.orElseThrow(() -> new IllegalArgumentException("결제 정보를 찾을 수 없습니다."));
+
+		if (payment.isCancelled()) {
+			throw new IllegalStateException("이미 취소된 결제입니다.");
+		}
+
+		// Toss 결제 취소 API 호출
+		cancelPaymentInToss(payment.getPaymentKey(), cancelReason);
+
+		// 결제 상태 업데이트
+		payment.cancel(cancelReason);
+		payment.setCancelled(true);
+
+		// 예약 상태도 취소로 변경
+		Reservation reservation = payment.getReservation();
+		reservation.setStatus(Reservation.Status.CANCELLED);
+	}
+
+	private void cancelPaymentInToss(String paymentKey, String cancelReason) {
+		HttpHeaders headers = new HttpHeaders();
+		String encodedKey = Base64.getEncoder().encodeToString((tossSecretKey + ":").getBytes(StandardCharsets.UTF_8));
+		headers.set("Authorization", "Basic " + encodedKey);
+		headers.setContentType(MediaType.APPLICATION_JSON);
+
+		Map<String, String> body = new HashMap<>();
+		body.put("cancelReason", cancelReason);
+
+		HttpEntity<Map<String, String>> request = new HttpEntity<>(body, headers);
+		RestTemplate restTemplate = new RestTemplate();
+		restTemplate.postForEntity(
+			"https://api.tosspayments.com/v1/payments/" + paymentKey + "/cancel",
+			request,
+			Void.class
+		);
+	}
 
 
 }
