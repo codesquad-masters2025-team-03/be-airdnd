@@ -12,13 +12,13 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
-@Controller //HTTP 요청이 아니라 STOMP WebSocket 메시지 처리용 어노테이션
+@Controller
 public class ChatController {
 
 	private final ChatService chatService;
 
-	@MessageMapping("/chat/message") // /pub/chat/message 로 요청 들어옴
-	@SendTo("/sub/chat/accommodation/{accommodationId}") // 이걸 구독하고 있는 클라이언트에게 보냄
+	@MessageMapping("/chat/message") // 클라이언트가 pub/chat/message로 전송
+	@SendTo("/sub/chat/room/{reservationId}") // 예약 ID 기준으로 구독
 	public ChatMessageDto sendMessage(ChatMessageDto message) {
 		chatService.saveMessage(message);
 		return message;

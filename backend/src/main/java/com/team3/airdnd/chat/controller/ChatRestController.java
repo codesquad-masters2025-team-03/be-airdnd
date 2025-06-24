@@ -21,9 +21,9 @@ public class ChatRestController {
 
 	private final ChatService chatService;
 
-	@GetMapping("/accommodations/{accommodationId}/messages")
-	public ResponseEntity<ResponseDto<List<ChatMessageResponseDto>>> getMessages(@PathVariable Long accommodationId) {
-		List<ChatMessageResponseDto> messages = chatService.getMessageList(accommodationId);
+	@GetMapping("/rooms/{reservationId}/messages")
+	public ResponseEntity<ResponseDto<List<ChatMessageResponseDto>>> getMessages(@PathVariable Long reservationId) {
+		List<ChatMessageResponseDto> messages = chatService.getMessageList(reservationId);
 		return ResponseDto.ok(messages);
 	}
 }

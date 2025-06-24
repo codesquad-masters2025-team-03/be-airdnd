@@ -8,7 +8,7 @@ import lombok.Getter;
 @Getter
 @Builder
 public class ChatMessageDto {
-	private Long accommodationId;
+	private Long reservationId;
 	private Long senderId;
 	private String content;
 }
