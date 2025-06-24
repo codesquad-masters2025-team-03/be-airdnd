@@ -188,24 +188,26 @@ const SearchBar = ({onSearchComplete}) => {
             checkIn: dates.startDate ? format(dates.startDate, 'yyyy-MM-dd') : format(today, 'yyyy-MM-dd'),
             checkOut: dates.endDate ? format(dates.endDate, 'yyyy-MM-dd') : format(tomorrow, 'yyyy-MM-dd'),
             guests: totalGuests > 0 ? totalGuests : 1,
-            minPrice: priceRange.min === 0 ? 0 : priceRange.min,
+            minPrice: priceRange.min === 0 ? 1000 : priceRange.min,
             maxPrice: priceRange.max === 1000000 ? 10000000 : priceRange.max,
         };
 
         try {
             const response = await getAccommodations(params);
+            console.log("📦 [AccommodationListPage] 응답:", response);
+            console.log("📦 [AccommodationListPage] 응답 구조:", response.data);
 
             const searchParams = new URLSearchParams(params).toString();
             navigate(`/accommodations?${searchParams}`, {
                 state: {
-                    initialData: response,
+                    initialData: response.data,
                     queryParams: params
                 },
                 replace: true
             });
 
             if (onSearchComplete) {
-                onSearchComplete();
+                onSearchComplete(params);
             }
 
         } catch (error) {
