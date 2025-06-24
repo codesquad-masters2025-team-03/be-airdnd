@@ -156,14 +156,14 @@ const SearchText = styled.span`
     white-space: nowrap;
 `;
 
-const SearchBar = ({ onSearchComplete }) => {
+const SearchBar = ({onSearchComplete}) => {
     const [activeFilter, setActiveFilter] = useState(null);
     const searchBarRef = useRef(null);
     const navigate = useNavigate();
 
     const [location, setLocation] = useState('');
     const [dates, setDates] = useState({startDate: null, endDate: null});
-    const [priceRange, setPriceRange] = useState({min: 1000, max: 1000000});
+    const [priceRange, setPriceRange] = useState({min: 0, max: 1000000});
     const [guests, setGuests] = useState({adults: 1, children: 0, infants: 0});
 
     const totalGuests = guests.adults + guests.children + guests.infants;
@@ -185,12 +185,11 @@ const SearchBar = ({ onSearchComplete }) => {
         const params = {
             page: 1,
             size: 10,
-            location: location || "서울",
             checkIn: dates.startDate ? format(dates.startDate, 'yyyy-MM-dd') : format(today, 'yyyy-MM-dd'),
             checkOut: dates.endDate ? format(dates.endDate, 'yyyy-MM-dd') : format(tomorrow, 'yyyy-MM-dd'),
             guests: totalGuests > 0 ? totalGuests : 1,
-            minPrice: priceRange.min,
-            maxPrice: priceRange.max,
+            minPrice: priceRange.min === 0 ? 0 : priceRange.min,
+            maxPrice: priceRange.max === 1000000 ? 10000000 : priceRange.max,
         };
 
         try {
@@ -204,7 +203,7 @@ const SearchBar = ({ onSearchComplete }) => {
                 },
                 replace: true
             });
-            
+
             if (onSearchComplete) {
                 onSearchComplete();
             }
@@ -264,10 +263,6 @@ const SearchBar = ({ onSearchComplete }) => {
 
     return (
         <SearchBarContainer ref={searchBarRef}>
-            <InputSection $active={activeFilter === 'location'} onClick={(e) => handleFilterClick('location', e)}>
-                <label>여행지</label>
-                <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="여행지 검색"/>
-            </InputSection>
             <VerticalDivider/>
             <InputSection $active={activeFilter === 'date'} onClick={(e) => handleFilterClick('date', e)}>
                 <label>체크인</label>
