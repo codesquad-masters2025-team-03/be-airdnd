@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.team3.airdnd.accommodation.domain.Accommodation;
 import com.team3.airdnd.accommodation.repository.AccommodationRepository;
+import com.team3.airdnd.chat.service.ChatService;
 import com.team3.airdnd.global.exception.CommonException;
 import com.team3.airdnd.global.exception.ErrorCode;
 import com.team3.airdnd.payment.repository.PaymentRepository;
@@ -33,6 +34,7 @@ public class ReservationService {
 	private final ReservationRepository reservationRepository;
 	private final ReservedDateRepository reservedDateRepository;
 	private final PaymentRepository paymentRepository;
+	private final ChatService chatService;
 
 	public ReservationResponseDto.ReservationInfoResponseDto getReservationInfo(Long accommodationId, LocalDate checkIn,
 		LocalDate checkOut) {
@@ -81,6 +83,8 @@ public class ReservationService {
 			.build();
 
 		reservationRepository.save(reservation);
+
+		chatService.createRoomIfNotExists(reservation);
 
 		return ReservationResponseDto.CreateReservationResponseDto.builder()
 			.reservationId(reservation.getId())
