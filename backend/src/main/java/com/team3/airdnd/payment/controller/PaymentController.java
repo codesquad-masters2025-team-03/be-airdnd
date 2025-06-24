@@ -3,6 +3,7 @@ package com.team3.airdnd.payment.controller;
 import java.util.List;
 
 import com.team3.airdnd.payment.domain.Payment;
+import com.team3.airdnd.payment.dto.CancelRequestDto;
 import com.team3.airdnd.payment.dto.PaymentRequestDto;
 import com.team3.airdnd.payment.dto.PaymentResponseDto;
 import com.team3.airdnd.payment.service.PaymentService;
@@ -46,7 +47,14 @@ public class PaymentController {
 		return ResponseEntity.ok(response);
 	}
 
-
+	@PatchMapping("/{paymentId}/cancel")
+	public ResponseEntity<Void> cancelPayment(
+		@PathVariable Long paymentId,
+		@RequestBody CancelRequestDto cancelRequest
+	) {
+		paymentService.cancelPayment(paymentId, cancelRequest.getReason());
+		return ResponseEntity.noContent().build();
+	}
 
 
 }
