@@ -34,6 +34,7 @@ spring:
       hibernate:
         dialect: org.hibernate.spatial.dialect.mysql.MySQLSpatialDialect
         format_sql: true
+
   sql:
     init:
       mode: always     # SQL 초기화 스크립트 실행 허용
