@@ -32,8 +32,8 @@ const LoadingText = styled.p`
 `;
 
 const Header = styled.header`
-  padding: 16px;
-  border-bottom: 1px solid #ddd;
+    padding: 16px;
+    border-bottom: 1px solid #ddd;
 `;
 
 const MiniSearchBar = styled.div`
@@ -42,9 +42,9 @@ const MiniSearchBar = styled.div`
     padding: 8px 16px;
     border: 1px solid #ddd;
     border-radius: 40px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     cursor: pointer;
-    
+
     span {
         margin-right: 8px;
     }
@@ -58,22 +58,22 @@ const FullScreenSearchContainer = styled.div`
     background: white;
     z-index: 20;
     padding: 20px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 `;
 
 const AccommodationListPage = () => {
     const location = useLocation();
     // const navigate = useNavigate(); // Not used yet
-    
+
     const [accommodations, setAccommodations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [queryParams, setQueryParams] = useState(null);
-    
+
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     // const [selectedAccommodation, setSelectedAccommodation] = useState(null); // Not used yet
     const [isModalOpen, setIsModalOpen] = useState(false);
-    
+
     // const itemRefs = useRef({}); // Not used yet
 
     useEffect(() => {
@@ -111,12 +111,12 @@ const AccommodationListPage = () => {
 
         fetchInitialData();
     }, [location.search, location.state]);
-    
+
     const handleBoundsChanged = useCallback(async (bounds) => {
         console.log("🗺️ Map bounds changed:", bounds);
         try {
             const response = await getAccommodationsByMap(bounds);
-             const accommodationList = response?.data?.data?.accommodations;
+            const accommodationList = response?.data?.data?.accommodations;
             if (response?.data?.success && Array.isArray(accommodationList)) {
                 setAccommodations(accommodationList);
             }
@@ -130,16 +130,14 @@ const AccommodationListPage = () => {
         setIsModalOpen(true);
         console.log("Card clicked:", accommodation);
     };
-    
+
     const renderMiniSearchBar = () => (
         <Header>
             <MiniSearchBar onClick={() => setIsSearchOpen(true)}>
-                <span>{queryParams?.location || '어디로 여행가세요?'}</span>
-                <span>·</span>
                 <span>{queryParams?.checkIn ? `${queryParams.checkIn} ~ ${queryParams.checkOut}` : '언제 떠나세요?'}</span>
                 <span>·</span>
                 <span>게스트 {queryParams?.guests || 1}명</span>
-                <FaSearch style={{ marginLeft: 8, color: '#ff385c' }} />
+                <FaSearch style={{marginLeft: 8, color: '#ff385c'}}/>
             </MiniSearchBar>
         </Header>
     );
@@ -148,10 +146,10 @@ const AccommodationListPage = () => {
         <>
             {renderMiniSearchBar()}
             {isSearchOpen && (
-                 <FullScreenSearchContainer>
-                     <SearchBar onSearchComplete={() => setIsSearchOpen(false)} />
-                     <button onClick={() => setIsSearchOpen(false)}>닫기</button>
-                 </FullScreenSearchContainer>
+                <FullScreenSearchContainer>
+                    <SearchBar onSearchComplete={() => setIsSearchOpen(false)}/>
+                    <button onClick={() => setIsSearchOpen(false)}>닫기</button>
+                </FullScreenSearchContainer>
             )}
             <PageContainer>
                 <ListContainer>
@@ -184,7 +182,7 @@ const AccommodationListPage = () => {
                     />
                 </MapContainer>
             </PageContainer>
-            
+
             {isModalOpen && (
                 <div>예약모달</div> /* Placeholder for ReservationModal */
             )}
