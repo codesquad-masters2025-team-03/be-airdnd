@@ -205,14 +205,6 @@ const AccommodationListPage = () => {
         console.log("Card clicked:", accommodation);
     };
 
-    const handleSearchComplete = useCallback((searchParams) => {
-        console.log("🔍 SearchBar 검색 완료, 새로운 파라미터:", searchParams);
-        if (searchParams) {
-            setQueryParams(searchParams);
-        }
-        setIsSearchOpen(false);
-    }, []);
-
     const renderMiniSearchBar = () => (
         <Header>
             <MiniSearchBar onClick={() => setIsSearchOpen(true)}>
@@ -229,7 +221,7 @@ const AccommodationListPage = () => {
             {renderMiniSearchBar()}
             {isSearchOpen && (
                 <FullScreenSearchContainer>
-                    <SearchBar onSearchComplete={handleSearchComplete}/>
+                    <SearchBar onSearchComplete={() => setIsSearchOpen(false)}/>
                     <button onClick={() => setIsSearchOpen(false)}>닫기</button>
                 </FullScreenSearchContainer>
             )}
