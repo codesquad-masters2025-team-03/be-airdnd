@@ -25,7 +25,6 @@ import com.team3.airdnd.accommodation.dto.AccommodationListConditionDto;
 import com.team3.airdnd.accommodation.dto.AccommodationResponseDto;
 import com.team3.airdnd.accommodation.dto.AmenityDto;
 import com.team3.airdnd.accommodation.dto.BaseSearchConditionDto;
-import com.team3.airdnd.accommodation.dto.MapBoundAccommodationSearchDto;
 import com.team3.airdnd.accommodation.dto.PriceHistogramConditionDto;
 import com.team3.airdnd.reservation.domain.QReservation;
 import com.team3.airdnd.reservation.domain.Reservation;
@@ -50,17 +49,6 @@ public class AccommodationQueryRepository {
 	public List<Integer> findAvailableAccommodationPrices(PriceHistogramConditionDto request) {
 		BooleanBuilder condition = createSearchCondition(request);
 
-		if (request.isLocationValid()) {
-			String keyword = "%" + request.getLocation() + "%";
-
-			condition.and(
-				address.city.like(keyword)
-					.or(address.district.like(keyword))
-					.or(address.streetAddress.like(keyword))
-					.or(accommodation.name.like(keyword))
-			);
-		}
-
 		BooleanExpression noOverlap = createNoOverlapCondition(request);
 
 		return queryFactory
@@ -71,55 +59,39 @@ public class AccommodationQueryRepository {
 			.fetch();
 	}
 
-	public AccommodationResponseDto.AccommodationListDto findAccommodationListWithFilter(
+	public AccommodationResponseDto.AccommodationListDto findAccommodationListWithinBounds(
 		AccommodationListConditionDto request, int page, int size) {
 
-		BooleanBuilder condition = createSearchCondition(request);
-
-		if (request.isLocationValid()) {
-			String keyword = "%" + request.getLocation() + "%";
-			condition.and(
-				address.city.like(keyword)
-					.or(address.district.like(keyword))
-					.or(address.streetAddress.like(keyword))
-					.or(accommodation.name.like(keyword))
-			);
-		}
-
-		if (request.hasValidPriceRange()) {
-			condition.and(accommodation.pricePerNight.between(request.getMinPrice(), request.getMaxPrice()));
-		}
-
-		BooleanExpression noOverlap = createNoOverlapCondition(request);
-		condition.and(noOverlap);
+		BooleanBuilder condition = buildCondition(request);
 
 		return buildAccommodationListResponse(condition, page, size);
 	}
 
-	public AccommodationResponseDto.AccommodationListDto findAccommodationListWithinBounds(
-		MapBoundAccommodationSearchDto request, int page, int size) {
-
+	private BooleanBuilder buildCondition(AccommodationListConditionDto request) {
 		BooleanBuilder condition = new BooleanBuilder();
 
+		// 1. 지도 범위
 		BooleanExpression bounds = createBoundsCondition(
 			request.getNorthEastLat(), request.getNorthEastLng(),
 			request.getSouthWestLat(), request.getSouthWestLng()
 		);
-		if (bounds != null) {
+		if (bounds != null)
 			condition.and(bounds);
-		}
 
+		// 2. 게스트 수
 		if (request.isGuestsValid()) {
 			condition.and(accommodation.maxGuests.goe(request.getGuests()));
 		}
+
+		// 3. 가격 범위
 		if (request.isValidPriceRange()) {
 			condition.and(accommodation.pricePerNight.between(request.getMinPrice(), request.getMaxPrice()));
 		}
 
-		BooleanExpression noOverlap = createNoOverlapCondition(request);
-		condition.and(noOverlap);
+		// 4. 예약 겹침 방지
+		condition.and(createNoOverlapCondition(request));
 
-		return buildAccommodationListResponse(condition, page, size);
+		return condition;
 	}
 
 	private AccommodationResponseDto.AccommodationListDto buildAccommodationListResponse(

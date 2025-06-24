@@ -55,7 +55,6 @@ class PriceHistogramServiceTest extends AbstractIntegrationTest {
 		@DisplayName("필터에 해당하는 값은 총 11개가 나온다.")
 		void shouldMatchTotalHistogramCountWithAvailableAccommodations() {
 			PriceHistogramConditionDto request = PriceHistogramConditionDto.builder()
-				.location("부산")
 				.checkIn(LocalDate.of(2025, 6, 20))
 				.checkOut(LocalDate.of(2025, 6, 27))
 				.guests(2)
@@ -72,7 +71,6 @@ class PriceHistogramServiceTest extends AbstractIntegrationTest {
 		void shouldFailWhenMinPriceGreaterThanMaxPrice() {
 			// given
 			AccommodationListConditionDto request = AccommodationListConditionDto.builder()
-				.location("부산")
 				.checkIn(LocalDate.of(2025, 6, 20))
 				.checkOut(LocalDate.of(2025, 6, 27))
 				.guests(2)
@@ -94,7 +92,6 @@ class PriceHistogramServiceTest extends AbstractIntegrationTest {
 		void shouldFailWhenCheckInIsAfterCheckOut() {
 			// given
 			PriceHistogramConditionDto request = PriceHistogramConditionDto.builder()
-				.location("부산")
 				.checkIn(LocalDate.of(2025, 6, 27))
 				.checkOut(LocalDate.of(2025, 6, 20))
 				.guests(2)
@@ -135,7 +132,6 @@ class PriceHistogramServiceTest extends AbstractIntegrationTest {
 		void shouldDistributeSamePriceIntoCenterBinOnly() {
 
 			PriceHistogramConditionDto request = PriceHistogramConditionDto.builder()
-				.location("부산")
 				.checkIn(LocalDate.of(2025, 6, 20))
 				.checkOut(LocalDate.of(2025, 6, 27))
 				.guests(2)
@@ -157,7 +153,6 @@ class PriceHistogramServiceTest extends AbstractIntegrationTest {
 		@DisplayName("가격이 모두 같다면 최소/최대 값이 동일하다")
 		void shouldHaveEqualMinAndMaxWhenAllPricesAreSame() {
 			PriceHistogramConditionDto request = PriceHistogramConditionDto.builder()
-				.location("부산")
 				.checkIn(LocalDate.of(2025, 6, 20))
 				.checkOut(LocalDate.of(2025, 6, 27))
 				.guests(2)
@@ -174,7 +169,6 @@ class PriceHistogramServiceTest extends AbstractIntegrationTest {
 		void shouldReturnZeroFilledHistogramWhenNoData() {
 			// when
 			PriceHistogramConditionDto request = PriceHistogramConditionDto.builder()
-				.location("부산")
 				.checkIn(LocalDate.of(2025, 6, 20))
 				.checkOut(LocalDate.of(2025, 6, 27))
 				.guests(99)
