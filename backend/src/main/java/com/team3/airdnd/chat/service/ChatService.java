@@ -10,6 +10,7 @@ import com.team3.airdnd.chat.domain.ChatRoom;
 import com.team3.airdnd.chat.domain.Message;
 import com.team3.airdnd.chat.dto.ChatMessageDto;
 import com.team3.airdnd.chat.dto.ChatMessageResponseDto;
+import com.team3.airdnd.chat.dto.ChatRoomWithUnreadCountDto;
 import com.team3.airdnd.chat.repository.ChatMessageRepository;
 import com.team3.airdnd.chat.repository.ChatRoomRepository;
 import com.team3.airdnd.reservation.domain.Reservation;
@@ -25,6 +26,7 @@ public class ChatService {
 	private final ChatRoomRepository chatRoomRepository;
 	private final ChatMessageRepository chatMessageRepository;
 	private final UserRepository userRepository;
+	private final ChatRedisService chatRedisService;
 
 	// 메시지 저장
 	@Transactional
@@ -43,6 +45,31 @@ public class ChatService {
 			.build();
 
 		chatMessageRepository.save(message);
+
+		Long receiverId = getOtherUserId(room, sender.getId());
+		chatRedisService.incrementUnreadCount(room.getId(), receiverId);
+	}
+
+	private Long getOtherUserId(ChatRoom room, Long senderId) {
+		return room.getGuest().getId().equals(senderId)
+			? room.getHost().getId()
+			: room.getGuest().getId();
+	}
+
+	public void markMessagesAsRead(Long roomId, Long userId) {
+		chatRedisService.clearUnreadCount(roomId, userId);
+	}
+
+	public List<ChatRoomWithUnreadCountDto> getMyChatRooms(Long userId, boolean unreadOnly) {
+		List<ChatRoom> rooms = chatRoomRepository.findByUser(userId); // guest or host
+
+		return rooms.stream()
+			.map(room -> {
+				long unread = chatRedisService.getUnreadCount(room.getId(), userId);
+				return ChatRoomWithUnreadCountDto.of(room, userId, unread);
+			})
+			.filter(dto -> !unreadOnly || dto.getUnreadCount() > 0) //false면 모두 반환
+			.toList();
 	}
 
 	// 메시지 목록 조회
