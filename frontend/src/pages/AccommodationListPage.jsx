@@ -3,7 +3,7 @@ import {useLocation} from 'react-router-dom';
 import styled from 'styled-components';
 import KakaoMap from '../components/KakaoMap';
 import AccommodationCard from '../components/AccommodationCard';
-import {getAccommodations, getAccommodationsByMap} from '../api/accommodationApi';
+import {getAccommodations} from '../api/accommodationApi';
 import SearchBar from "../components/SearchBar";
 import {FaSearch} from "react-icons/fa";
 
@@ -68,7 +68,17 @@ const AccommodationListPage = () => {
     const [accommodations, setAccommodations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [queryParams, setQueryParams] = useState(null);
+    
+    // 기본값으로 queryParams 초기화
+    const [queryParams, setQueryParams] = useState({
+        page: 1,
+        size: 10,
+        checkIn: null,
+        checkOut: null,
+        guests: 1,
+        minPrice: 1000,
+        maxPrice: 10000000,
+    });
 
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     // const [selectedAccommodation, setSelectedAccommodation] = useState(null); // Not used yet
@@ -78,12 +88,29 @@ const AccommodationListPage = () => {
 
     useEffect(() => {
         const processData = (data, params) => {
+            console.log("📊 processData 진입:", data);
+            console.log("📋 processData params:", params);
+            
             const accommodationList = data?.data?.accommodations;
             if (data?.success && Array.isArray(accommodationList)) {
+                console.log("✅ 유효한 숙소 데이터 수신:", accommodationList.length);
                 setAccommodations(accommodationList);
-                setQueryParams(params);
+                
+                // queryParams를 명시적으로 설정 (기본값 유지)
+                const processedParams = {
+                    page: params.page || 1,
+                    size: params.size || 10,
+                    checkIn: params.checkIn,
+                    checkOut: params.checkOut,
+                    guests: params.guests || 1,
+                    minPrice: params.minPrice || 1000,
+                    maxPrice: params.maxPrice || 10000000,
+                };
+                
+                console.log("🔧 설정된 queryParams:", processedParams);
+                setQueryParams(processedParams);
             } else {
-                console.error("데이터 처리 실패. 수신된 데이터:", data);
+                console.error("❌ 숙소 데이터 처리 실패: ", data);
                 throw new Error('숙소 데이터를 불러올 수 없습니다.');
             }
         };
@@ -93,12 +120,32 @@ const AccommodationListPage = () => {
             setError(null);
             try {
                 if (location.state?.initialData) {
-                    processData(location.state.initialData.data, location.state.queryParams);
+                    console.log("📍 location.state에서 데이터 로드");
+                    processData(location.state.initialData, location.state.queryParams);
                 } else {
+                    console.log("📍 URL 파라미터에서 데이터 로드");
                     const params = new URLSearchParams(location.search);
                     const paramsObject = Object.fromEntries(params);
-                    const response = await getAccommodations(paramsObject);
-                    processData(response.data, paramsObject);
+                    console.log("📍 URL 파라미터:", paramsObject);
+                    
+                    // URL 파라미터가 있으면 사용, 없으면 기본값으로 검색
+                    if (Object.keys(paramsObject).length > 0) {
+                        const response = await getAccommodations(paramsObject);
+                        processData(response.data, paramsObject);
+                    } else {
+                        // 기본값으로 검색
+                        const defaultParams = {
+                            page: 1,
+                            size: 10,
+                            checkIn: new Date().toISOString().split('T')[0], // 오늘
+                            checkOut: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 내일
+                            guests: 1,
+                            minPrice: 1000,
+                            maxPrice: 10000000,
+                        };
+                        const response = await getAccommodations(defaultParams);
+                        processData(response.data, defaultParams);
+                    }
                 }
             } catch (e) {
                 console.error('❌ 숙소 초기 데이터 불러오기 실패:', e);
@@ -114,22 +161,57 @@ const AccommodationListPage = () => {
 
     const handleBoundsChanged = useCallback(async (bounds) => {
         console.log("🗺️ Map bounds changed:", bounds);
+        console.log("📋 Current queryParams:", queryParams);
+
         try {
-            const response = await getAccommodationsByMap(bounds);
+            const mapSearchParams = {
+                // 기존 필터 파라미터들 (기본값 포함)
+                page: queryParams.page || 1,
+                size: queryParams.size || 10,
+                checkIn: queryParams.checkIn || new Date().toISOString().split('T')[0],
+                checkOut: queryParams.checkOut || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                guests: queryParams.guests || 1,
+                minPrice: queryParams.minPrice || 1000,
+                maxPrice: queryParams.maxPrice || 10000000,
+                
+                // 지도 경계 파라미터들
+                southWestLat: bounds.sw.lat,
+                southWestLng: bounds.sw.lng,
+                northEastLat: bounds.ne.lat,
+                northEastLng: bounds.ne.lng,
+            };
+
+            console.log("🚀 지도 기반 검색 요청 파라미터:", mapSearchParams);
+
+            const response = await getAccommodations(mapSearchParams);
+
+            console.log("📦 지도 기반 검색 응답:", response);
+
             const accommodationList = response?.data?.data?.accommodations;
             if (response?.data?.success && Array.isArray(accommodationList)) {
+                console.log("✅ 지도 기반 검색 성공:", accommodationList.length + "개 숙소");
                 setAccommodations(accommodationList);
+            } else {
+                console.error("❌ 지도 기반 검색 실패:", response);
             }
         } catch (error) {
             console.error("지도 기반 숙소 검색 실패:", error);
         }
-    }, []);
+    }, [queryParams]);
 
     const handleCardClick = (accommodation) => {
         // setSelectedAccommodation(accommodation);
         setIsModalOpen(true);
         console.log("Card clicked:", accommodation);
     };
+
+    const handleSearchComplete = useCallback((searchParams) => {
+        console.log("🔍 SearchBar 검색 완료, 새로운 파라미터:", searchParams);
+        if (searchParams) {
+            setQueryParams(searchParams);
+        }
+        setIsSearchOpen(false);
+    }, []);
 
     const renderMiniSearchBar = () => (
         <Header>
@@ -147,7 +229,7 @@ const AccommodationListPage = () => {
             {renderMiniSearchBar()}
             {isSearchOpen && (
                 <FullScreenSearchContainer>
-                    <SearchBar onSearchComplete={() => setIsSearchOpen(false)}/>
+                    <SearchBar onSearchComplete={handleSearchComplete}/>
                     <button onClick={() => setIsSearchOpen(false)}>닫기</button>
                 </FullScreenSearchContainer>
             )}
@@ -164,7 +246,7 @@ const AccommodationListPage = () => {
                                 <AccommodationCard
                                     key={acc.id}
                                     accommodation={acc}
-                                    queryParams={queryParams}
+                                    queryParams={queryParams} MiniSearchBar
                                     onClick={() => handleCardClick(acc)}
                                 />
                             ))}
