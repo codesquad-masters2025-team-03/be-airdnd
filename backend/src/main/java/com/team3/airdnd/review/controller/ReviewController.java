@@ -31,8 +31,9 @@ public class ReviewController {
 	}
 
 	@DeleteMapping("/{reviewId}")
-	public ResponseEntity<ResponseDto<Void>> deleteReview(@PathVariable Long reviewId) {
-		reviewService.deleteReview(reviewId);
+	public ResponseEntity<ResponseDto<Void>> deleteReview(@PathVariable Long reviewId,
+		@RequestParam("guestId") Long guestId) {
+		reviewService.deleteReview(reviewId, guestId);
 		return ResponseDto.ok(null);
 	}
 }

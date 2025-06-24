@@ -24,21 +24,11 @@ public class ReviewService {
 
 	@Transactional
 	public void createReview(ReviewRequestDto request, Long guestId) {
-		Reservation reservation = reservationRepository.findById(guestId)
+		Reservation reservation = reservationRepository.findById(request.getReservationId())
 			.orElseThrow(() -> new CommonException(ErrorCode.NOT_FOUND_RESERVATION));
 
-		if (reviewRepository.existsByReservationId(reservation.getId())) {
-			throw new CommonException(ErrorCode.ALREADY_WRITTEN_REVIEW);
-		}
-
-		if (reservation.getStatus() != Reservation.Status.CONFIRMED) {
-			throw new CommonException(ErrorCode.INVALID_RESERVATION_STATUS);
-		}
-
-		if (reservation.getCheckOut().isAfter(LocalDate.now())) {
-			throw new CommonException(ErrorCode.CHECKOUT_NOT_PASSED);
-		}
-
+		validateReviewable(reservation, guestId);
+		
 		Review review = Review.builder()
 			.reservation(reservation)
 			.content(request.getContent())
@@ -59,5 +49,20 @@ public class ReviewService {
 		}
 
 		reviewRepository.delete(review);
+	}
+
+	private void validateReviewable(Reservation reservation, Long guestId) {
+		if (!reservation.getGuest().getId().equals(guestId)) {
+			throw new CommonException(ErrorCode.ACCESS_DENIED);
+		}
+		if (reviewRepository.existsByReservationId(reservation.getId())) {
+			throw new CommonException(ErrorCode.ALREADY_WRITTEN_REVIEW);
+		}
+		if (reservation.getStatus() != Reservation.Status.CONFIRMED) {
+			throw new CommonException(ErrorCode.INVALID_RESERVATION_STATUS);
+		}
+		if (reservation.getCheckOut().isAfter(LocalDate.now())) {
+			throw new CommonException(ErrorCode.CHECKOUT_NOT_PASSED);
+		}
 	}
 }

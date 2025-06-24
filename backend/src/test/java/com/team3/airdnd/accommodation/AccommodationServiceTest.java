@@ -20,7 +20,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.team3.airdnd.AbstractIntegrationTest;
 import com.team3.airdnd.AccommodationTestFactory;
-import com.team3.airdnd.MockAwsConfig;
 import com.team3.airdnd.accommodation.domain.Accommodation;
 import com.team3.airdnd.accommodation.domain.AccommodationAmenity;
 import com.team3.airdnd.accommodation.domain.AmenityType;
@@ -31,6 +30,7 @@ import com.team3.airdnd.accommodation.query.AccommodationQueryRepository;
 import com.team3.airdnd.accommodation.repository.AccommodationAmenityRepository;
 import com.team3.airdnd.accommodation.repository.AccommodationRepository;
 import com.team3.airdnd.accommodation.service.AccommodationService;
+import com.team3.airdnd.config.MockAwsConfig;
 import com.team3.airdnd.global.exception.CommonException;
 import com.team3.airdnd.storedFile.StoredFileService;
 import com.team3.airdnd.storedFile.domain.StoredFile;
