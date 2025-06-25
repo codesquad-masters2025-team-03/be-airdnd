@@ -1,17 +1,18 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo, useRef } from 'react';
 import styled from 'styled-components';
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import KakaoMap from '../components/KakaoMap';
-import { getAccommodationDetail } from '../api/accommodationApi';
+import { getAccommodationDetail, getReservationInfo } from '../api/accommodationApi';
 import { FaWifi, FaTv, FaSnowflake, FaSwimmer, FaParking, FaDumbbell, FaUtensils, FaTshirt, FaFireAlt } from 'react-icons/fa';
 import { MdKitchen, MdLocalLaundryService, MdAcUnit, MdOutlineLocalParking, MdOutlinePool, MdOutlineTv, MdOutlineWifi, MdOutlineFitnessCenter, MdOutlineKitchen, MdOutlineLocalLaundryService, MdOutlineFireplace, MdOutlineDry, MdOutlineBathroom, MdOutlineDirectionsCar } from 'react-icons/md';
+import CalendarDropdown from '../components/CalendarDropdown';
 
 const PageWrapper = styled.div`
   max-width: 1120px;
   margin: 0 auto;
-  padding: 12px 0 60px 0;
+  padding: 0 0 40px 0;
   @media (max-width: 900px) {
-    padding: 4px 0 60px 0;
+    padding: 0 0 40px 0;
   }
 `;
 
@@ -20,7 +21,7 @@ const ImageGrid = styled.div`
   grid-template-columns: 2fr 1fr 1fr;
   grid-template-rows: 220px 220px;
   gap: 8px;
-  margin-bottom: 32px;
+  margin-bottom: 0;
   @media (max-width: 900px) {
     display: flex;
     overflow-x: auto;
@@ -45,26 +46,37 @@ const SubImage = styled.img`
   &:nth-child(2) { border-radius: 0 0 16px 0; }
 `;
 
-const ContentRow = styled.div`
+const MainRow = styled.div`
   display: flex;
   gap: 40px;
+  margin-top: 0;
   @media (max-width: 900px) {
     flex-direction: column;
     gap: 24px;
   }
 `;
-const InfoSection = styled.section`
-  flex: 2;
+const LeftCol = styled.div`
+  flex: 6;
+  min-width: 0;
+`;
+const RightCol = styled.div`
+  flex: 4;
+  min-width: 320px;
+  max-width: 400px;
+  @media (max-width: 900px) {
+    max-width: 100%;
+    min-width: 0;
+  }
 `;
 const Title = styled.h1`
   font-size: 2rem;
   font-weight: bold;
-  margin-bottom: 4px;
+  margin: 16px 0 4px 0;
 `;
 const Summary = styled.div`
   color: #555;
   font-size: 1.08rem;
-  margin-bottom: 18px;
+  margin-bottom: 12px;
 `;
 const Separator = styled.hr`
   border: none;
@@ -160,6 +172,26 @@ const ReserveButton = styled.button`
   margin-top: 18px;
   cursor: pointer;
 `;
+const ReserveSummary = styled.div`
+  margin: 18px 0 8px 0;
+  color: #555;
+  font-size: 0.98rem;
+`;
+const ReserveRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1.08rem;
+  margin: 6px 0;
+`;
+const ReserveTotal = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: bold;
+  font-size: 1.15rem;
+  margin-top: 18px;
+`;
 
 const MapSection = styled.section`
   margin: 48px 0 0 0;
@@ -219,6 +251,7 @@ const HostDesc = styled.div`
 const DescriptionBox = styled.div`
   margin-bottom: 18px;
   position: relative;
+  text-align: left;
 `;
 const DescText = styled.div`
   font-size: 1.1rem;
@@ -257,12 +290,132 @@ const AmenitiesList = styled.ul`
   }
 `;
 
+const ReserveForm = styled.div`
+  border: 1px solid #eee;
+  border-radius: 16px;
+  background: #fff;
+  padding: 24px 20px 18px 20px;
+  margin-bottom: 12px;
+`;
+const ReserveInputRow = styled.div`
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+`;
+const ReserveInput = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 8px 12px;
+  background: #fafafa;
+  font-size: 1rem;
+  min-width: 120px;
+  max-width: 180px;
+  label {
+    font-size: 0.92rem;
+    color: #888;
+    margin-bottom: 2px;
+  }
+  select, input {
+    border: none;
+    background: transparent;
+    font-size: 1rem;
+    outline: none;
+    width: 100%;
+  }
+`;
+const CalendarInlineWrap = styled.div`
+  display: flex;
+  justify-content: center;
+  margin: 0 0 12px 0;
+`;
+const ReservePriceRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1.08rem;
+  margin: 6px 0;
+`;
+
+const Navbar = styled.nav`
+  width: 100vw;
+  min-width: 320px;
+  background: #fff;
+  border-bottom: 1.5px solid #eee;
+  display: flex;
+  align-items: center;
+  height: 64px;
+  padding: 0 32px;
+  box-sizing: border-box;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+`;
+const Logo = styled.div`
+  font-size: 1.6rem;
+  font-weight: bold;
+  color: #ff385c;
+  cursor: pointer;
+  user-select: none;
+`;
+
+const CalendarPopup = styled.div`
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.15);
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+const CalendarInner = styled.div`
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  padding: 32px 24px 24px 24px;
+  min-width: 600px;
+  max-width: 95vw;
+`;
+const WideInput = styled.input`
+  width: 100%;
+  min-width: 260px;
+  max-width: 400px;
+  font-size: 1.1rem;
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: 1px solid #ddd;
+  background: #fafafa;
+`;
+
 const AccommodationDetailPage = () => {
     const { id } = useParams();
+    const location = useLocation();
+    const navigate = useNavigate();
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [descExpanded, setDescExpanded] = useState(false);
+    const [reservationInfo, setReservationInfo] = useState(null);
+    const [reserveLoading, setReserveLoading] = useState(false);
+    const [reserveError, setReserveError] = useState(null);
+
+    // 예약 form 상태
+    const queryParams = location.state?.queryParams || {};
+    const [checkIn, setCheckIn] = useState(queryParams.checkIn || '');
+    const [checkOut, setCheckOut] = useState(queryParams.checkOut || '');
+    const [guests, setGuests] = useState(queryParams.guests || 1);
+
+    // 달력 인라인 상태
+    const [calendarInline, setCalendarInline] = useState(false);
+    const [calendarType, setCalendarType] = useState('in');
+    const calendarAnchorRef = useRef();
+
+    const [calendarPopup, setCalendarPopup] = useState(false);
 
     useEffect(() => {
         const fetchDetail = async () => {
@@ -279,88 +432,153 @@ const AccommodationDetailPage = () => {
         fetchDetail();
     }, [id]);
 
+    // 예약 정보 API 호출
+    useEffect(() => {
+        if (!checkIn || !checkOut) return;
+        setReserveLoading(true);
+        setReserveError(null);
+        getReservationInfo(id, checkIn, checkOut)
+            .then(res => setReservationInfo(res.data))
+            .catch(e => setReserveError(e))
+            .finally(() => setReserveLoading(false));
+    }, [id, checkIn, checkOut]);
+
+    // 설명 3줄 이상일 때만 더보기 노출
+    const isLongDescription = useMemo(() => {
+        if (!data?.description) return false;
+        // 3줄 기준: 120자 이상이면 더보기 노출(대략적)
+        return data.description.length > 120;
+    }, [data]);
+
     if (loading) return <PageWrapper>로딩 중...</PageWrapper>;
     if (error) return <PageWrapper>오류가 발생했습니다.</PageWrapper>;
     if (!data) return null;
 
-    const { name, imageUrls, amenities, host, description, pricePerNight, maxGuests, bedCount, address, reviews } = data;
-    // host: { hostId, hostName, hostProfileUrl, hostCareerDesc }
+    const { name, imageUrls, amenities, hostName, hostProfileUrl, description, pricePerNight, maxGuests, bedCount, address, reviews } = data;
     const mainImg = imageUrls && imageUrls[0]?.imageUrl;
     const subImgs = imageUrls ? imageUrls.slice(1, 5) : [];
-
-    // 지도 중심을 숙소 위치로 고정
     const mapCenter = { lat: address.latitude, lng: address.longitude };
     const mapMarkers = [{ latitude: address.latitude, longitude: address.longitude }];
 
+    // 가격 계산 (수수료 10%)
+    const nights = reservationInfo?.nights || 0;
+    const nightly = reservationInfo?.pricePerNight || pricePerNight;
+    const totalPrice = nights * nightly;
+    const serviceFee = Math.round(totalPrice * 0.1);
+    const finalPrice = totalPrice + serviceFee;
+
+    // 날짜 입력 핸들러
+    const handleDateClick = (type) => {
+        setCalendarType(type);
+        setCalendarPopup(true);
+    };
+    const handleCalendarChange = (range) => {
+        setCalendarPopup(false);
+        if (range?.startDate) setCheckIn(range.startDate.toISOString().split('T')[0]);
+        if (range?.endDate) setCheckOut(range.endDate.toISOString().split('T')[0]);
+    };
+    const handleCalendarClose = () => setCalendarPopup(false);
+    // 인원 입력 핸들러
+    const handleGuestsChange = (e) => {
+        setGuests(Number(e.target.value));
+    };
+
     return (
-        <PageWrapper>
-            {/* 이미지 그리드 */}
-            <ImageGrid>
-                {mainImg && <MainImage src={mainImg} alt={name} />}
-                {subImgs.map((img, i) => (
-                    <SubImage key={img.id} src={img.imageUrl} alt={name + i} style={i === 0 ? {gridColumn:2,gridRow:1} : i === 1 ? {gridColumn:3,gridRow:1} : i === 2 ? {gridColumn:2,gridRow:2} : {gridColumn:3,gridRow:2}} />
-                ))}
-            </ImageGrid>
-            <ContentRow style={{marginTop: '-4px'}}>
-                <InfoSection>
-                    <Title>{name}</Title>
-                    <Summary>최대 인원 {maxGuests}명 · 침대 {bedCount}개</Summary>
-                    <Separator />
-                    <AmenitiesList>
-                        {amenities && amenities.map(a => (
-                            <li key={a.id}>{AMENITY_ICONS[a.name] || null}{a.name}</li>
-                        ))}
-                    </AmenitiesList>
-                    <Separator />
-                    <HostBox>
-                        <HostProfile src={host?.hostProfileUrl || 'https://via.placeholder.com/56'} alt={host?.hostName} />
-                        <HostInfoCol>
-                            <HostName>호스트: {host?.hostName || '알 수 없음'}</HostName>
-                            <HostDesc>{host?.hostCareerDesc || ''}</HostDesc>
-                        </HostInfoCol>
-                    </HostBox>
-                    <Separator />
-                    <DescriptionBox>
-                        <DescText expanded={descExpanded}>{description}</DescText>
-                        {!descExpanded && description && description.length > 0 && (
-                            <MoreBtn onClick={() => setDescExpanded(true)}>더 보기</MoreBtn>
-                        )}
-                    </DescriptionBox>
-                    <Separator />
-                    <ReviewSection>
-                        <ReviewHeader>평점 {reviews?.avgRating ?? '-'} / 5 ({reviews?.reviewSize ?? 0}개 후기)</ReviewHeader>
-                        <ReviewList>
-                            {reviews?.comments?.map(c => (
-                                <ReviewCard key={c.commentId}>
-                                    <ProfileImg src={c.profileUrl} alt={c.guestName} />
-                                    <ReviewContent>
-                                        <div style={{ fontWeight: 'bold' }}>{c.guestName}</div>
-                                        <div style={{ color: '#888', fontSize: '0.95em' }}>{new Date(c.createdAt).toLocaleDateString()}</div>
-                                        <div style={{ margin: '8px 0' }}>{c.content}</div>
-                                        <div>⭐ {c.rating}</div>
-                                    </ReviewContent>
-                                </ReviewCard>
+        <>
+            <Navbar>
+                <Logo onClick={() => navigate('/')}>AirDND</Logo>
+            </Navbar>
+            <PageWrapper>
+                <Title>{name}</Title>
+                <Summary>최대 인원 {maxGuests}명 · 침대 {bedCount}개</Summary>
+                <ImageGrid>
+                    {mainImg && <MainImage src={mainImg} alt={name} />}
+                    {subImgs.map((img, i) => (
+                        <SubImage key={img.id} src={img.imageUrl} alt={name + i} style={i === 0 ? {gridColumn:2,gridRow:1} : i === 1 ? {gridColumn:3,gridRow:1} : i === 2 ? {gridColumn:2,gridRow:2} : {gridColumn:3,gridRow:2}} />
+                    ))}
+                </ImageGrid>
+                <MainRow>
+                    <LeftCol>
+                        <HostBox>
+                            <HostProfile src={hostProfileUrl || 'https://via.placeholder.com/56'} alt={hostName} />
+                            <HostName>호스트: {hostName || '알 수 없음'}</HostName>
+                        </HostBox>
+                        <AmenitiesList>
+                            {amenities && amenities.map(a => (
+                                <li key={a.id}>{AMENITY_ICONS[a.name] || null}{a.name}</li>
                             ))}
-                        </ReviewList>
-                    </ReviewSection>
-                </InfoSection>
-                <ReserveBox>
-                    <Price>₩{pricePerNight.toLocaleString()} / 박</Price>
-                    <div style={{marginBottom:'8px', color:'#555'}}>날짜와 인원을 선택하세요</div>
-                    {/* 예약 폼(날짜, 인원 등) 추가 가능 */}
-                    <ReserveButton>예약하기</ReserveButton>
-                </ReserveBox>
-            </ContentRow>
-            <MapSection>
-                <h2 style={{fontSize:'1.2rem', fontWeight:'bold', marginBottom:'12px'}}>위치</h2>
-                <MapBox>
-                    <KakaoMap accommodations={mapMarkers} center={mapCenter} />
-                </MapBox>
-                <Address>
-                    {address.city} {address.district} {address.streetAddress}
-                </Address>
-            </MapSection>
-        </PageWrapper>
+                        </AmenitiesList>
+                        <DescriptionBox>
+                            <DescText expanded={descExpanded}>{description}</DescText>
+                            {!descExpanded && isLongDescription && (
+                                <MoreBtn onClick={() => setDescExpanded(true)}>더 보기</MoreBtn>
+                            )}
+                        </DescriptionBox>
+                    </LeftCol>
+                    <RightCol>
+                        <ReserveForm>
+                            <Price>₩{nightly.toLocaleString()} / 박</Price>
+                            <ReserveInputRow>
+                                <ReserveInput>
+                                    <label>체크인</label>
+                                    <WideInput type="text" readOnly value={checkIn ? checkIn : '연도. 월. 일.'} onClick={() => handleDateClick('in')} style={{cursor:'pointer'}} />
+                                </ReserveInput>
+                                <ReserveInput>
+                                    <label>체크아웃</label>
+                                    <WideInput type="text" readOnly value={checkOut ? checkOut : '연도. 월. 일.'} onClick={() => handleDateClick('out')} style={{cursor:'pointer'}} />
+                                </ReserveInput>
+                            </ReserveInputRow>
+                            {calendarPopup && (
+                                <CalendarPopup onClick={handleCalendarClose}>
+                                    <CalendarInner onClick={e => e.stopPropagation()}>
+                                        <CalendarDropdown
+                                            dates={{startDate: checkIn ? new Date(checkIn) : null, endDate: checkOut ? new Date(checkOut) : null}}
+                                            setDates={range => handleCalendarChange(range)}
+                                        />
+                                    </CalendarInner>
+                                </CalendarPopup>
+                            )}
+                            <ReserveInput style={{width:'100%'}}>
+                                <label>인원</label>
+                                <WideInput type="number" min={1} max={10} value={guests} onChange={handleGuestsChange} />
+                            </ReserveInput>
+                            <ReserveButton style={{marginTop:'18px'}} disabled={reserveLoading || !checkIn || !checkOut}>
+                                {reserveLoading ? '조회 중...' : '예약하기'}
+                            </ReserveButton>
+                            <ReserveSummary>예약 확정 전에는 요금이 청구되지 않습니다.</ReserveSummary>
+                            {checkIn && checkOut && (
+                                <>
+                                    <ReservePriceRow>
+                                        <span>₩{nightly.toLocaleString()} x {nights}박</span>
+                                        <span>₩{totalPrice.toLocaleString()}</span>
+                                    </ReservePriceRow>
+                                    <ReservePriceRow>
+                                        <span>에어디엔디 서비스 수수료</span>
+                                        <span>₩{serviceFee.toLocaleString()}</span>
+                                    </ReservePriceRow>
+                                    <hr style={{margin:'12px 0', border:'none', borderTop:'1px solid #eee'}}/>
+                                    <ReserveTotal>
+                                        <span>총액</span>
+                                        <span>₩{finalPrice.toLocaleString()}</span>
+                                    </ReserveTotal>
+                                </>
+                            )}
+                            {reserveError && <div style={{color:'red', marginTop:'8px'}}>예약 정보를 불러올 수 없습니다.</div>}
+                        </ReserveForm>
+                    </RightCol>
+                </MainRow>
+                <Separator />
+                <MapSection>
+                    <h2 style={{fontSize:'1.2rem', fontWeight:'bold', marginBottom:'12px'}}>위치</h2>
+                    <MapBox>
+                        <KakaoMap accommodations={mapMarkers} center={mapCenter} />
+                    </MapBox>
+                    <Address>
+                        {address.city} {address.district} {address.streetAddress}
+                    </Address>
+                </MapSection>
+            </PageWrapper>
+        </>
     );
 };
 

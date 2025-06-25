@@ -1,5 +1,5 @@
 import React, {useCallback, useEffect, useState} from 'react';
-import {useLocation} from 'react-router-dom';
+import {useLocation, useNavigate} from 'react-router-dom';
 import styled from 'styled-components';
 import KakaoMap from '../components/KakaoMap';
 import AccommodationCard from '../components/AccommodationCard';
@@ -36,34 +36,118 @@ const Header = styled.header`
     border-bottom: 1px solid #ddd;
 `;
 
-const MiniSearchBar = styled.div`
+const Navbar = styled.nav`
+    width: 100vw;
+    min-width: 320px;
+    background: #fff;
+    border-bottom: 1.5px solid #eee;
+    display: flex;
+    align-items: center;
+    height: 64px;
+    padding: 0 32px;
+    box-sizing: border-box;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+`;
+
+const NavbarContent = styled.div`
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+`;
+
+const NavbarFlex = styled.div`
+    display: flex;
+    align-items: center;
+    width: 100%;
+    justify-content: center;
+    position: relative;
+`;
+
+const NavbarLeft = styled.div`
+    flex: 1;
+    display: flex;
+    align-items: center;
+`;
+
+const NavbarCenter = styled.div`
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+`;
+
+const NavbarRight = styled.div`
+    flex: 1;
+`;
+
+const Logo = styled.div`
+    font-size: 1.6rem;
+    font-weight: bold;
+    color: #ff385c;
+    cursor: pointer;
+    user-select: none;
+    margin-right: 32px;
+`;
+
+const CenteredMiniSearchBar = styled.div`
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+`;
+
+const MiniSearchBarBox = styled.div`
     display: inline-flex;
     align-items: center;
-    padding: 8px 16px;
-    border: 1px solid #ddd;
+    padding: 10px 24px;
+    border: 1.5px solid #ddd;
     border-radius: 40px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+    background: #fff;
     cursor: pointer;
-
-    span {
-        margin-right: 8px;
+    font-size: 1.08rem;
+    font-weight: 500;
+    transition: box-shadow 0.2s;
+    &:hover {
+        box-shadow: 0 4px 16px rgba(0,0,0,0.13);
     }
 `;
 
-const FullScreenSearchContainer = styled.div`
+const ExpandedSearchContainer = styled.div`
     position: absolute;
-    top: 0;
+    left: 50%;
+    top: 72px;
+    transform: translateX(-50%);
+    background: #fff;
+    border-radius: 32px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    padding: 32px 32px 24px 32px;
+    z-index: 2001;
+    min-width: 600px;
+    max-width: 95vw;
+`;
+
+const Overlay = styled.div`
+    position: fixed;
     left: 0;
-    right: 0;
-    background: white;
-    z-index: 20;
-    padding: 20px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    background: transparent;
+    z-index: 2000;
 `;
 
 const AccommodationListPage = () => {
     const location = useLocation();
-    // const navigate = useNavigate(); // Not used yet
+    const navigate = useNavigate();
 
     const [accommodations, setAccommodations] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -205,25 +289,58 @@ const AccommodationListPage = () => {
         console.log("Card clicked:", accommodation);
     };
 
+    // 외부 클릭 시 검색창 닫기
+    useEffect(() => {
+        if (!isSearchOpen) return;
+        const handleClick = (e) => {
+            if (!document.getElementById('expanded-search-container')?.contains(e.target) &&
+                !document.getElementById('mini-search-bar')?.contains(e.target)) {
+                setIsSearchOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClick);
+        return () => document.removeEventListener('mousedown', handleClick);
+    }, [isSearchOpen]);
+
+    // Airbnb 스타일 미니검색바 문구
+    const getMiniSearchText = () => {
+        if (queryParams?.checkIn && queryParams?.checkOut && queryParams?.guests) {
+            return `${queryParams.checkIn} ~ ${queryParams.checkOut} · 게스트 ${queryParams.guests}명`;
+        }
+        return '어디든지 · 언제든 일주일 · 게스트 추가';
+    };
+
     const renderMiniSearchBar = () => (
-        <Header>
-            <MiniSearchBar onClick={() => setIsSearchOpen(true)}>
-                <span>{queryParams?.checkIn ? `${queryParams.checkIn} ~ ${queryParams.checkOut}` : '언제 떠나세요?'}</span>
-                <span>·</span>
-                <span>게스트 {queryParams?.guests || 1}명</span>
-                <FaSearch style={{marginLeft: 8, color: '#ff385c'}}/>
-            </MiniSearchBar>
-        </Header>
+        <CenteredMiniSearchBar>
+            <MiniSearchBarBox id="mini-search-bar" onClick={() => setIsSearchOpen(true)}>
+                {getMiniSearchText()}
+                <FaSearch style={{marginLeft: 12, color: '#ff385c'}}/>
+            </MiniSearchBarBox>
+        </CenteredMiniSearchBar>
     );
 
     return (
         <>
-            {renderMiniSearchBar()}
+            <Navbar>
+                <NavbarContent>
+                    <NavbarFlex>
+                        <NavbarLeft>
+                            <Logo onClick={() => navigate('/')}>AirDND</Logo>
+                        </NavbarLeft>
+                        <NavbarCenter>
+                            {renderMiniSearchBar()}
+                        </NavbarCenter>
+                        <NavbarRight />
+                    </NavbarFlex>
+                </NavbarContent>
+            </Navbar>
             {isSearchOpen && (
-                <FullScreenSearchContainer>
-                    <SearchBar onSearchComplete={() => setIsSearchOpen(false)}/>
-                    <button onClick={() => setIsSearchOpen(false)}>닫기</button>
-                </FullScreenSearchContainer>
+                <>
+                    <Overlay />
+                    <ExpandedSearchContainer id="expanded-search-container">
+                        <SearchBar onSearchComplete={() => setIsSearchOpen(false)}/>
+                    </ExpandedSearchContainer>
+                </>
             )}
             <PageContainer>
                 <ListContainer>
