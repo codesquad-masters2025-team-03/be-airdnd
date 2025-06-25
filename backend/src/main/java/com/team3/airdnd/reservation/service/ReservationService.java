@@ -20,8 +20,12 @@ import com.team3.airdnd.global.exception.ErrorCode;
 import com.team3.airdnd.payment.repository.PaymentRepository;
 import com.team3.airdnd.reservation.domain.Reservation;
 import com.team3.airdnd.reservation.domain.ReservedDate;
+
+import com.team3.airdnd.reservation.dto.GuestReservationDto;
+import com.team3.airdnd.reservation.dto.HostReservationDto;
 import com.team3.airdnd.reservation.dto.ReservationRequestDto;
 import com.team3.airdnd.reservation.dto.ReservationResponseDto;
+import com.team3.airdnd.reservation.query.ReservationQueryRepository;
 import com.team3.airdnd.reservation.repository.ReservationRepository;
 import com.team3.airdnd.reservation.repository.ReservedDateRepository;
 import com.team3.airdnd.user.domain.User;
@@ -40,6 +44,7 @@ public class ReservationService {
 	private final PaymentRepository paymentRepository;
 	private final RedissonClient redissonClient;
 	private final ChatService chatService;
+	private final ReservationQueryRepository reservationQueryRepository;
 
 	public ReservationResponseDto.ReservationInfoResponseDto getReservationInfo(Long accommodationId, LocalDate checkIn,
 		LocalDate checkOut) {
@@ -213,5 +218,18 @@ public class ReservationService {
 			}
 		}
 	}
+	//게스트 예약 조회
+	public List<GuestReservationDto> getConfirmedReservationsByGuest(Long guestId) {
+		return reservationQueryRepository.findConfirmedReservationsByGuestId(guestId);
+	}
 
+	//호스트가 자신이 등록한 숙소들의 예약을 최신순으로 조회
+	public List<HostReservationDto> getReservationsByHost(Long hostId) {
+		return reservationQueryRepository.findReservationsByHostId(hostId);
+	}
+
+	//호스트의 특정 숙소에 해당하는 예약 목록을 조회
+	public List<HostReservationDto> getReservationsByHostAndAccommodation(Long hostId, Long accommodationId) {
+		return reservationQueryRepository.findReservationsByHostIdAndAccommodationId(hostId, accommodationId);
+	}
 }
