@@ -1,5 +1,7 @@
 package com.team3.airdnd.auth.controller;
 
+import java.util.Map;
+
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -28,8 +30,9 @@ public class AuthController {
 	}
 
 	@PostMapping("/login")
-	public ResponseEntity<ResponseDto<Void>> login(@RequestBody LoginRequestDto request) {
-		authService.login(request);
-		return ResponseDto.ok(null);
+	public ResponseEntity<ResponseDto<Map<String, String>>> login(@RequestBody LoginRequestDto request) {
+		String token = authService.login(request);
+		Map<String, String> data = Map.of("accessToken", token);
+		return ResponseDto.ok(data);
 	}
 }

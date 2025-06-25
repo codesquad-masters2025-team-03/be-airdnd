@@ -48,3 +48,6 @@ toss:
 
 profile:
   default-image-url: ${DEFAULT_PROFILE_URL}
+
+jwt:
+  secret: ${JWT_SECRET}

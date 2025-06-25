@@ -6,6 +6,7 @@ import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.team3.airdnd.auth.JwtProvider;
 import com.team3.airdnd.auth.dto.request.LoginRequestDto;
 import com.team3.airdnd.auth.dto.request.SignupRequestDto;
 import com.team3.airdnd.aws.S3FileService;
@@ -25,6 +26,7 @@ public class AuthService {
 
 	private final UserRepository userRepository;
 	private final S3FileService s3FileService;
+	private final JwtProvider jwtProvider;
 
 	public void signup(SignupRequestDto request) {
 
@@ -50,15 +52,15 @@ public class AuthService {
 		userRepository.save(user);
 	}
 
-	public boolean login(LoginRequestDto request) {
+	public String login(LoginRequestDto request) {
 		User user = userRepository.findByLoginId(request.getLoginId())
 			.orElseThrow(() -> new CommonException(ErrorCode.NOT_FOUND_USER));
 
-		if (!user.getPassword().equals(request.getPassword())) {
-			throw new CommonException(ErrorCode.FAILURE_LOGIN);
+		if (!BCrypt.checkpw(request.getPassword(), user.getPassword())) {
+			throw new CommonException(ErrorCode.NOT_FOUND_USER);
 		}
-
-		return true;
+		// JWT 발급
+		return jwtProvider.createToken(user);
 	}
 
 	private void validateDuplicateEmailOrLoginId(SignupRequestDto request) {
