@@ -74,7 +74,9 @@ const GuestsInputSection = styled.div`
     align-items: center;
     height: 100%;
     cursor: pointer;
-    padding-left: 24px;
+    padding-left: 32px;
+    padding-right: 32px;
+    min-width: 120px;
     border-radius: 30px;
 
     &:hover {

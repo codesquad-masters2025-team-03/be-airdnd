@@ -101,4 +101,23 @@ export const getAccommodationDetail = async (id) => {
     return response;
 };
 
+export const getReservationInfo = async (accommodationId, checkIn, checkOut) => {
+    if (useMock) {
+        return {
+            data: {
+                available: true,
+                nights: 2,
+                pricePerNight: 250000,
+                totalPrice: 500000,
+                serviceFee: 50000,
+                finalPrice: 550000
+            }
+        };
+    }
+    const response = await axios.get(`${BASE_URL}/api/reservations/${accommodationId}`, {
+        params: { checkIn, checkOut }
+    });
+    return response;
+};
+
 

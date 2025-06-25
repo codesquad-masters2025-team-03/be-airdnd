@@ -53,6 +53,9 @@ const HeroSection = styled.div`
     flex-direction: column;
     align-items: center;
     padding-top: 40px;
+    > div {
+      min-width: 600px;
+    }
 `;
 
 const Section = styled.section`
