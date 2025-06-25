@@ -95,6 +95,7 @@ public class PaymentService {
 				paymentRepository.save(payment);
 
 				reservation.setStatus(Reservation.Status.CONFIRMED);
+				reservation.setCreatedAt(LocalDateTime.now());
 				reservationRepository.save(reservation);
 
 				return payment;

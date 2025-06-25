@@ -1,6 +1,9 @@
 package com.team3.airdnd.reservation.domain;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+import org.springframework.data.annotation.CreatedDate;
 
 import com.team3.airdnd.accommodation.domain.Accommodation;
 import com.team3.airdnd.user.domain.User;
@@ -60,6 +63,10 @@ public class Reservation {
 
 	@Column(name = "total_price", nullable = false)
 	private Long totalPrice; //순수 숙박비
+
+	@CreatedDate
+	@Column(name = "created_at")
+	private LocalDateTime createdAt;
 
 	public enum Status {
 		PENDING, CONFIRMED, CANCELLED
