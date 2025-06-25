@@ -3,6 +3,7 @@ import {BrowserRouter, Route, Routes} from 'react-router-dom';
 import MainPage from './pages/MainPage';
 import ChatRoom from './components/ChatRoom';
 import AccommodationListPage from './pages/AccommodationListPage';
+import AccommodationDetailPage from './pages/AccommodationDetailPage';
 import './App.css';
 
 function App() {
@@ -12,6 +13,7 @@ function App() {
                 <Routes>
                     <Route path="/" element={<MainPage/>}/>
                     <Route path="/accommodations" element={<AccommodationListPage/>}/>
+                    <Route path="/accommodations/:id" element={<AccommodationDetailPage/>}/>
                     <Route path="/chatroom" element={<ChatRoom/>}/>
                 </Routes>
             </div>

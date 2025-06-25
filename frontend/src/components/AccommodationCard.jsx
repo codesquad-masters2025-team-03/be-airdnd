@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { FaRegHeart, FaStar } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 
 const CardContainer = styled.div`
     display: flex;
@@ -92,8 +93,10 @@ const Price = styled.div`
     }
 `;
 
-const AccommodationCard = ({ accommodation, queryParams, onClick }) => {
+const AccommodationCard = ({ accommodation, queryParams }) => {
+    const navigate = useNavigate();
     const {
+        id,
         name,
         imageUrl,
         description,
@@ -117,7 +120,7 @@ const AccommodationCard = ({ accommodation, queryParams, onClick }) => {
     const totalPrice = nights > 0 ? pricePerNight * nights : 0;
 
     return (
-        <CardContainer onClick={onClick}>
+        <CardContainer onClick={() => navigate(`/accommodations/${id}`)}>
             <ImageContainer>
                 <img src={imageUrl || 'https://via.placeholder.com/300x200'} alt={name}/>
             </ImageContainer>

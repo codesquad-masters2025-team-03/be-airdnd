@@ -55,4 +55,50 @@ export const getAccommodations = async (params) => {
     return response;
 };
 
+export const getAccommodationDetail = async (id) => {
+    if (useMock) {
+        // 필요시 mock 데이터 반환
+        return {
+            data: {
+                success: true,
+                data: {
+                    name: "Mock 숙소",
+                    imageUrls: [],
+                    amenities: [],
+                    hostId: 1,
+                    description: "Mock 숙소 설명",
+                    pricePerNight: 10000,
+                    maxGuests: 2,
+                    bedCount: 1,
+                    address: {
+                        city: "서울",
+                        district: "강남구",
+                        streetAddress: "테헤란로 123",
+                        latitude: 37.5,
+                        longitude: 127.0
+                    },
+                    reviews: {
+                        avgRating: 5.0,
+                        reviewSize: 1,
+                        comments: [
+                            {
+                                commentId: 1,
+                                content: "아주 좋아요!",
+                                createdAt: "2025-06-11T10:23:00",
+                                guestId: 2,
+                                guestName: "홍길동",
+                                profileUrl: "",
+                                rating: 5.0
+                            }
+                        ]
+                    }
+                },
+                error: null
+            }
+        };
+    }
+    const response = await axios.get(`${BASE_URL}/api/accommodations/${id}`);
+    return response;
+};
+
 
