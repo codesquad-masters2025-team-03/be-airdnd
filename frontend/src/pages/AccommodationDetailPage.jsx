@@ -3,6 +3,8 @@ import styled from 'styled-components';
 import {useParams, useLocation, useNavigate} from 'react-router-dom';
 import KakaoMap from '../components/KakaoMap';
 import {getAccommodationDetail, getReservationInfo} from '../api/accommodationApi';
+import { format } from 'date-fns';
+
 import {
     FaWifi,
     FaTv,
@@ -455,6 +457,11 @@ const AccommodationDetailPage = () => {
 
     const [calendarPopup, setCalendarPopup] = useState(false);
 
+    const [tempDates, setTempDates] = useState({
+        startDate: checkIn ? new Date(checkIn) : null,
+        endDate: checkOut ? new Date(checkOut) : null,
+    });
+
     useEffect(() => {
         const fetchDetail = async () => {
             setLoading(true);
@@ -517,17 +524,58 @@ const AccommodationDetailPage = () => {
     const serviceFee = Math.round(totalPrice * 0.1);
     const finalPrice = totalPrice + serviceFee;
 
-    // 날짜 입력 핸들러
-    const handleDateClick = (type) => {
-        setCalendarType(type);
+    // 날짜 입력 핸들러 (체크인/체크아웃 모두 같은 함수)
+    const handleDateClick = () => {
+        setTempDates({
+            startDate: checkIn ? new Date(checkIn) : null,
+            endDate: checkOut ? new Date(checkOut) : null,
+        });
         setCalendarPopup(true);
     };
+
+    // 달력에서 날짜 선택 시
     const handleCalendarChange = (range) => {
-        setCalendarPopup(false);
-        if (range?.startDate) setCheckIn(range.startDate.toISOString().split('T')[0]);
-        if (range?.endDate) setCheckOut(range.endDate.toISOString().split('T')[0]);
+        let { startDate, endDate } = range || {};
+
+        // 체크인/체크아웃 순서 보정
+        if (endDate && startDate > endDate) {
+            [startDate, endDate] = [endDate, startDate];
+        }
+
+        // 오늘 날짜
+        const today = new Date();
+        today.setHours(0,0,0,0);
+
+        // 체크인/체크아웃 둘 다 오늘이면, 체크아웃을 +1일
+        if (startDate && endDate &&
+            startDate.getFullYear() === today.getFullYear() &&
+            startDate.getMonth() === today.getMonth() &&
+            startDate.getDate() === today.getDate() &&
+            endDate.getFullYear() === today.getFullYear() &&
+            endDate.getMonth() === today.getMonth() &&
+            endDate.getDate() === today.getDate()) {
+            endDate = new Date(today);
+            endDate.setDate(endDate.getDate() + 1);
+        }
+
+        setTempDates({ startDate, endDate });
+
+        // 둘 다 선택된 경우에만 팝업 닫고 실제 값 반영
+        if (startDate && endDate) {
+            setCheckIn(format(startDate, 'yyyy-MM-dd'));
+            setCheckOut(format(endDate, 'yyyy-MM-dd'));
+            setCalendarPopup(false);
+        }
     };
-    const handleCalendarClose = () => setCalendarPopup(false);
+
+    const handleCalendarClose = () => {
+        setCalendarPopup(false);
+        setTempDates({
+            startDate: checkIn ? new Date(checkIn) : null,
+            endDate: checkOut ? new Date(checkOut) : null,
+        });
+    };
+
     // 인원 입력 핸들러
     const handleGuestsChange = (e) => {
         setGuests(Number(e.target.value));
@@ -576,23 +624,20 @@ const AccommodationDetailPage = () => {
                                 <ReserveInput>
                                     <label>체크인</label>
                                     <input type="text" readOnly value={checkIn ? checkIn : '연도. 월. 일.'}
-                                           onClick={() => handleDateClick('in')} style={{cursor: 'pointer'}}/>
+                                           onClick={handleDateClick} style={{cursor: 'pointer'}}/>
                                 </ReserveInput>
                                 <ReserveInput>
                                     <label>체크아웃</label>
                                     <input type="text" readOnly value={checkOut ? checkOut : '연도. 월. 일.'}
-                                           onClick={() => handleDateClick('out')} style={{cursor: 'pointer'}}/>
+                                           onClick={handleDateClick} style={{cursor: 'pointer'}}/>
                                 </ReserveInput>
                             </ReserveInputRow>
                             {calendarPopup && (
                                 <CalendarPopup onClick={handleCalendarClose}>
-                                    <CalendarInner onClick={e => e.stopPropagation()}>
+                                    <CalendarInner onClick={(e) => e.stopPropagation()}>
                                         <CalendarDropdown
-                                            dates={{
-                                                startDate: checkIn ? new Date(checkIn) : null,
-                                                endDate: checkOut ? new Date(checkOut) : null
-                                            }}
-                                            setDates={range => handleCalendarChange(range)}
+                                            dates={tempDates}
+                                            setDates={handleCalendarChange}
                                         />
                                     </CalendarInner>
                                 </CalendarPopup>
