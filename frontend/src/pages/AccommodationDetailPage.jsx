@@ -2,8 +2,9 @@ import React, {useEffect, useState, useMemo, useRef} from 'react';
 import styled from 'styled-components';
 import {useParams, useLocation, useNavigate} from 'react-router-dom';
 import KakaoMap from '../components/KakaoMap';
-import {getAccommodationDetail, getReservationInfo} from '../api/accommodationApi';
+import {getAccommodationDetail, getReservationInfo, createReservation} from '../api/accommodationApi';
 import { format } from 'date-fns';
+import axios from 'axios';
 
 import {
     FaWifi,
@@ -459,6 +460,77 @@ const DropdownItem = styled.div`
     }
 `;
 
+const PaymentModalOverlay = styled.div`
+    position: fixed;
+    left: 0; top: 0; width: 100vw; height: 100vh;
+    background: rgba(0,0,0,0.18);
+    z-index: 3000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+`;
+const PaymentModalBox = styled.div`
+    background: #fff;
+    border-radius: 24px;
+    box-shadow: 0 4px 32px rgba(0,0,0,0.13);
+    padding: 36px 32px 32px 32px;
+    min-width: 380px;
+    max-width: 95vw;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+`;
+const ModalTitle = styled.div`
+    font-size: 1.18rem;
+    font-weight: bold;
+    margin-bottom: 8px;
+`;
+const ModalRow = styled.div`
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 1.05rem;
+    margin: 6px 0;
+`;
+const ModalSection = styled.div`
+    margin: 12px 0 0 0;
+`;
+const ModalImage = styled.img`
+    width: 90px;
+    height: 90px;
+    border-radius: 16px;
+    object-fit: cover;
+    margin-right: 18px;
+`;
+const ModalFlex = styled.div`
+    display: flex;
+    align-items: center;
+`;
+const ModalSub = styled.div`
+    color: #888;
+    font-size: 0.98rem;
+    margin-bottom: 2px;
+`;
+const ModalTotal = styled.div`
+    font-size: 1.18rem;
+    font-weight: bold;
+    margin-top: 10px;
+    display: flex;
+    justify-content: space-between;
+`;
+const PayButton = styled.button`
+    width: 100%;
+    background: #ff385c;
+    color: white;
+    font-size: 1.1rem;
+    font-weight: bold;
+    padding: 16px 0;
+    border: none;
+    border-radius: 10px;
+    margin-top: 18px;
+    cursor: pointer;
+`;
+
 function parseJwt(token) {
     if (!token) return null;
     try {
@@ -484,6 +556,11 @@ const AccommodationDetailPage = () => {
     const [reservationInfo, setReservationInfo] = useState(null);
     const [reserveLoading, setReserveLoading] = useState(false);
     const [reserveError, setReserveError] = useState(null);
+    const [paymentModal, setPaymentModal] = useState(false);
+    const [paymentInfo, setPaymentInfo] = useState(null);
+    const [reserveId, setReserveId] = useState(null);
+    const [reserveBtnLoading, setReserveBtnLoading] = useState(false);
+    const [reserveBtnDone, setReserveBtnDone] = useState(false);
 
     // 예약 form 상태
     const queryParams = location.state?.queryParams || {};
@@ -492,10 +569,12 @@ const AccommodationDetailPage = () => {
     const [guests] = useState(queryParams.guests || 1);
 
     const [menuOpen, setMenuOpen] = useState(false);
-    const token = localStorage.getItem('jwt');
-    const user = parseJwt(token);
-    const isLoggedIn = !!user;
-    const guestId = user?.id;
+    // const token = localStorage.getItem('jwt');
+    // const user = parseJwt(token);
+    // const isLoggedIn = !!user;
+    // const guestId = user?.id;
+    // TODO: 추후 JWT에서 guestId 파싱하도록 변경
+    const guestId = 2;
 
     const handleMenuClick = () => setMenuOpen((v) => !v);
     const handleMenuClose = () => setMenuOpen(false);
@@ -546,6 +625,24 @@ const AccommodationDetailPage = () => {
         return data.description.length > 120;
     }, [data]);
 
+    const handleReserve = async () => {
+        setReserveBtnLoading(true);
+        try {
+            const res = await createReservation(id, guestId, checkIn, checkOut, guests);
+            setReserveId(res.data.reservationId);
+            setReserveBtnDone(true);
+            // 결제 정보 모달 띄우기
+            const payRes = await axios.get(`${process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080'}/api/payment/reservation/${res.data.reservationId}`);
+            setPaymentInfo(payRes.data);
+            setPaymentModal(true);
+        } catch (e) {
+            alert('예약에 실패했습니다.');
+        } finally {
+            setReserveBtnLoading(false);
+        }
+    };
+    const closePaymentModal = () => setPaymentModal(false);
+
     if (loading) return <PageWrapper>로딩 중...</PageWrapper>;
     if (error) return <PageWrapper>오류가 발생했습니다.</PageWrapper>;
     if (!data) return null;
@@ -587,15 +684,10 @@ const AccommodationDetailPage = () => {
                     </UserButton>
                     {menuOpen && (
                         <DropdownMenu onMouseLeave={handleMenuClose}>
-                            {!isLoggedIn ? (
-                                <DropdownItem onClick={() => handleDropdownClick('login')}>로그인</DropdownItem>
-                            ) : (
-                                <>
-                                    <DropdownItem onClick={() => handleDropdownClick('messages')}>메시지</DropdownItem>
-                                    <DropdownItem onClick={() => handleDropdownClick('trips')}>내 여행</DropdownItem>
-                                    <DropdownItem onClick={() => handleDropdownClick('profile')}>프로필</DropdownItem>
-                                </>
-                            )}
+                            <DropdownItem onClick={() => handleDropdownClick('login')}>로그인</DropdownItem>
+                            <DropdownItem onClick={() => handleDropdownClick('messages')}>메시지</DropdownItem>
+                            <DropdownItem onClick={() => handleDropdownClick('trips')}>내 여행</DropdownItem>
+                            <DropdownItem onClick={() => handleDropdownClick('profile')}>프로필</DropdownItem>
                         </DropdownMenu>
                     )}
                 </UserMenuContainer>
@@ -648,8 +740,12 @@ const AccommodationDetailPage = () => {
                                 <label>인원</label>
                                 <input type="text" readOnly value={guests} />
                             </ReserveInput>
-                            <ReserveButton style={{marginTop: '18px'}} disabled={reserveLoading || !checkIn || !checkOut}>
-                                {reserveLoading ? '조회 중...' : '예약하기'}
+                            <ReserveButton
+                                style={{marginTop: '18px'}}
+                                disabled={reserveLoading || !checkIn || !checkOut || reserveBtnLoading || reserveBtnDone}
+                                onClick={handleReserve}
+                            >
+                                {reserveBtnLoading ? '예약 중...' : reserveBtnDone ? '예약 완료' : '예약하기'}
                             </ReserveButton>
                             <ReserveSummary>예약 확정 전에는 요금이 청구되지 않습니다.</ReserveSummary>
                             {checkIn && checkOut && (
@@ -684,6 +780,53 @@ const AccommodationDetailPage = () => {
                     </Address>
                 </MapSection>
             </PageWrapper>
+            {paymentModal && paymentInfo && (
+                <PaymentModalOverlay onClick={closePaymentModal}>
+                    <PaymentModalBox onClick={e => e.stopPropagation()}>
+                        <ModalFlex>
+                            <ModalImage src={paymentInfo.imageUrl || 'https://via.placeholder.com/90'} alt={paymentInfo.title} />
+                            <div>
+                                <ModalTitle>{paymentInfo.title}</ModalTitle>
+                                <div style={{fontSize:'1.05rem', color:'#888'}}>{paymentInfo.checkIn}~{paymentInfo.checkOut} · 성인 {paymentInfo.guestCount}명</div>
+                            </div>
+                        </ModalFlex>
+                        <ModalSection>
+                            <ModalSub>취소 수수료 없음</ModalSub>
+                            <div style={{color:'#888', fontSize:'0.97rem'}}>7월 30일까지 예약을 취소하면 요금 전액이 환불됩니다.<br/>환불 정책 전문</div>
+                        </ModalSection>
+                        <hr style={{margin:'18px 0 10px 0', border:'none', borderTop:'1px solid #eee'}}/>
+                        <ModalSection>
+                            <ModalTitle>여행 세부 정보</ModalTitle>
+                            <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+                                <div>
+                                    {paymentInfo.checkIn}~{paymentInfo.checkOut}<br/>
+                                    성인 {paymentInfo.guestCount}명
+                                </div>
+                                <button style={{background:'#f5f5f5', border:'none', borderRadius:'12px', padding:'7px 22px', fontSize:'1rem', color:'#888', fontWeight:'bold', cursor:'not-allowed'}}>변경</button>
+                            </div>
+                        </ModalSection>
+                        <hr style={{margin:'18px 0 10px 0', border:'none', borderTop:'1px solid #eee'}}/>
+                        <ModalSection>
+                            <ModalTitle>요금 세부 정보</ModalTitle>
+                            <ModalRow>
+                                <span>₩{paymentInfo.pricePerNight.toLocaleString()} x {Math.max(1, (new Date(paymentInfo.checkOut) - new Date(paymentInfo.checkIn))/(1000*60*60*24))}박</span>
+                                <span>₩{paymentInfo.totalPrice.toLocaleString()}</span>
+                            </ModalRow>
+                            <ModalRow>
+                                <span>에어비앤비 서비스 수수료</span>
+                                <span>₩{paymentInfo.serviceFee.toLocaleString()}</span>
+                            </ModalRow>
+                        </ModalSection>
+                        <hr style={{margin:'18px 0 10px 0', border:'none', borderTop:'1px solid #eee'}}/>
+                        <ModalTotal>
+                            <span>총액 <span style={{fontWeight:400}}>KRW</span></span>
+                            <span>₩{(paymentInfo.totalPrice + paymentInfo.serviceFee).toLocaleString()}</span>
+                        </ModalTotal>
+                        <PayButton>결제하기</PayButton>
+                        <div style={{color:'#888', fontSize:'0.97rem', marginTop:'8px', textAlign:'center', cursor:'pointer'}}>요금 상세 내역</div>
+                    </PaymentModalBox>
+                </PaymentModalOverlay>
+            )}
         </>
     );
 };
