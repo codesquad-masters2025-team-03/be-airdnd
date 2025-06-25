@@ -339,6 +339,7 @@ const ReserveInputRow = styled.div`
     display: flex;
     gap: 8px;
     margin-bottom: 12px;
+    justify-content: center;
 `;
 const ReserveInput = styled.div`
     flex: 1;
@@ -347,23 +348,25 @@ const ReserveInput = styled.div`
     border: 1px solid #ddd;
     border-radius: 8px;
     padding: 8px 12px;
-    background: #fafafa;
+    background: #f5f5f5;
     font-size: 1rem;
     min-width: 120px;
     max-width: 180px;
-
+    align-items: center;
     label {
         font-size: 0.92rem;
         color: #888;
         margin-bottom: 2px;
+        text-align: center;
     }
-
     select, input {
         border: none;
-        background: transparent;
+        background: #f5f5f5;
         font-size: 1rem;
         outline: none;
         width: 100%;
+        text-align: center;
+        cursor: not-allowed;
     }
 `;
 const CalendarInlineWrap = styled.div`
@@ -399,37 +402,6 @@ const Logo = styled.div`
     color: #FF385C;
     cursor: pointer;
     user-select: none;
-`;
-
-const CalendarPopup = styled.div`
-    position: fixed;
-    left: 0;
-    top: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.15);
-    z-index: 3000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-`;
-const CalendarInner = styled.div`
-    background: #fff;
-    border-radius: 24px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
-    padding: 32px 24px 24px 24px;
-    min-width: 600px;
-    max-width: 95vw;
-`;
-const WideInput = styled.input`
-    width: 100%;
-    min-width: 260px;
-    max-width: 400px;
-    font-size: 1.1rem;
-    padding: 10px 16px;
-    border-radius: 12px;
-    border: 1px solid #ddd;
-    background: #fafafa;
 `;
 
 const UserMenuContainer = styled.div`
@@ -515,21 +487,9 @@ const AccommodationDetailPage = () => {
 
     // 예약 form 상태
     const queryParams = location.state?.queryParams || {};
-    const [checkIn, setCheckIn] = useState(queryParams.checkIn || '');
-    const [checkOut, setCheckOut] = useState(queryParams.checkOut || '');
-    const [guests, setGuests] = useState(queryParams.guests || 1);
-
-    // 달력 인라인 상태
-    const [calendarInline, setCalendarInline] = useState(false);
-    const [calendarType, setCalendarType] = useState('in');
-    const calendarAnchorRef = useRef();
-
-    const [calendarPopup, setCalendarPopup] = useState(false);
-
-    const [tempDates, setTempDates] = useState({
-        startDate: checkIn ? new Date(checkIn) : null,
-        endDate: checkOut ? new Date(checkOut) : null,
-    });
+    const [checkIn] = useState(queryParams.checkIn || '');
+    const [checkOut] = useState(queryParams.checkOut || '');
+    const [guests] = useState(queryParams.guests || 1);
 
     const [menuOpen, setMenuOpen] = useState(false);
     const token = localStorage.getItem('jwt');
@@ -615,63 +575,6 @@ const AccommodationDetailPage = () => {
     const serviceFee = Math.round(totalPrice * 0.1);
     const finalPrice = totalPrice + serviceFee;
 
-    // 날짜 입력 핸들러 (체크인/체크아웃 모두 같은 함수)
-    const handleDateClick = () => {
-        setTempDates({
-            startDate: checkIn ? new Date(checkIn) : null,
-            endDate: checkOut ? new Date(checkOut) : null,
-        });
-        setCalendarPopup(true);
-    };
-
-    // 달력에서 날짜 선택 시
-    const handleCalendarChange = (range) => {
-        let { startDate, endDate } = range || {};
-
-        // 체크인/체크아웃 순서 보정
-        if (endDate && startDate > endDate) {
-            [startDate, endDate] = [endDate, startDate];
-        }
-
-        // 오늘 날짜
-        const today = new Date();
-        today.setHours(0,0,0,0);
-
-        // 체크인/체크아웃 둘 다 오늘이면, 체크아웃을 +1일
-        if (startDate && endDate &&
-            startDate.getFullYear() === today.getFullYear() &&
-            startDate.getMonth() === today.getMonth() &&
-            startDate.getDate() === today.getDate() &&
-            endDate.getFullYear() === today.getFullYear() &&
-            endDate.getMonth() === today.getMonth() &&
-            endDate.getDate() === today.getDate()) {
-            endDate = new Date(today);
-            endDate.setDate(endDate.getDate() + 1);
-        }
-
-        setTempDates({ startDate, endDate });
-
-        // 둘 다 선택된 경우에만 팝업 닫고 실제 값 반영
-        if (startDate && endDate) {
-            setCheckIn(format(startDate, 'yyyy-MM-dd'));
-            setCheckOut(format(endDate, 'yyyy-MM-dd'));
-            setCalendarPopup(false);
-        }
-    };
-
-    const handleCalendarClose = () => {
-        setCalendarPopup(false);
-        setTempDates({
-            startDate: checkIn ? new Date(checkIn) : null,
-            endDate: checkOut ? new Date(checkOut) : null,
-        });
-    };
-
-    // 인원 입력 핸들러
-    const handleGuestsChange = (e) => {
-        setGuests(Number(e.target.value));
-    };
-
     return (
         <>
             <Navbar>
@@ -734,31 +637,18 @@ const AccommodationDetailPage = () => {
                             <ReserveInputRow>
                                 <ReserveInput>
                                     <label>체크인</label>
-                                    <input type="text" readOnly value={checkIn ? checkIn : '연도. 월. 일.'}
-                                           onClick={handleDateClick} style={{cursor: 'pointer'}}/>
+                                    <input type="text" readOnly value={checkIn ? checkIn : '연도. 월. 일.'} />
                                 </ReserveInput>
                                 <ReserveInput>
                                     <label>체크아웃</label>
-                                    <input type="text" readOnly value={checkOut ? checkOut : '연도. 월. 일.'}
-                                           onClick={handleDateClick} style={{cursor: 'pointer'}}/>
+                                    <input type="text" readOnly value={checkOut ? checkOut : '연도. 월. 일.'} />
                                 </ReserveInput>
                             </ReserveInputRow>
-                            {calendarPopup && (
-                                <CalendarPopup onClick={handleCalendarClose}>
-                                    <CalendarInner onClick={(e) => e.stopPropagation()}>
-                                        <CalendarDropdown
-                                            dates={tempDates}
-                                            setDates={handleCalendarChange}
-                                        />
-                                    </CalendarInner>
-                                </CalendarPopup>
-                            )}
-                            <ReserveInput style={{ width: '332px', maxWidth: '332px', marginBottom: '12px' }}>
+                            <ReserveInput style={{ width: '332px', maxWidth: '332px', marginBottom: '12px', marginLeft: 'auto', marginRight: 'auto' }}>
                                 <label>인원</label>
-                                <input type="number" min={1} max={10} value={guests} onChange={handleGuestsChange}/>
+                                <input type="text" readOnly value={guests} />
                             </ReserveInput>
-                            <ReserveButton style={{marginTop: '18px'}}
-                                           disabled={reserveLoading || !checkIn || !checkOut}>
+                            <ReserveButton style={{marginTop: '18px'}} disabled={reserveLoading || !checkIn || !checkOut}>
                                 {reserveLoading ? '조회 중...' : '예약하기'}
                             </ReserveButton>
                             <ReserveSummary>예약 확정 전에는 요금이 청구되지 않습니다.</ReserveSummary>
