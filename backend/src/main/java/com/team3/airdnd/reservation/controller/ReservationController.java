@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.team3.airdnd.reservation.dto.GuestReservationDto;
+import com.team3.airdnd.reservation.dto.HostReservationDto;
 import com.team3.airdnd.reservation.dto.ReservationRequestDto;
 import com.team3.airdnd.reservation.dto.ReservationResponseDto;
 import com.team3.airdnd.reservation.service.ReservationService;
@@ -67,6 +68,21 @@ public class ReservationController {
 	@GetMapping("/guest/{guestId}/confirmed")
 	public List<GuestReservationDto> getConfirmedReservationsByGuest(@PathVariable Long guestId) {
 		return reservationService.getConfirmedReservationsByGuest(guestId);
+	}
+
+	//호스트가 자신이 등록한 숙소들의 예약을 최신순으로 조회
+	@GetMapping("/host/{hostId}")
+	public List<HostReservationDto> getReservationsByHost(@PathVariable Long hostId) {
+		return reservationService.getReservationsByHost(hostId);
+	}
+
+	//호스트의 특정 숙소에 해당하는 예약 목록을 조회
+	@GetMapping("/host/{hostId}/accommodation/{accommodationId}")
+	public List<HostReservationDto> getReservationsByHostAndAccommodation(
+		@PathVariable Long hostId,
+		@PathVariable Long accommodationId
+	) {
+		return reservationService.getReservationsByHostAndAccommodation(hostId, accommodationId);
 	}
 
 }
