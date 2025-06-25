@@ -1,6 +1,6 @@
 import React, {useEffect, useRef} from 'react';
 
-const KakaoMap = ({accommodations, onBoundsChanged, onMarkerClick}) => {
+const KakaoMap = ({accommodations, onBoundsChanged, onMarkerClick, center}) => {
     const mapContainerRef = useRef(null);
     const mapRef = useRef(null);
     const markersRef = useRef([]);
@@ -11,7 +11,9 @@ const KakaoMap = ({accommodations, onBoundsChanged, onMarkerClick}) => {
                 if (!mapContainerRef.current) return;
 
                 const options = {
-                    center: new window.kakao.maps.LatLng(37.566826, 126.9786567),
+                    center: center
+                        ? new window.kakao.maps.LatLng(center.lat, center.lng)
+                        : new window.kakao.maps.LatLng(37.566826, 126.9786567),
                     level: 7,
                 };
                 const map = new window.kakao.maps.Map(mapContainerRef.current, options);
@@ -45,7 +47,7 @@ const KakaoMap = ({accommodations, onBoundsChanged, onMarkerClick}) => {
         } else if (window.kakao && window.kakao.maps) {
             initMap();
         }
-    }, [onBoundsChanged]);
+    }, [onBoundsChanged, center]);
 
     useEffect(() => {
         if (!mapRef.current || !window.kakao) return;
