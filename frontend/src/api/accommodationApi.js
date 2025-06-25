@@ -120,4 +120,21 @@ export const getReservationInfo = async (accommodationId, checkIn, checkOut) => 
     return response;
 };
 
+export const createReservation = async (accommodationId, guestId, checkIn, checkOut, guests) => {
+    if (useMock) {
+        // 필요시 mock 데이터 반환
+        return {
+            data: {
+                reservationId: 123,
+                success: true
+            }
+        };
+    }
+    const response = await axios.post(
+        `${BASE_URL}/api/reservations/${accommodationId}?guestId=${guestId}`,
+        { checkIn, checkOut, guests }
+    );
+    return response;
+};
+
 
