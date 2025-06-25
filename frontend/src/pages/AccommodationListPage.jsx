@@ -204,6 +204,14 @@ const DropdownItem = styled.div`
     }
 `;
 
+const ListCount = styled.p`
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: #222;
+    margin: 0 0 16px 0;
+    text-align: left;
+`;
+
 function parseJwt(token) {
     if (!token) return null;
     try {
@@ -464,7 +472,11 @@ const AccommodationListPage = () => {
                         <LoadingText>⚠️ 오류: {error.message}</LoadingText>
                     ) : accommodations.length > 0 ? (
                         <>
-                            <p>{accommodations.length}개의 숙소</p>
+                            <ListCount>
+                                {accommodations.length >= 1000
+                                    ? '1000개 이상의 숙소'
+                                    : `${accommodations.length}개의 숙소`}
+                            </ListCount>
                             {accommodations.map(acc => (
                                 <AccommodationCard
                                     key={acc.id}
