@@ -16,6 +16,8 @@ public class AccommodationResponseDto {
 		private List<String> imageUrls;
 		private List<String> amenities;
 		private Long hostId;
+		private String hostName;
+		private String hostProfileUrl;
 		private String description;
 		private long pricePerNight;
 		private int maxGuests;
