@@ -45,3 +45,6 @@ cloud:
 toss:
   secret-key: ${TOSS_SECRET_KEY}
   client-key: ${TOSS_CLIENT_KEY}
+
+profile:
+  default-image-url: ${DEFAULT_PROFILE_URL}

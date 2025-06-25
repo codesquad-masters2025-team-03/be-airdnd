@@ -131,7 +131,7 @@ public class AccommodationService {
 		Address address = saveAdderss(request);
 		Accommodation accommodation = saveAccommodation(request, address, host);
 		saveAmenities(request.getAmenityTypes(), accommodation);
-		storedFileService.saveFiles(files, accommodation.getId());
+		storedFileService.saveAccommodationImages(files, accommodation.getId());
 	}
 
 	private Address saveAdderss(AccommodationRequestDto.CreateAccommodationDto request) {
@@ -189,7 +189,7 @@ public class AccommodationService {
 
 		if (files != null) {
 			storedFileService.deleteFilesByAccommodationId(accommodationId);
-			storedFileService.saveFiles(files, updatedAccommodation.getId());
+			storedFileService.saveAccommodationImages(files, updatedAccommodation.getId());
 		}
 	}
 
