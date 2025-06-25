@@ -84,7 +84,10 @@ public class ReservationQueryRepository {
 				storedFile.targetId.eq(accommodation.id),
 				storedFile.fileOrder.eq(1)
 			)
-			.where(accommodation.host.id.eq(hostId))
+			.where(
+				accommodation.host.id.eq(hostId),
+				reservation.status.eq(Reservation.Status.CONFIRMED)
+			)
 			.orderBy(reservation.createdAt.desc())
 			.fetch();
 	}
@@ -118,7 +121,8 @@ public class ReservationQueryRepository {
 			)
 			.where(
 				accommodation.host.id.eq(hostId),
-				accommodation.id.eq(accommodationId)
+				accommodation.id.eq(accommodationId),
+				reservation.status.eq(Reservation.Status.CONFIRMED)
 			)
 			.orderBy(reservation.createdAt.desc())
 			.fetch();

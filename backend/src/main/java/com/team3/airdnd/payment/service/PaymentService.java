@@ -2,15 +2,26 @@ package com.team3.airdnd.payment.service;
 
 import static com.team3.airdnd.payment.dto.PaymentResponseDto.*;
 
+import com.team3.airdnd.accommodation.domain.Accommodation;
+import com.team3.airdnd.accommodation.repository.AccommodationRepository;
+import com.team3.airdnd.global.exception.CommonException;
+import com.team3.airdnd.global.exception.ErrorCode;
 import com.team3.airdnd.payment.domain.Payment;
 import com.team3.airdnd.payment.domain.PaymentMethod;
+import com.team3.airdnd.payment.dto.PaymentInfoDto;
 import com.team3.airdnd.payment.dto.PaymentRequestDto;
 import com.team3.airdnd.payment.dto.PaymentResponseDto;
 import com.team3.airdnd.payment.query.PaymentQueryRepository;
 import com.team3.airdnd.payment.repository.PaymentMethodRepository;
 import com.team3.airdnd.payment.repository.PaymentRepository;
 import com.team3.airdnd.reservation.domain.Reservation;
+import com.team3.airdnd.reservation.domain.ReservedDate;
+import com.team3.airdnd.reservation.dto.ReservationResponseDto;
 import com.team3.airdnd.reservation.repository.ReservationRepository;
+import com.team3.airdnd.reservation.repository.ReservedDateRepository;
+import com.team3.airdnd.reservation.service.ReservationService;
+import com.team3.airdnd.storedFile.domain.StoredFile;
+import com.team3.airdnd.storedFile.repository.StoredFileRepository;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +35,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.HashMap;
@@ -39,6 +51,9 @@ public class PaymentService {
 	private final PaymentMethodRepository paymentMethodRepository;
 	private final ReservationRepository reservationRepository;
 	private final PaymentQueryRepository paymentQueryRepository;
+	private final AccommodationRepository accommodationRepository;
+	private final ReservedDateRepository reservedDateRepository;
+	private final StoredFileRepository storedFileRepository;
 
 	@Value("${toss.secret-key}")
 	private String tossSecretKey;
@@ -162,5 +177,38 @@ public class PaymentService {
 		);
 	}
 
+
+	public PaymentInfoDto getPaymentInfo(Long reservationId) {
+
+		Reservation reservation = reservationRepository.findById(reservationId).orElseThrow(() -> new IllegalArgumentException("예약 정보를 찾을 수 없습니다."));
+
+		Accommodation acc = accommodationRepository.findById(reservation.getAccommodation().getId())
+			.orElseThrow(() -> new CommonException(ErrorCode.NOT_FOUND_RESOURCE));
+
+
+		String imageUrl = storedFileRepository.findFirstFileUrlByTargetTypeAndTargetId(
+			StoredFile.TargetType.ACCOMMODATION, acc.getId());
+
+		return PaymentInfoDto.builder()
+			//체크인 체크아웃, 숙소 id, 숙소 제목,  숙소 사진, 게스트 인원, 1박당 금액, 수수료, 총액
+			.checkIn(reservation.getCheckIn())
+			.checkOut(reservation.getCheckOut())
+			.accommodationId(reservation.getAccommodation().getId())
+			.title(reservation.getAccommodation().getName())
+			.imageUrl(imageUrl)
+			.guestCount(reservation.getGuestCount())
+			.pricePerNight(acc.getPricePerNight())
+			.serviceFee(reservation.getServiceFee())
+			.totalPrice(reservation.getTotalPrice())
+			.build();
+	}
+
+	//예약 가능 여부 확인 (예외 x, Boolean)
+	private boolean isAvailable(Long accId, LocalDate checkIn, LocalDate checkOut) {
+		List<ReservedDate> conflicts = reservedDateRepository.findOverlappingDates(
+			accId, checkIn, checkOut.minusDays(1)
+		);
+		return conflicts.isEmpty();
+	}
 
 }
