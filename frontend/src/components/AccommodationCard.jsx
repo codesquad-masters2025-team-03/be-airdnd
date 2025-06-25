@@ -120,7 +120,7 @@ const AccommodationCard = ({ accommodation, queryParams }) => {
     const totalPrice = nights > 0 ? pricePerNight * nights : 0;
 
     return (
-        <CardContainer onClick={() => navigate(`/accommodations/${id}`)}>
+        <CardContainer onClick={() => navigate(`/accommodations/${id}`, { state: { queryParams } })}>
             <ImageContainer>
                 <img src={imageUrl || 'https://via.placeholder.com/300x200'} alt={name}/>
             </ImageContainer>
