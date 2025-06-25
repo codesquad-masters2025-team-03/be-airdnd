@@ -73,6 +73,8 @@ public class AccommodationService {
 			.imageUrls(imageUrls)
 			.amenities(amenities)
 			.hostId(accommodation.getHost().getId())
+			.hostName(accommodation.getHost().getUsername())
+			.hostProfileUrl(accommodation.getHost().getProfileUrl())
 			.description(accommodation.getDescription())
 			.pricePerNight(accommodation.getPricePerNight())
 			.maxGuests(accommodation.getMaxGuests())
