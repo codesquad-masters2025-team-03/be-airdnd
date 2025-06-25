@@ -1,13 +1,16 @@
 package com.team3.airdnd.payment.controller;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import com.team3.airdnd.payment.domain.Payment;
 import com.team3.airdnd.payment.dto.CancelRequestDto;
+import com.team3.airdnd.payment.dto.PaymentInfoDto;
 import com.team3.airdnd.payment.dto.PaymentRequestDto;
 import com.team3.airdnd.payment.dto.PaymentResponseDto;
 import com.team3.airdnd.payment.service.PaymentService;
 import com.team3.airdnd.reservation.domain.Reservation;
+import com.team3.airdnd.reservation.dto.ReservationResponseDto;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -56,5 +59,14 @@ public class PaymentController {
 		return ResponseEntity.noContent().build();
 	}
 
+
+	@GetMapping("/reservation/{reservationId}")
+	public ResponseEntity<PaymentInfoDto> getPaymentInfo(
+		@PathVariable Long reservationId
+	) {
+		return ResponseEntity.ok(
+			paymentService.getPaymentInfo(reservationId)
+		);
+	}
 
 }
