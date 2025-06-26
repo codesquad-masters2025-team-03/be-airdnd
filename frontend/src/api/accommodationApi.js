@@ -5,7 +5,7 @@ import axios from 'axios';
 // ✅ 지도 범위 기반 숙소 검색
 // accommodationApi.js
 const useMock = process.env.REACT_APP_USE_MOCK === 'true';
-const BASE_URL = 'http://localhost:8080'; // 8080 포트로 직접 요청
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 console.log('🔧 API 설정 확인:');
 console.log('🔧 REACT_APP_USE_MOCK:', process.env.REACT_APP_USE_MOCK);

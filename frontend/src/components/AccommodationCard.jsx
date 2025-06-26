@@ -103,6 +103,9 @@ const AccommodationCard = ({ accommodation, queryParams }) => {
         pricePerNight,
         rating,
         reviewCount,
+        maxGuests,
+        bedCount,
+        roomCount,
     } = accommodation;
 
     // 날짜 정보를 이용해 총 숙박일수 계산
@@ -126,9 +129,10 @@ const AccommodationCard = ({ accommodation, queryParams }) => {
             </ImageContainer>
             <InfoContainer>
                 <div>
-                    <InfoHeader>{description}</InfoHeader>
                     <Title>{name}</Title>
-                    <Options>침실 1개 · 침대 1개 · 욕실 1개</Options> {/* Mock Data */}
+                    <Options>
+                        수용인원 {maxGuests ?? '-'}인 · 침대 {bedCount ?? '-'}개 · 방 {roomCount ?? '-'}개
+                    </Options>
                 </div>
                 <WishlistButton onClick={(e) => {
                     e.stopPropagation();
