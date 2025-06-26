@@ -539,7 +539,8 @@ const authAxios = axios.create({
 
 // 인증 헤더 추가 인터셉터
 authAxios.interceptors.request.use((config) => {
-    const token = localStorage.getItem('jwt');
+    const token = localStorage.getItem('accessToken');
+
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
@@ -584,10 +585,10 @@ const AccommodationDetailPage = () => {
     const [guests] = useState(queryParams.guests || 1);
 
     const [menuOpen, setMenuOpen] = useState(false);
-    const token = localStorage.getItem('jwt');
+    const token = localStorage.getItem('accessToken');
     const user = parseJwt(token);
     const isLoggedIn = !!user;
-    const guestId = user?.id;
+    const guestId = user?.userId;
 
     const handleMenuClick = () => setMenuOpen((v) => !v);
     const handleMenuClose = () => setMenuOpen(false);

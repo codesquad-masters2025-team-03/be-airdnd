@@ -255,6 +255,8 @@ const AccommodationListPage = () => {
 
     // const itemRefs = useRef({}); // Not used yet
 
+    const token = localStorage.getItem('accessToken');
+
     useEffect(() => {
         const processData = (data, params) => {
             console.log("📊 processData 진입:", data);
@@ -419,7 +421,7 @@ const AccommodationListPage = () => {
                 navigate('/login');
             }
         } else if (action === 'trips') {
-            if (user?.id) navigate(`/api/reservations/guest/${user.id}/confirmed`);
+            if (user?.userId) navigate(`/api/reservations/guest/${user.userId}/confirmed`);
         } else if (action === 'profile') {
             navigate('/profile');
         }

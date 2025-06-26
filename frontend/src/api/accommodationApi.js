@@ -32,7 +32,8 @@ const authAxios = axios.create({
 
 // 인증 헤더 추가 인터셉터
 authAxios.interceptors.request.use((config) => {
-    const token = localStorage.getItem('jwt');
+    const token = localStorage.getItem('accessToken');
+
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
         console.log('🔐 JWT 토큰:', token);
@@ -194,7 +195,7 @@ export const login = async (loginId, password) => {
             data: {
                 success: true,
                 data: {
-                    token: "mock-jwt-token",
+                    accessToken: "mock-jwt-token",
                     user: {
                         id: 1,
                         loginId: loginId,
@@ -211,9 +212,9 @@ export const login = async (loginId, password) => {
     
     // 🔍 로그인 응답 디버깅
     console.log('🔐 로그인 응답:', response.data);
-    if (response.data?.data?.token) {
-        console.log('🔐 저장할 토큰:', response.data.data.token);
-        localStorage.setItem('jwt', response.data.data.token);
+    if (response.data?.data?.accessToken) {
+        console.log('🔐 저장할 토큰:', response.data.data.accessToken);
+        localStorage.setItem('accessToken', response.data.data.accessToken);
     }
     
     return response;
