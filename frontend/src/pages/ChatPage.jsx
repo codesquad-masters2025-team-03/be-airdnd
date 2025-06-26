@@ -30,7 +30,7 @@ const ChatPage = () => {
   const [selectedRoom, setSelectedRoom] = useState(null);
   
   // 로그인 상태 확인
-  const token = localStorage.getItem('jwt');
+  const token = localStorage.getItem('accessToken');
   const user = parseJwt(token);
   const isLoggedIn = !!user;
 

@@ -8,7 +8,7 @@ export function parseJwt(token) {
     // 'undefined' 문자열인 경우 제거
     if (token === 'undefined') {
         console.error('잘못된 토큰 (undefined) 제거');
-        localStorage.removeItem('jwt');
+        localStorage.removeItem('accessToken');
         return null;
     }
     
@@ -23,14 +23,14 @@ export function parseJwt(token) {
         
         if (parts.length !== 3) {
             console.error('JWT 토큰 형식이 올바르지 않습니다:', token);
-            localStorage.removeItem('jwt');
+            localStorage.removeItem('accessToken');
             return null;
         }
         
         const base64Url = parts[1];
         if (!base64Url) {
             console.error('JWT payload가 없습니다.');
-            localStorage.removeItem('jwt');
+            localStorage.removeItem('accessToken');
             return null;
         }
         
@@ -52,14 +52,14 @@ export function parseJwt(token) {
         console.error('JWT 파싱 오류:', e);
         console.error('토큰 값:', token);
         // 잘못된 토큰 제거
-        localStorage.removeItem('jwt');
+        localStorage.removeItem('accessToken');
         return null;
     }
 }
 
 // 로그인 상태 확인
 export function isLoggedIn() {
-    const token = localStorage.getItem('jwt');
+    const token = localStorage.getItem('accessToken');
     console.log('현재 JWT 토큰:', token ? '존재함' : '없음');
     
     if (!token) return false;
@@ -70,7 +70,7 @@ export function isLoggedIn() {
     // 토큰 만료 확인 (exp가 있는 경우)
     if (user.exp && user.exp * 1000 < Date.now()) {
         console.log('JWT 토큰 만료됨');
-        localStorage.removeItem('jwt');
+        localStorage.removeItem('accessToken');
         return false;
     }
     
@@ -80,7 +80,7 @@ export function isLoggedIn() {
 
 // 현재 사용자 정보 가져오기
 export function getCurrentUser() {
-    const token = localStorage.getItem('jwt');
+    const token = localStorage.getItem('accessToken');
     if (!token) return null;
     
     return parseJwt(token);
@@ -88,12 +88,12 @@ export function getCurrentUser() {
 
 // 로그아웃
 export function logout() {
-    localStorage.removeItem('jwt');
+    localStorage.removeItem('accessToken');
     window.location.href = '/';
 }
 
 // localStorage 클리어 (디버깅용)
 export function clearAuth() {
-    localStorage.removeItem('jwt');
+    localStorage.removeItem('accessToken');
     console.log('인증 정보 클리어 완료');
 } 

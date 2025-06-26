@@ -256,7 +256,7 @@ const MainPage = () => {
           navigate('/login');
         }
       } else if (action === 'trips') {
-        if (user?.id) navigate(`/api/reservations/guest/${user.id}/confirmed`);
+        if (user?.userId) navigate(`/api/reservations/guest/${user.userId}/confirmed`);
       } else if (action === 'profile') {
         navigate('/profile');
       }

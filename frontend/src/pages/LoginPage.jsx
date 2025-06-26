@@ -161,7 +161,7 @@ const LoginPage = () => {
                 
                 if (token && token !== 'undefined') {
                     // JWT 토큰을 localStorage에 저장
-                    localStorage.setItem('jwt', token);
+                    localStorage.setItem('accessToken', token);
                     console.log('토큰 저장 완료');
                     // 로그인 성공 후 메인 페이지로 이동하고 새로고침
                     navigate('/');

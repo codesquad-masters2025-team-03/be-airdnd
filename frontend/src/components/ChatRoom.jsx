@@ -32,9 +32,9 @@ const ChatRoom = () => {
     const messagesEndRef = useRef(null);
 
     // JWT에서 사용자 ID 파싱
-    const token = localStorage.getItem('jwt');
+    const token = localStorage.getItem('accessToken');
     const user = parseJwt(token);
-    const senderId = user?.id || 2; // 기본값 2 (로그인하지 않은 경우)
+    const senderId = user?.userId || 2; // 기본값 2 (로그인하지 않은 경우)
 
     // 1. 채팅방 생성 요청 (예약 완료 후)
     useEffect(() => {
