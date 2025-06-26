@@ -118,6 +118,7 @@ export default function ChatRoomDetail({ room }) {
   const user = parseJwt(token);
   const userId = user?.userId || 2; // 기본값 2 (로그인하지 않은 경우)
 
+
   // 메시지 불러오기
   useEffect(() => {
     if (!room) return;

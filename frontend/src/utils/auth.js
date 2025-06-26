@@ -81,6 +81,7 @@ export function isLoggedIn() {
 // 현재 사용자 정보 가져오기
 export function getCurrentUser() {
     const token = localStorage.getItem('accessToken');
+
     if (!token) return null;
     
     return parseJwt(token);
@@ -89,6 +90,7 @@ export function getCurrentUser() {
 // 로그아웃
 export function logout() {
     localStorage.removeItem('accessToken');
+
     window.location.href = '/';
 }
 

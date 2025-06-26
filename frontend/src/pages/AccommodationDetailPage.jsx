@@ -540,6 +540,7 @@ const authAxios = axios.create({
 // 인증 헤더 추가 인터셉터
 authAxios.interceptors.request.use((config) => {
     const token = localStorage.getItem('accessToken');
+
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
