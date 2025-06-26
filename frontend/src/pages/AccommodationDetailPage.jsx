@@ -561,6 +561,70 @@ function parseJwt(token) {
     }
 }
 
+// 캐러셀 및 모달 스타일 추가
+const ImageCarousel = styled.div`
+  position: relative;
+  width: 100%;
+  height: 440px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+  background: #f7f7f7;
+  border-radius: 18px;
+  overflow: hidden;
+`;
+const ArrowButton = styled.button`
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255,255,255,0.7);
+  border: none;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  font-size: 2rem;
+  color: #333;
+  cursor: pointer;
+  z-index: 2;
+  &:disabled {
+    opacity: 0.3;
+    cursor: default;
+  }
+`;
+const ModalOverlay = styled.div`
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+`;
+const ModalContent = styled.div`
+  position: relative;
+  background: #fff;
+  border-radius: 18px;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+const CloseButton = styled.button`
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: #fff;
+  border: 1.5px solid #bbb;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  font-size: 1.2rem;
+  color: #333;
+  cursor: pointer;
+  z-index: 3;
+`;
+
 const AccommodationDetailPage = () => {
     const {id} = useParams();
     const location = useLocation();
@@ -577,6 +641,8 @@ const AccommodationDetailPage = () => {
     const [reserveId, setReserveId] = useState(null);
     const [reserveBtnLoading, setReserveBtnLoading] = useState(false);
     const [reserveBtnDone, setReserveBtnDone] = useState(false);
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const [showModal, setShowModal] = useState(false);
 
     // 예약 form 상태
     const queryParams = location.state?.queryParams || {};
@@ -619,6 +685,10 @@ const AccommodationDetailPage = () => {
             }
         };
         fetchDetail();
+    }, [id]);
+
+    useEffect(() => {
+        setCurrentIndex(0); // 숙소 id 바뀌면 첫번째 사진으로 초기화
     }, [id]);
 
     // 예약 정보 API 호출
@@ -714,7 +784,8 @@ const AccommodationDetailPage = () => {
         address,
         reviews
     } = data;
-    const mainImg = imageUrls && imageUrls[0]?.imageUrl;
+    // imageUrls가 문자열 배열이므로 바로 사용
+    const mainImg = imageUrls && imageUrls[0];
     const subImgs = imageUrls ? imageUrls.slice(1, 5) : [];
     // address가 없으면 서울 시청 좌표를 기본값으로 사용
     const mapCenter = address && address.latitude && address.longitude 
@@ -759,16 +830,30 @@ const AccommodationDetailPage = () => {
             <PageWrapper>
                 <Title>{name}</Title>
                 <Summary>최대 인원 {maxGuests}명 · 침대 {bedCount}개</Summary>
-                <ImageGrid>
-                    {mainImg && <MainImage src={mainImg} alt={name}/>}
-                    {subImgs.map((img, i) => (
-                        <SubImage key={img.id} src={img.imageUrl} alt={name + i}
-                                  style={i === 0 ? {gridColumn: 2, gridRow: 1} : i === 1 ? {
-                                      gridColumn: 3,
-                                      gridRow: 1
-                                  } : i === 2 ? {gridColumn: 2, gridRow: 2} : {gridColumn: 3, gridRow: 2}}/>
-                    ))}
-                </ImageGrid>
+                <ImageCarousel>
+                  {imageUrls && imageUrls.length > 1 && (
+                    <ArrowButton
+                      onClick={() => setCurrentIndex(currentIndex === 0 ? imageUrls.length - 1 : currentIndex - 1)}
+                      style={{ left: 16 }}
+                      aria-label="이전 사진"
+                    >&#8592;</ArrowButton>
+                  )}
+                  {imageUrls && imageUrls.length > 0 && (
+                    <MainImage
+                      src={imageUrls[currentIndex]}
+                      alt={name}
+                      style={{ cursor: 'pointer', height: '100%', objectFit: 'cover', borderRadius: '18px' }}
+                      onClick={() => setShowModal(true)}
+                    />
+                  )}
+                  {imageUrls && imageUrls.length > 1 && (
+                    <ArrowButton
+                      onClick={() => setCurrentIndex(currentIndex === imageUrls.length - 1 ? 0 : currentIndex + 1)}
+                      style={{ right: 16 }}
+                      aria-label="다음 사진"
+                    >&#8594;</ArrowButton>
+                  )}
+                </ImageCarousel>
                 <MainRow>
                     <LeftCol>
                         <HostBox>
@@ -892,6 +977,28 @@ const AccommodationDetailPage = () => {
                         <div style={{color:'#888', fontSize:'0.97rem', marginTop:'8px', textAlign:'center', cursor:'pointer'}}>요금 상세 내역</div>
                     </PaymentModalBox>
                 </PaymentModalOverlay>
+            )}
+            {showModal && imageUrls && imageUrls.length > 0 && (
+              <ModalOverlay onClick={() => setShowModal(false)}>
+                <ModalContent onClick={e => e.stopPropagation()}>
+                  {imageUrls.length > 1 && (
+                    <ArrowButton
+                      onClick={() => setCurrentIndex(currentIndex === 0 ? imageUrls.length - 1 : currentIndex - 1)}
+                      style={{ left: 0 }}
+                      aria-label="이전 사진"
+                    >&#8592;</ArrowButton>
+                  )}
+                  <ModalImage src={imageUrls[currentIndex]} alt={name} />
+                  {imageUrls.length > 1 && (
+                    <ArrowButton
+                      onClick={() => setCurrentIndex(currentIndex === imageUrls.length - 1 ? 0 : currentIndex + 1)}
+                      style={{ right: 0 }}
+                      aria-label="다음 사진"
+                    >&#8594;</ArrowButton>
+                  )}
+                  <CloseButton onClick={() => setShowModal(false)} aria-label="닫기">×</CloseButton>
+                </ModalContent>
+              </ModalOverlay>
             )}
         </>
     );
