@@ -1,8 +1,8 @@
-import React from 'react';
+import React, {useState} from 'react';
 import styled from 'styled-components';
 import SearchBar from '../components/SearchBar';
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { isLoggedIn, getCurrentUser } from '../utils/auth';
 
 const PageContainer = styled.div`
     width: 100%;
@@ -180,20 +180,6 @@ const experiences = [
     {image: 'https://picsum.photos/300/300?random=4', title: '반려동물 동반 가능'},
 ];
 
-function parseJwt(token) {
-  if (!token) return null;
-  try {
-    const base64Url = token.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-    }).join(''));
-    return JSON.parse(jsonPayload);
-  } catch (e) {
-    return null;
-  }
-}
-
 const UserMenuContainer = styled.div`
   position: relative;
   display: flex;
@@ -252,10 +238,8 @@ const DropdownItem = styled.div`
 const MainPage = () => {
     const navigate = useNavigate();
     const [menuOpen, setMenuOpen] = useState(false);
-    const token = localStorage.getItem('jwt');
-    const user = parseJwt(token);
-    const isLoggedIn = !!user;
-    const guestId = user?.id;
+    const isUserLoggedIn = isLoggedIn();
+    const user = getCurrentUser();
 
     const handleMenuClick = () => setMenuOpen((v) => !v);
     const handleMenuClose = () => setMenuOpen(false);
@@ -265,9 +249,14 @@ const MainPage = () => {
       if (action === 'login') {
         navigate('/login');
       } else if (action === 'messages') {
-        navigate('/chatroom'); // 실제 채팅방 목록 페이지로 연결 필요
+        if (isUserLoggedIn) {
+          navigate('/chatroom');
+        } else {
+          alert('로그인이 필요합니다.');
+          navigate('/login');
+        }
       } else if (action === 'trips') {
-        if (guestId) navigate(`/api/reservations/guest/${guestId}/confirmed`);
+        if (user?.id) navigate(`/api/reservations/guest/${user.id}/confirmed`);
       } else if (action === 'profile') {
         navigate('/profile');
       }
@@ -285,11 +274,26 @@ const MainPage = () => {
                 <UserMenuContainer>
                   <UserButton onClick={handleMenuClick}>
                     <span style={{fontSize:'20px'}}>☰</span>
-                    <UserIcon> <span role="img" aria-label="user">👤</span> </UserIcon>
+                    {isUserLoggedIn && user?.profileImage ? (
+                      <UserIcon>
+                        <img 
+                          src={user.profileImage} 
+                          alt="프로필" 
+                          style={{
+                            width: '28px',
+                            height: '28px',
+                            borderRadius: '50%',
+                            objectFit: 'cover'
+                          }}
+                        />
+                      </UserIcon>
+                    ) : (
+                      <UserIcon> <span role="img" aria-label="user">👤</span> </UserIcon>
+                    )}
                   </UserButton>
                   {menuOpen && (
                     <DropdownMenu onMouseLeave={handleMenuClose}>
-                      {!isLoggedIn ? (
+                      {!isUserLoggedIn ? (
                         <DropdownItem onClick={() => handleDropdownClick('login')}>로그인</DropdownItem>
                       ) : (
                         <>

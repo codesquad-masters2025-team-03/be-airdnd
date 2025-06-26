@@ -150,15 +150,31 @@ const LoginPage = () => {
         try {
             const response = await login(formData.loginId, formData.password);
             
+            console.log('로그인 API 응답:', response);
+            console.log('응답 데이터:', response.data);
+            console.log('응답 data 객체:', response.data.data);
+            console.log('응답 data 객체의 키들:', Object.keys(response.data.data || {}));
+            
             if (response.data.success) {
-                // JWT 토큰을 localStorage에 저장
-                localStorage.setItem('jwt', response.data.data.token);
-                // 로그인 성공 후 메인 페이지로 이동
-                navigate('/');
+                const token = response.data.data?.accessToken;
+                console.log('저장할 토큰:', token);
+                
+                if (token && token !== 'undefined') {
+                    // JWT 토큰을 localStorage에 저장
+                    localStorage.setItem('jwt', token);
+                    console.log('토큰 저장 완료');
+                    // 로그인 성공 후 메인 페이지로 이동하고 새로고침
+                    navigate('/');
+                    window.location.reload(); // 페이지 새로고침으로 모든 컴포넌트가 새로운 로그인 상태를 인식하도록
+                } else {
+                    console.error('토큰이 올바르지 않습니다:', token);
+                    setError('로그인 응답에 토큰이 없습니다.');
+                }
             } else {
                 setError('로그인에 실패했습니다.');
             }
         } catch (err) {
+            console.error('로그인 에러:', err);
             setError('로그인에 실패했습니다. 아이디와 비밀번호를 확인해주세요.');
         } finally {
             setLoading(false);

@@ -6,6 +6,7 @@ import AccommodationCard from '../components/AccommodationCard';
 import {getAccommodations} from '../api/accommodationApi';
 import SearchBar from "../components/SearchBar";
 import {FaSearch} from "react-icons/fa";
+import {isLoggedIn, getCurrentUser} from '../utils/auth';
 
 const PageContainer = styled.div`
     display: flex;
@@ -249,10 +250,8 @@ const AccommodationListPage = () => {
     // const [selectedAccommodation, setSelectedAccommodation] = useState(null); // Not used yet
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
-    const token = localStorage.getItem('jwt');
-    const user = parseJwt(token);
-    const isLoggedIn = !!user;
-    const guestId = user?.id;
+    const isUserLoggedIn = isLoggedIn();
+    const user = getCurrentUser();
 
     // const itemRefs = useRef({}); // Not used yet
 
@@ -413,9 +412,14 @@ const AccommodationListPage = () => {
         if (action === 'login') {
             navigate('/login');
         } else if (action === 'messages') {
-            navigate('/chatroom');
+            if (isUserLoggedIn) {
+                navigate('/chatroom');
+            } else {
+                alert('로그인이 필요합니다.');
+                navigate('/login');
+            }
         } else if (action === 'trips') {
-            if (guestId) navigate(`/api/reservations/guest/${guestId}/confirmed`);
+            if (user?.id) navigate(`/api/reservations/guest/${user.id}/confirmed`);
         } else if (action === 'profile') {
             navigate('/profile');
         }
@@ -436,11 +440,26 @@ const AccommodationListPage = () => {
                             <UserMenuContainer>
                                 <UserButton onClick={handleMenuClick}>
                                     <span style={{fontSize:'20px'}}>☰</span>
-                                    <UserIcon> <span role="img" aria-label="user">👤</span> </UserIcon>
+                                    {isUserLoggedIn && user?.profileImage ? (
+                                        <UserIcon>
+                                            <img 
+                                                src={user.profileImage} 
+                                                alt="프로필" 
+                                                style={{
+                                                    width: '28px',
+                                                    height: '28px',
+                                                    borderRadius: '50%',
+                                                    objectFit: 'cover'
+                                                }}
+                                            />
+                                        </UserIcon>
+                                    ) : (
+                                        <UserIcon> <span role="img" aria-label="user">👤</span> </UserIcon>
+                                    )}
                                 </UserButton>
                                 {menuOpen && (
                                     <DropdownMenu onMouseLeave={handleMenuClose}>
-                                        {!isLoggedIn ? (
+                                        {!isUserLoggedIn ? (
                                             <DropdownItem onClick={() => handleDropdownClick('login')}>로그인</DropdownItem>
                                         ) : (
                                             <>
