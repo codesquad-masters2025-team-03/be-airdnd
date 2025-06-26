@@ -25,6 +25,7 @@ import com.team3.airdnd.accommodation.service.AccommodationService;
 import com.team3.airdnd.global.dto.ResponseDto;
 import com.team3.airdnd.storedFile.validation.ImageValidator;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -48,8 +49,8 @@ public class AccommodationController {
 	public ResponseEntity<ResponseDto<Void>> createAccommodation(
 		@RequestPart @Valid AccommodationRequestDto.CreateAccommodationDto request,
 		@RequestPart("files") List<MultipartFile> files,
-		@RequestParam Long hostId) {
-
+		HttpServletRequest servletRequest) {
+		Long hostId = (Long)servletRequest.getAttribute("userId");
 		imageValidator.validate(files);
 		accommodationService.createAccommodation(request, files, hostId);
 		return ResponseDto.created();
@@ -59,9 +60,10 @@ public class AccommodationController {
 	public ResponseEntity<ResponseDto<Void>> updateAccommodation(
 		@PathVariable Long accommodationId,
 		@RequestPart AccommodationRequestDto.UpdateAccommodationDto request,
-		@RequestParam Long hostId,
-		@RequestPart(value = "files", required = false) List<MultipartFile> files
+		@RequestPart(value = "files", required = false) List<MultipartFile> files,
+		HttpServletRequest servletRequest
 	) {
+		Long hostId = (Long)servletRequest.getAttribute("userId");
 		imageValidator.validate(files);
 		accommodationService.updateAccommodation(accommodationId, request, hostId, files);
 		return ResponseDto.ok(null);
@@ -70,8 +72,9 @@ public class AccommodationController {
 	@DeleteMapping("/{accommodationId}")
 	public ResponseEntity<ResponseDto<Void>> deleteAccommodation(
 		@PathVariable Long accommodationId,
-		@RequestParam Long hostId
+		HttpServletRequest servletRequest
 	) {
+		Long hostId = (Long)servletRequest.getAttribute("userId");
 		accommodationService.deleteAccommodation(accommodationId, hostId);
 		return ResponseDto.noContent();
 	}
@@ -96,7 +99,8 @@ public class AccommodationController {
 	}
 
 	@GetMapping("/host")
-	public ResponseEntity<ResponseDto<Map<String, Object>>> getMyAccommodations(@RequestParam Long hostId) {
+	public ResponseEntity<ResponseDto<Map<String, Object>>> getMyAccommodations(HttpServletRequest servletRequest) {
+		Long hostId = (Long)servletRequest.getAttribute("userId");
 		List<AccommodationResponseDto.HostAccommodationDto> accommodations = accommodationService.getMyAccommodations(
 			hostId);
 
