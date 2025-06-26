@@ -33,7 +33,10 @@ public class WebConfig implements WebMvcConfigurer {
 	public void addInterceptors(InterceptorRegistry registry) {
 		registry.addInterceptor(authInterceptor)
 			.addPathPatterns("/api/**")
-			.excludePathPatterns("/api/auth/**");
+			.excludePathPatterns("/api/auth/**",
+				"api/accommodations",
+				"api/accommodations/{accommodationId}",
+				"api/accommodations//price-range");
 	}
 
 	@Bean
