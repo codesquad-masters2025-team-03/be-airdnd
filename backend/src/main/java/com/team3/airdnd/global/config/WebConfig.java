@@ -34,9 +34,9 @@ public class WebConfig implements WebMvcConfigurer {
 		registry.addInterceptor(authInterceptor)
 			.addPathPatterns("/api/**")
 			.excludePathPatterns("/api/auth/**",
-				"api/accommodations",
-				"api/accommodations/{accommodationId}",
-				"api/accommodations//price-range");
+				"/api/accommodations",             // 숙소 목록
+				"/api/accommodations/*",           // 숙소 상세 (id)
+				"/api/accommodations/price-range");  // 가격 히스토그램);
 	}
 
 	@Bean
