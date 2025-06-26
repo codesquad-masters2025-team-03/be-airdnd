@@ -569,12 +569,10 @@ const AccommodationDetailPage = () => {
     const [guests] = useState(queryParams.guests || 1);
 
     const [menuOpen, setMenuOpen] = useState(false);
-    // const token = localStorage.getItem('jwt');
-    // const user = parseJwt(token);
-    // const isLoggedIn = !!user;
-    // const guestId = user?.id;
-    // TODO: 추후 JWT에서 guestId 파싱하도록 변경
-    const guestId = 2;
+    const token = localStorage.getItem('jwt');
+    const user = parseJwt(token);
+    const isLoggedIn = !!user;
+    const guestId = user?.id;
 
     const handleMenuClick = () => setMenuOpen((v) => !v);
     const handleMenuClose = () => setMenuOpen(false);
@@ -626,6 +624,12 @@ const AccommodationDetailPage = () => {
     }, [data]);
 
     const handleReserve = async () => {
+        if (!isLoggedIn) {
+            alert('로그인이 필요합니다.');
+            navigate('/login');
+            return;
+        }
+        
         setReserveBtnLoading(true);
         try {
             const res = await createReservation(id, guestId, checkIn, checkOut, guests);
@@ -684,10 +688,15 @@ const AccommodationDetailPage = () => {
                     </UserButton>
                     {menuOpen && (
                         <DropdownMenu onMouseLeave={handleMenuClose}>
-                            <DropdownItem onClick={() => handleDropdownClick('login')}>로그인</DropdownItem>
-                            <DropdownItem onClick={() => handleDropdownClick('messages')}>메시지</DropdownItem>
-                            <DropdownItem onClick={() => handleDropdownClick('trips')}>내 여행</DropdownItem>
-                            <DropdownItem onClick={() => handleDropdownClick('profile')}>프로필</DropdownItem>
+                            {!isLoggedIn ? (
+                                <DropdownItem onClick={() => handleDropdownClick('login')}>로그인</DropdownItem>
+                            ) : (
+                                <>
+                                    <DropdownItem onClick={() => handleDropdownClick('messages')}>메시지</DropdownItem>
+                                    <DropdownItem onClick={() => handleDropdownClick('trips')}>내 여행</DropdownItem>
+                                    <DropdownItem onClick={() => handleDropdownClick('profile')}>프로필</DropdownItem>
+                                </>
+                            )}
                         </DropdownMenu>
                     )}
                 </UserMenuContainer>

@@ -4,9 +4,23 @@ import SockJS from 'sockjs-client';
 import {Stomp} from '@stomp/stompjs';
 import axios from 'axios';
 
+// JWT 파싱 함수
+function parseJwt(token) {
+    if (!token) return null;
+    try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        return JSON.parse(jsonPayload);
+    } catch (e) {
+        return null;
+    }
+}
+
 // 하드코딩된 테스트 값 (실제 환경에 따라 교체 필요)
 const RESERVATION_ID = 1;
-const SENDER_ID = 2;
 const ACCOMMODATION_ID = 100;
 
 const ChatRoom = () => {
@@ -17,17 +31,22 @@ const ChatRoom = () => {
     const [partnerProfileUrl, setPartnerProfileUrl] = useState(null);
     const messagesEndRef = useRef(null);
 
+    // JWT에서 사용자 ID 파싱
+    const token = localStorage.getItem('jwt');
+    const user = parseJwt(token);
+    const senderId = user?.id || 2; // 기본값 2 (로그인하지 않은 경우)
+
     // 1. 채팅방 생성 요청 (예약 완료 후)
     useEffect(() => {
-        axios.post('/api/chat/rooms', {
+        axios.post(`${process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080'}/api/chat/rooms`, {
             reservationId: RESERVATION_ID,
-            senderId: SENDER_ID,
+            senderId: senderId,
         }).catch(console.error);
-    }, []);
+    }, [senderId]);
 
     // 2. 과거 메시지 불러오기
     useEffect(() => {
-        axios.get(`/api/chat/rooms/${ACCOMMODATION_ID}/messages`)
+        axios.get(`${process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080'}/api/chat/rooms/${ACCOMMODATION_ID}/messages`)
             .then((res) => {
                 setMessages(res.data.data || []);
             }).catch(console.error);
@@ -69,14 +88,14 @@ const ChatRoom = () => {
         if (client && input.trim()) {
             const payload = {
                 accommodationId: ACCOMMODATION_ID,
-                senderId: SENDER_ID,
+                senderId: senderId,
                 content: input.trim(),
             };
             client.send('/pub/chat/message', {}, JSON.stringify(payload));
 
             // 낙관적 UI 적용 (선택사항)
             setMessages(prev => [...prev, {
-                senderId: SENDER_ID,
+                senderId: senderId,
                 senderName: '나',
                 content: input.trim(),
             }]);
@@ -93,7 +112,7 @@ const ChatRoom = () => {
             </Header>
             <MessageContainer>
                 {messages.map((msg, idx) => (
-                    <MessageBubble key={idx} isMe={msg.senderId === SENDER_ID}>
+                    <MessageBubble key={idx} isMe={msg.senderId === senderId}>
                         <Sender>{msg.senderName}</Sender>
                         <Content>{msg.content}</Content>
                     </MessageBubble>
