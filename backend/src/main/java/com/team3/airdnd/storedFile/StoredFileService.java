@@ -19,7 +19,7 @@ public class StoredFileService {
 	private final S3FileService s3FileService;
 
 	@Transactional
-	public void saveFiles(List<MultipartFile> files, Long accommodationId) {
+	public void saveAccommodationImages(List<MultipartFile> files, Long accommodationId) {
 		for (int i = 0; i < files.size(); i++) {
 			MultipartFile file = files.get(i);
 			String url = s3FileService.upload(file);

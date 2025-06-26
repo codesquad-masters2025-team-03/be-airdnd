@@ -19,6 +19,7 @@ import com.team3.airdnd.reservation.dto.ReservationRequestDto;
 import com.team3.airdnd.reservation.dto.ReservationResponseDto;
 import com.team3.airdnd.reservation.service.ReservationService;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -44,8 +45,9 @@ public class ReservationController {
 	public ResponseEntity<ReservationResponseDto.CreateReservationResponseDto> createReservation(
 		@PathVariable Long accommodationId,
 		@RequestBody @Valid ReservationRequestDto.CreateReservationRequestDto request,
-		@RequestParam("guestId") Long guestId // TODO: 로그인 기능 구현 시 guestId 제거하고 인증 유저로 대체
+		HttpServletRequest servletRequest
 	) {
+		Long guestId = (Long)servletRequest.getAttribute("userId");
 		var response = reservationService.createReservation(accommodationId, request, guestId);
 		return ResponseEntity.ok(response);
 	}
@@ -65,23 +67,26 @@ public class ReservationController {
 	}
 
 	//게스트 예약 조회
-	@GetMapping("/guest/{guestId}/confirmed")
-	public List<GuestReservationDto> getConfirmedReservationsByGuest(@PathVariable Long guestId) {
+	@GetMapping("/guest/confirmed")
+	public List<GuestReservationDto> getConfirmedReservationsByGuest(HttpServletRequest servletRequest) {
+		Long guestId = (Long)servletRequest.getAttribute("userId");
 		return reservationService.getConfirmedReservationsByGuest(guestId);
 	}
 
 	//호스트가 자신이 등록한 숙소들의 예약을 최신순으로 조회
-	@GetMapping("/host/{hostId}")
-	public List<HostReservationDto> getReservationsByHost(@PathVariable Long hostId) {
+	@GetMapping("/host")
+	public List<HostReservationDto> getReservationsByHost(HttpServletRequest servletRequest) {
+		Long hostId = (Long)servletRequest.getAttribute("userId");
 		return reservationService.getReservationsByHost(hostId);
 	}
 
 	//호스트의 특정 숙소에 해당하는 예약 목록을 조회
-	@GetMapping("/host/{hostId}/accommodation/{accommodationId}")
+	@GetMapping("/host/accommodation/{accommodationId}")
 	public List<HostReservationDto> getReservationsByHostAndAccommodation(
-		@PathVariable Long hostId,
-		@PathVariable Long accommodationId
+		@PathVariable Long accommodationId,
+		HttpServletRequest servletRequest
 	) {
+		Long hostId = (Long)servletRequest.getAttribute("userId");
 		return reservationService.getReservationsByHostAndAccommodation(hostId, accommodationId);
 	}
 

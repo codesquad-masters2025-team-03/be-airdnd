@@ -1,5 +1,6 @@
 package com.team3.airdnd.accommodation.controller;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -23,8 +24,10 @@ import com.team3.airdnd.accommodation.dto.PriceHistogramConditionDto;
 import com.team3.airdnd.accommodation.dto.PriceHistogramResponseDto;
 import com.team3.airdnd.accommodation.service.AccommodationService;
 import com.team3.airdnd.global.dto.ResponseDto;
+import com.team3.airdnd.reservation.service.ReservationService;
 import com.team3.airdnd.storedFile.validation.ImageValidator;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -34,6 +37,7 @@ import lombok.RequiredArgsConstructor;
 public class AccommodationController {
 
 	private final AccommodationService accommodationService;
+	private final ReservationService reservationService;
 	private final ImageValidator imageValidator;
 
 	@GetMapping("/{accommodationId}")
@@ -48,8 +52,8 @@ public class AccommodationController {
 	public ResponseEntity<ResponseDto<Void>> createAccommodation(
 		@RequestPart @Valid AccommodationRequestDto.CreateAccommodationDto request,
 		@RequestPart("files") List<MultipartFile> files,
-		@RequestParam Long hostId) {
-
+		HttpServletRequest servletRequest) {
+		Long hostId = (Long)servletRequest.getAttribute("userId");
 		imageValidator.validate(files);
 		accommodationService.createAccommodation(request, files, hostId);
 		return ResponseDto.created();
@@ -59,9 +63,10 @@ public class AccommodationController {
 	public ResponseEntity<ResponseDto<Void>> updateAccommodation(
 		@PathVariable Long accommodationId,
 		@RequestPart AccommodationRequestDto.UpdateAccommodationDto request,
-		@RequestParam Long hostId,
-		@RequestPart(value = "files", required = false) List<MultipartFile> files
+		@RequestPart(value = "files", required = false) List<MultipartFile> files,
+		HttpServletRequest servletRequest
 	) {
+		Long hostId = (Long)servletRequest.getAttribute("userId");
 		imageValidator.validate(files);
 		accommodationService.updateAccommodation(accommodationId, request, hostId, files);
 		return ResponseDto.ok(null);
@@ -70,8 +75,9 @@ public class AccommodationController {
 	@DeleteMapping("/{accommodationId}")
 	public ResponseEntity<ResponseDto<Void>> deleteAccommodation(
 		@PathVariable Long accommodationId,
-		@RequestParam Long hostId
+		HttpServletRequest servletRequest
 	) {
+		Long hostId = (Long)servletRequest.getAttribute("userId");
 		accommodationService.deleteAccommodation(accommodationId, hostId);
 		return ResponseDto.noContent();
 	}
@@ -96,11 +102,20 @@ public class AccommodationController {
 	}
 
 	@GetMapping("/host")
-	public ResponseEntity<ResponseDto<Map<String, Object>>> getMyAccommodations(@RequestParam Long hostId) {
+	public ResponseEntity<ResponseDto<Map<String, Object>>> getMyAccommodations(HttpServletRequest servletRequest) {
+		Long hostId = (Long)servletRequest.getAttribute("userId");
 		List<AccommodationResponseDto.HostAccommodationDto> accommodations = accommodationService.getMyAccommodations(
 			hostId);
 
 		Map<String, Object> data = Map.of("accommodations", accommodations);
 		return ResponseDto.ok(data);
+	}
+
+	@GetMapping("/{accommodationId}/unavailable-dates")
+	public ResponseEntity<ResponseDto<Map<String, List<LocalDate>>>> getUnavailableDates(
+		@PathVariable Long accommodationId
+	) {
+		List<LocalDate> unavailableDates = reservationService.getUnavailableDates(accommodationId);
+		return ResponseDto.ok(Map.of("unavailableDates", unavailableDates));
 	}
 }
