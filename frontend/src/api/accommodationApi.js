@@ -137,4 +137,54 @@ export const createReservation = async (accommodationId, guestId, checkIn, check
     return response;
 };
 
+export const login = async (loginId, password) => {
+    if (useMock) {
+        return {
+            data: {
+                success: true,
+                data: {
+                    token: "mock-jwt-token",
+                    user: {
+                        id: 1,
+                        loginId: loginId,
+                        username: "테스트 사용자"
+                    }
+                }
+            }
+        };
+    }
+    const response = await axios.post(`${BASE_URL}/api/auth/login`, {
+        loginId,
+        password
+    });
+    return response;
+};
+
+export const signup = async (email, loginId, password, username, phone, profileImage) => {
+    if (useMock) {
+        return {
+            data: {
+                success: true,
+                data: {
+                    token: "mock-jwt-token",
+                    user: {
+                        id: 1,
+                        loginId: loginId,
+                        username: username
+                    }
+                }
+            }
+        };
+    }
+    const response = await axios.post(`${BASE_URL}/api/auth/signup`, {
+        email,
+        loginId,
+        password,
+        username,
+        phone,
+        profileImage
+    });
+    return response;
+};
+
 
