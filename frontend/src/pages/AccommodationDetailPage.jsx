@@ -645,15 +645,24 @@ const AccommodationDetailPage = () => {
             navigate('/login');
             return;
         }
-        
         setReserveBtnLoading(true);
         try {
+            // 예약 생성
             const res = await createReservation(id, guestId, checkIn, checkOut, guests);
             setReserveId(res.data.reservationId);
             setReserveBtnDone(true);
-            // 결제 정보 모달 띄우기
-            const payRes = await authAxios.get(`/api/payment/reservation/${res.data.reservationId}`);
-            setPaymentInfo(payRes.data);
+            // 예약 응답에서 orderId, amount 등 바로 사용
+            setPaymentInfo({
+                orderId: res.data.orderId,
+                amount: res.data.amount,
+                title: data?.name || '숙소 예약',
+                checkIn,
+                checkOut,
+                guestCount: guests,
+                pricePerNight: reservationInfo?.pricePerNight || data.pricePerNight || 0,
+                totalPrice: reservationInfo?.totalPrice || res.data.amount || 0,
+                serviceFee: Math.round((reservationInfo?.totalPrice || res.data.amount || 0) * 0.1)
+            });
             setPaymentModal(true);
         } catch (e) {
             alert('예약에 실패했습니다.');
@@ -665,14 +674,15 @@ const AccommodationDetailPage = () => {
 
     // 토스페이먼츠 결제 처리
     const handlePayment = async () => {
+        if (!paymentInfo?.orderId) {
+            alert('결제 정보에 주문번호가 없습니다.');
+            return;
+        }
         try {
             const tossPayments = await loadTossPayments(process.env.REACT_APP_TOSS_CLIENT_KEY || 'test_ck_D5GePWvyJnrK0W0k6q8gLzN97Eoq');
-            
-            const totalAmount = paymentInfo.totalPrice + paymentInfo.serviceFee;
-            
             await tossPayments.requestPayment('카드', {
-                amount: totalAmount,
-                orderId: `order_${Date.now()}`,
+                amount: paymentInfo.amount,
+                orderId: paymentInfo.orderId,
                 orderName: `${paymentInfo.title} 예약`,
                 customerName: '고객명',
                 customerEmail: 'customer@example.com',

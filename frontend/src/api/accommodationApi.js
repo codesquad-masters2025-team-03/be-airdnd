@@ -247,4 +247,25 @@ export const signup = async (email, loginId, password, username, phone, profileI
     return response;
 };
 
+export const approvePayment = async (paymentKey, orderId, amount) => {
+    if (useMock) {
+        return {
+            data: {
+                id: 2,
+                reservationId: 16,
+                paymentMethodId: 2,
+                orderId: orderId,
+                amount: amount,
+                paidAt: new Date().toISOString()
+            }
+        };
+    }
+    const response = await authAxios.post('/api/payment/approve', {
+        paymentKey,
+        orderId,
+        amount
+    });
+    return response;
+};
+
 

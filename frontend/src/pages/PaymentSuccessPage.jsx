@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
+import { approvePayment } from '../api/accommodationApi';
 
 const PageWrapper = styled.div`
     min-height: 100vh;
@@ -72,6 +73,16 @@ const PaymentSuccessPage = () => {
                 paymentKey,
                 amount: parseInt(amount)
             });
+
+            // approvePayment API 호출
+            approvePayment(paymentKey, orderId, parseInt(amount))
+                .then(res => {
+                    console.log('결제 승인 성공:', res.data);
+                })
+                .catch(err => {
+                    console.error('결제 승인 실패:', err);
+                    alert('결제 승인 처리 중 오류가 발생했습니다.');
+                });
         }
     }, [searchParams]);
 
