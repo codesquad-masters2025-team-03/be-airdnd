@@ -2,10 +2,16 @@ import React, {useEffect, useState, useMemo, useRef} from 'react';
 import styled from 'styled-components';
 import {useParams, useLocation, useNavigate, useSearchParams} from 'react-router-dom';
 import KakaoMap from '../components/KakaoMap';
-import {getAccommodationDetail, getReservationInfo, createReservation, createChatRoom, getUnavailableDates} from '../api/accommodationApi';
-import { format } from 'date-fns';
+import {
+    getAccommodationDetail,
+    getReservationInfo,
+    createReservation,
+    createChatRoom,
+    getUnavailableDates
+} from '../api/accommodationApi';
+import {format} from 'date-fns';
 import axios from 'axios';
-import { loadTossPayments } from '@tosspayments/payment-sdk';
+import {loadTossPayments} from '@tosspayments/payment-sdk';
 
 import {
     FaWifi,
@@ -356,12 +362,14 @@ const ReserveInput = styled.div`
     min-width: 120px;
     max-width: 180px;
     align-items: center;
+
     label {
         font-size: 0.92rem;
         color: #888;
         margin-bottom: 2px;
         text-align: center;
     }
+
     select, input {
         border: none;
         background: #f5f5f5;
@@ -424,7 +432,7 @@ const UserButton = styled.button`
     font-size: 16px;
     font-weight: 500;
     color: #444;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
 `;
 const UserIcon = styled.span`
     display: flex;
@@ -445,7 +453,7 @@ const DropdownMenu = styled.div`
     background: #fff;
     border: 2px dashed #6c3;
     border-radius: 16px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.13);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.13);
     z-index: 100;
     padding: 16px 0;
     display: flex;
@@ -457,6 +465,7 @@ const DropdownItem = styled.div`
     cursor: pointer;
     font-size: 16px;
     color: #222;
+
     &:hover {
         background: #f7f7f7;
     }
@@ -464,8 +473,11 @@ const DropdownItem = styled.div`
 
 const PaymentModalOverlay = styled.div`
     position: fixed;
-    left: 0; top: 0; width: 100vw; height: 100vh;
-    background: rgba(0,0,0,0.18);
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.18);
     z-index: 3000;
     display: flex;
     align-items: center;
@@ -474,7 +486,7 @@ const PaymentModalOverlay = styled.div`
 const PaymentModalBox = styled.div`
     background: #fff;
     border-radius: 24px;
-    box-shadow: 0 4px 32px rgba(0,0,0,0.13);
+    box-shadow: 0 4px 32px rgba(0, 0, 0, 0.13);
     padding: 36px 32px 32px 32px;
     min-width: 380px;
     max-width: 95vw;
@@ -553,7 +565,7 @@ function parseJwt(token) {
     try {
         const base64Url = token.split('.')[1];
         const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function (c) {
             return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
         }).join(''));
         return JSON.parse(jsonPayload);
@@ -564,78 +576,82 @@ function parseJwt(token) {
 
 // 캐러셀 및 모달 스타일 추가
 const ImageCarousel = styled.div`
-  position: relative;
-  width: 100%;
-  height: 440px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 24px;
-  background: #f7f7f7;
-  border-radius: 18px;
-  overflow: hidden;
+    position: relative;
+    width: 100%;
+    height: 440px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 24px;
+    background: #f7f7f7;
+    border-radius: 18px;
+    overflow: hidden;
 `;
 const ArrowButton = styled.button`
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  background: rgba(255,255,255,0.7);
-  border: none;
-  border-radius: 50%;
-  width: 44px;
-  height: 44px;
-  font-size: 2rem;
-  color: #333;
-  cursor: pointer;
-  z-index: 2;
-  &:disabled {
-    opacity: 0.3;
-    cursor: default;
-  }
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.7);
+    border: none;
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    font-size: 2rem;
+    color: #333;
+    cursor: pointer;
+    z-index: 2;
+
+    &:disabled {
+        opacity: 0.3;
+        cursor: default;
+    }
 `;
 const ModalOverlay = styled.div`
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.7);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
 `;
 const ModalContent = styled.div`
-  position: relative;
-  background: #fff;
-  border-radius: 18px;
-  padding: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    position: relative;
+    background: #fff;
+    border-radius: 18px;
+    padding: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 `;
 const CloseButton = styled.button`
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  background: #fff;
-  border: 1.5px solid #bbb;
-  border-radius: 50%;
-  width: 36px;
-  height: 36px;
-  font-size: 1.2rem;
-  color: #333;
-  cursor: pointer;
-  z-index: 3;
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: #fff;
+    border: 1.5px solid #bbb;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    font-size: 1.2rem;
+    color: #333;
+    cursor: pointer;
+    z-index: 3;
 `;
 
 const SectionTitle = styled.h2`
-  font-size: 1.18rem;
-  font-weight: bold;
-  margin: 36px 0 16px 0;
-  text-align: left;
+    font-size: 1.18rem;
+    font-weight: bold;
+    margin: 36px 0 16px 0;
+    text-align: left;
 `;
 const SectionDivider = styled.hr`
-  border: none;
-  border-top: 1.5px solid #eee;
-  margin: 36px 0 36px 0;
+    border: none;
+    border-top: 1.5px solid #eee;
+    margin: 36px 0 36px 0;
 `;
 
 const AccommodationDetailPage = () => {
@@ -850,11 +866,11 @@ const AccommodationDetailPage = () => {
     const mainImg = imageUrls && imageUrls[0];
     const subImgs = imageUrls ? imageUrls.slice(1, 5) : [];
     // address가 없으면 서울 시청 좌표를 기본값으로 사용
-    const mapCenter = address && address.latitude && address.longitude 
-        ? {lat: address.latitude, lng: address.longitude} 
+    const mapCenter = address && address.latitude && address.longitude
+        ? {lat: address.latitude, lng: address.longitude}
         : {lat: 37.5665, lng: 126.9780};
-    const mapMarkers = address && address.latitude && address.longitude 
-        ? [{latitude: address.latitude, longitude: address.longitude}] 
+    const mapMarkers = address && address.latitude && address.longitude
+        ? [{latitude: address.latitude, longitude: address.longitude}]
         : [];
 
     // 가격 계산 (수수료 10%)
@@ -868,10 +884,10 @@ const AccommodationDetailPage = () => {
         <>
             <Navbar>
                 <Logo onClick={() => navigate('/')}>AirDND</Logo>
-                <div style={{flex:1}} />
+                <div style={{flex: 1}}/>
                 <UserMenuContainer>
                     <UserButton onClick={handleMenuClick}>
-                        <span style={{fontSize:'20px'}}>☰</span>
+                        <span style={{fontSize: '20px'}}>☰</span>
                         <UserIcon> <span role="img" aria-label="user">👤</span> </UserIcon>
                     </UserButton>
                     {menuOpen && (
@@ -894,7 +910,7 @@ const AccommodationDetailPage = () => {
                     {imageUrls && imageUrls.length > 1 && (
                         <ArrowButton
                             onClick={() => setCurrentIndex(currentIndex === 0 ? imageUrls.length - 1 : currentIndex - 1)}
-                            style={{ left: 16 }}
+                            style={{left: 16}}
                             aria-label="이전 사진"
                         >&#8592;</ArrowButton>
                     )}
@@ -902,14 +918,14 @@ const AccommodationDetailPage = () => {
                         <MainImage
                             src={imageUrls[currentIndex]}
                             alt={name}
-                            style={{ cursor: 'pointer', height: '100%', objectFit: 'cover', borderRadius: '18px' }}
+                            style={{cursor: 'pointer', height: '100%', objectFit: 'cover', borderRadius: '18px'}}
                             onClick={() => setShowModal(true)}
                         />
                     )}
                     {imageUrls && imageUrls.length > 1 && (
                         <ArrowButton
                             onClick={() => setCurrentIndex(currentIndex === imageUrls.length - 1 ? 0 : currentIndex + 1)}
-                            style={{ right: 16 }}
+                            style={{right: 16}}
                             aria-label="다음 사진"
                         >&#8594;</ArrowButton>
                     )}
@@ -946,11 +962,13 @@ const AccommodationDetailPage = () => {
                             <ReserveInputRow>
                                 <ReserveInput onClick={handleDateInputClick}>
                                     <label>체크인</label>
-                                    <input type="text" readOnly value={checkIn ? checkIn : '연도. 월. 일.'} style={{cursor: 'pointer'}} />
+                                    <input type="text" readOnly value={checkIn ? checkIn : '연도. 월. 일.'}
+                                           style={{cursor: 'pointer'}}/>
                                 </ReserveInput>
                                 <ReserveInput onClick={handleDateInputClick}>
                                     <label>체크아웃</label>
-                                    <input type="text" readOnly value={checkOut ? checkOut : '연도. 월. 일.'} style={{cursor: 'pointer'}} />
+                                    <input type="text" readOnly value={checkOut ? checkOut : '연도. 월. 일.'}
+                                           style={{cursor: 'pointer'}}/>
                                 </ReserveInput>
                             </ReserveInputRow>
 
@@ -974,9 +992,15 @@ const AccommodationDetailPage = () => {
                                 </div>
                             )}
 
-                            <ReserveInput style={{ width: '332px', maxWidth: '332px', marginBottom: '12px', marginLeft: 'auto', marginRight: 'auto' }}>
+                            <ReserveInput style={{
+                                width: '332px',
+                                maxWidth: '332px',
+                                marginBottom: '12px',
+                                marginLeft: 'auto',
+                                marginRight: 'auto'
+                            }}>
                                 <label>인원</label>
-                                <input type="text" readOnly value={guests} />
+                                <input type="text" readOnly value={guests}/>
                             </ReserveInput>
                             <ReserveButton
                                 style={{marginTop: '18px'}}
@@ -1025,48 +1049,65 @@ const AccommodationDetailPage = () => {
                 <ReviewList>
                     {reviews && reviews.comments && reviews.comments.length > 0 ? reviews.comments.map(c => (
                         <ReviewCard key={c.commentId}>
-                            <ProfileImg src={c.profileUrl || 'https://via.placeholder.com/48'} alt={c.guestName} />
+                            <ProfileImg src={c.profileUrl || 'https://via.placeholder.com/48'} alt={c.guestName}/>
                             <ReviewContent>
                                 <div>
                                     <b>{c.guestName}</b> · {c.rating}점
                                 </div>
                                 <div>{c.content}</div>
-                                <div style={{color:'#888', fontSize:'0.9em'}}>{c.createdAt}</div>
+                                <div style={{color: '#888', fontSize: '0.9em'}}>{c.createdAt}</div>
                             </ReviewContent>
                         </ReviewCard>
-                    )) : <div style={{color:'#888'}}>아직 후기가 없습니다.</div>}
+                    )) : <div style={{color: '#888'}}>아직 후기가 없습니다.</div>}
                 </ReviewList>
             </PageWrapper>
             {paymentModal && paymentInfo && (
                 <PaymentModalOverlay onClick={closePaymentModal}>
                     <PaymentModalBox onClick={e => e.stopPropagation()}>
                         <ModalFlex>
-                            <ModalImage src={paymentInfo.imageUrl || 'https://via.placeholder.com/90'} alt={paymentInfo.title} />
+                            <ModalImage src={paymentInfo.imageUrl || 'https://via.placeholder.com/90'}
+                                        alt={paymentInfo.title}/>
                             <div>
                                 <ModalTitle>{paymentInfo.title}</ModalTitle>
-                                <div style={{fontSize:'1.05rem', color:'#888'}}>{paymentInfo.checkIn}~{paymentInfo.checkOut} · 성인 {paymentInfo.guestCount}명</div>
+                                <div style={{
+                                    fontSize: '1.05rem',
+                                    color: '#888'
+                                }}>{paymentInfo.checkIn}~{paymentInfo.checkOut} · 성인 {paymentInfo.guestCount}명
+                                </div>
                             </div>
                         </ModalFlex>
                         <ModalSection>
                             <ModalSub>취소 수수료 없음</ModalSub>
-                            <div style={{color:'#888', fontSize:'0.97rem'}}>7월 30일까지 예약을 취소하면 요금 전액이 환불됩니다.<br/>환불 정책 전문</div>
+                            <div style={{color: '#888', fontSize: '0.97rem'}}>7월 30일까지 예약을 취소하면 요금 전액이 환불됩니다.<br/>환불 정책
+                                전문
+                            </div>
                         </ModalSection>
-                        <hr style={{margin:'18px 0 10px 0', border:'none', borderTop:'1px solid #eee'}}/>
+                        <hr style={{margin: '18px 0 10px 0', border: 'none', borderTop: '1px solid #eee'}}/>
                         <ModalSection>
                             <ModalTitle>여행 세부 정보</ModalTitle>
-                            <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+                            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
                                 <div>
                                     {paymentInfo.checkIn}~{paymentInfo.checkOut}<br/>
                                     성인 {paymentInfo.guestCount}명
                                 </div>
-                                <button style={{background:'#f5f5f5', border:'none', borderRadius:'12px', padding:'7px 22px', fontSize:'1rem', color:'#888', fontWeight:'bold', cursor:'not-allowed'}}>변경</button>
+                                <button style={{
+                                    background: '#f5f5f5',
+                                    border: 'none',
+                                    borderRadius: '12px',
+                                    padding: '7px 22px',
+                                    fontSize: '1rem',
+                                    color: '#888',
+                                    fontWeight: 'bold',
+                                    cursor: 'not-allowed'
+                                }}>변경
+                                </button>
                             </div>
                         </ModalSection>
-                        <hr style={{margin:'18px 0 10px 0', border:'none', borderTop:'1px solid #eee'}}/>
+                        <hr style={{margin: '18px 0 10px 0', border: 'none', borderTop: '1px solid #eee'}}/>
                         <ModalSection>
                             <ModalTitle>요금 세부 정보</ModalTitle>
                             <ModalRow>
-                                <span>₩{paymentInfo.pricePerNight.toLocaleString()} x {Math.max(1, (new Date(paymentInfo.checkOut) - new Date(paymentInfo.checkIn))/(1000*60*60*24))}박</span>
+                                <span>₩{paymentInfo.pricePerNight.toLocaleString()} x {Math.max(1, (new Date(paymentInfo.checkOut) - new Date(paymentInfo.checkIn)) / (1000 * 60 * 60 * 24))}박</span>
                                 <span>₩{paymentInfo.totalPrice.toLocaleString()}</span>
                             </ModalRow>
                             <ModalRow>
@@ -1074,13 +1115,20 @@ const AccommodationDetailPage = () => {
                                 <span>₩{paymentInfo.serviceFee.toLocaleString()}</span>
                             </ModalRow>
                         </ModalSection>
-                        <hr style={{margin:'18px 0 10px 0', border:'none', borderTop:'1px solid #eee'}}/>
+                        <hr style={{margin: '18px 0 10px 0', border: 'none', borderTop: '1px solid #eee'}}/>
                         <ModalTotal>
-                            <span>총액 <span style={{fontWeight:400}}>KRW</span></span>
+                            <span>총액 <span style={{fontWeight: 400}}>KRW</span></span>
                             <span>₩{(paymentInfo.totalPrice + paymentInfo.serviceFee).toLocaleString()}</span>
                         </ModalTotal>
                         <PayButton onClick={handlePayment}>결제하기</PayButton>
-                        <div style={{color:'#888', fontSize:'0.97rem', marginTop:'8px', textAlign:'center', cursor:'pointer'}}>요금 상세 내역</div>
+                        <div style={{
+                            color: '#888',
+                            fontSize: '0.97rem',
+                            marginTop: '8px',
+                            textAlign: 'center',
+                            cursor: 'pointer'
+                        }}>요금 상세 내역
+                        </div>
                     </PaymentModalBox>
                 </PaymentModalOverlay>
             )}
@@ -1090,15 +1138,15 @@ const AccommodationDetailPage = () => {
                         {imageUrls.length > 1 && (
                             <ArrowButton
                                 onClick={() => setCurrentIndex(currentIndex === 0 ? imageUrls.length - 1 : currentIndex - 1)}
-                                style={{ left: 0 }}
+                                style={{left: 0}}
                                 aria-label="이전 사진"
                             >&#8592;</ArrowButton>
                         )}
-                        <ModalImage src={imageUrls[currentIndex]} alt={name} />
+                        <ModalImage src={imageUrls[currentIndex]} alt={name}/>
                         {imageUrls.length > 1 && (
                             <ArrowButton
                                 onClick={() => setCurrentIndex(currentIndex === imageUrls.length - 1 ? 0 : currentIndex + 1)}
-                                style={{ right: 0 }}
+                                style={{right: 0}}
                                 aria-label="다음 사진"
                             >&#8594;</ArrowButton>
                         )}
