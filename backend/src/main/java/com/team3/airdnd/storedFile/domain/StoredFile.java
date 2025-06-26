@@ -22,7 +22,7 @@ public class StoredFile {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column(name = "file_url", nullable = false)
+	@Column(name = "file_url", nullable = false, length = 1000)
 	private String fileUrl;
 
 	@Enumerated(EnumType.STRING)

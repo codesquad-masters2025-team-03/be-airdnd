@@ -168,6 +168,18 @@ public class ReservationService {
 		return reservedDateRepository.findReservedDatesByAccommodationId(accommodationId);
 	}
 
+	//예약 날짜 저장
+	public void registerReservedDates(Reservation reservation) {
+		for (LocalDate d = reservation.getCheckIn(); d.isBefore(reservation.getCheckOut()); d = d.plusDays(1)) {
+			ReservedDate reservedDate = ReservedDate.builder()
+				.accommodation(reservation.getAccommodation())
+				.reservedDate(d)
+				.build();
+
+			reservedDateRepository.save(reservedDate);
+		}
+	}
+
 	// 예약 유효성 검사 (존재하는 예약인지)
 	private Reservation getReservationOrThrow(Long reservationId) {
 		return reservationRepository.findById(reservationId)

@@ -2,6 +2,25 @@ package com.team3.airdnd.payment.service;
 
 import static com.team3.airdnd.payment.dto.PaymentResponseDto.*;
 
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
+
 import com.team3.airdnd.accommodation.domain.Accommodation;
 import com.team3.airdnd.accommodation.repository.AccommodationRepository;
 import com.team3.airdnd.global.exception.CommonException;
@@ -16,7 +35,6 @@ import com.team3.airdnd.payment.repository.PaymentMethodRepository;
 import com.team3.airdnd.payment.repository.PaymentRepository;
 import com.team3.airdnd.reservation.domain.Reservation;
 import com.team3.airdnd.reservation.domain.ReservedDate;
-import com.team3.airdnd.reservation.dto.ReservationResponseDto;
 import com.team3.airdnd.reservation.repository.ReservationRepository;
 import com.team3.airdnd.reservation.repository.ReservedDateRepository;
 import com.team3.airdnd.reservation.service.ReservationService;
@@ -26,21 +44,6 @@ import com.team3.airdnd.storedFile.repository.StoredFileRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
-
-import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -54,6 +57,7 @@ public class PaymentService {
 	private final AccommodationRepository accommodationRepository;
 	private final ReservedDateRepository reservedDateRepository;
 	private final StoredFileRepository storedFileRepository;
+	private final ReservationService reservationService;
 
 	@Value("${toss.secret-key}")
 	private String tossSecretKey;
@@ -112,6 +116,7 @@ public class PaymentService {
 				reservation.setStatus(Reservation.Status.CONFIRMED);
 				reservation.setCreatedAt(LocalDateTime.now());
 				reservationRepository.save(reservation);
+				reservationService.registerReservedDates(reservation);
 
 				return payment;
 			} else {
@@ -177,14 +182,13 @@ public class PaymentService {
 		);
 	}
 
-
 	public PaymentInfoDto getPaymentInfo(Long reservationId) {
 
-		Reservation reservation = reservationRepository.findById(reservationId).orElseThrow(() -> new IllegalArgumentException("예약 정보를 찾을 수 없습니다."));
+		Reservation reservation = reservationRepository.findById(reservationId)
+			.orElseThrow(() -> new IllegalArgumentException("예약 정보를 찾을 수 없습니다."));
 
 		Accommodation acc = accommodationRepository.findById(reservation.getAccommodation().getId())
 			.orElseThrow(() -> new CommonException(ErrorCode.NOT_FOUND_RESOURCE));
-
 
 		String imageUrl = storedFileRepository.findFirstFileUrlByTargetTypeAndTargetId(
 			StoredFile.TargetType.ACCOMMODATION, acc.getId());
