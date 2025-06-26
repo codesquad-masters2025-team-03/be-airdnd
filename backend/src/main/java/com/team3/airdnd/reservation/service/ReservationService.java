@@ -96,11 +96,13 @@ public class ReservationService {
 			reservationRepository.save(reservation);
 			chatService.createRoomIfNotExists(reservation);
 
+			Long amount = price.total() + price.fee();
+
 			return ReservationResponseDto.CreateReservationResponseDto.builder()
 				.reservationId(reservation.getId())
 				.orderId(reservation.getOrderId())
 				.status(reservation.getStatus().name())
-				.amount(price.total())
+				.amount(amount)
 				.build();
 		} finally {
 			releaseLocks(locks);
