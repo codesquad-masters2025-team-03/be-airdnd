@@ -268,4 +268,15 @@ export const approvePayment = async (paymentKey, orderId, amount) => {
     return response;
 };
 
+export const createChatRoom = async (reservationId, senderId) => {
+    if (useMock) {
+        return { data: { roomId: 1, success: true } };
+    }
+    const response = await authAxios.post('/api/chat/rooms', {
+        reservationId,
+        senderId
+    });
+    return response;
+};
+
 

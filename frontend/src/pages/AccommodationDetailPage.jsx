@@ -2,7 +2,7 @@ import React, {useEffect, useState, useMemo, useRef} from 'react';
 import styled from 'styled-components';
 import {useParams, useLocation, useNavigate, useSearchParams} from 'react-router-dom';
 import KakaoMap from '../components/KakaoMap';
-import {getAccommodationDetail, getReservationInfo, createReservation} from '../api/accommodationApi';
+import {getAccommodationDetail, getReservationInfo, createReservation, createChatRoom} from '../api/accommodationApi';
 import { format } from 'date-fns';
 import axios from 'axios';
 import { loadTossPayments } from '@tosspayments/payment-sdk';
@@ -663,6 +663,8 @@ const AccommodationDetailPage = () => {
                 totalPrice: reservationInfo?.totalPrice || res.data.amount || 0,
                 serviceFee: Math.round((reservationInfo?.totalPrice || res.data.amount || 0) * 0.1)
             });
+            // 예약 성공 후 채팅방 생성
+            createChatRoom(res.data.reservationId, guestId).catch(console.error);
             setPaymentModal(true);
         } catch (e) {
             alert('예약에 실패했습니다.');

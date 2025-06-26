@@ -2,6 +2,20 @@ import React, { useEffect, useState } from 'react';
 import styled, { css } from 'styled-components';
 import axios from 'axios';
 
+// 인증된 axios 인스턴스 생성
+const authAxios = axios.create({
+    baseURL: process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080'
+});
+
+// 인증 헤더 추가 인터셉터
+authAxios.interceptors.request.use((config) => {
+    const token = localStorage.getItem('accessToken');
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+});
+
 const Sidebar = styled.div`
   width: 340px;
   background: #fafafa;
@@ -132,7 +146,7 @@ export default function ChatRoomList({ selectedRoom, setSelectedRoom }) {
 
   useEffect(() => {
     setLoading(true);
-    axios.get(`${process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080'}/api/chat/rooms`, {
+    authAxios.get('/api/chat/rooms', {
       params: { userId, unreadOnly: filter === 'unread' }
     })
       .then(res => setRooms(res.data.data || []))

@@ -4,6 +4,20 @@ import SockJS from 'sockjs-client';
 import {Stomp} from '@stomp/stompjs';
 import axios from 'axios';
 
+// 인증된 axios 인스턴스 생성
+const authAxios = axios.create({
+    baseURL: process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080'
+});
+
+// 인증 헤더 추가 인터셉터
+authAxios.interceptors.request.use((config) => {
+    const token = localStorage.getItem('accessToken');
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+});
+
 // JWT 파싱 함수
 function parseJwt(token) {
     if (!token) return null;
@@ -38,7 +52,7 @@ const ChatRoom = () => {
 
     // 1. 채팅방 생성 요청 (예약 완료 후)
     useEffect(() => {
-        axios.post(`${process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080'}/api/chat/rooms`, {
+        authAxios.post('/api/chat/rooms', {
             reservationId: RESERVATION_ID,
             senderId: senderId,
         }).catch(console.error);
@@ -46,7 +60,7 @@ const ChatRoom = () => {
 
     // 2. 과거 메시지 불러오기
     useEffect(() => {
-        axios.get(`${process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080'}/api/chat/rooms/${ACCOMMODATION_ID}/messages`)
+        authAxios.get(`/api/chat/rooms/${ACCOMMODATION_ID}/messages`)
             .then((res) => {
                 setMessages(res.data.data || []);
             }).catch(console.error);
