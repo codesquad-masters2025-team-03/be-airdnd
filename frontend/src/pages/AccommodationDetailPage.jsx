@@ -629,6 +629,7 @@ const SectionTitle = styled.h2`
   font-size: 1.18rem;
   font-weight: bold;
   margin: 36px 0 16px 0;
+  text-align: left;
 `;
 const SectionDivider = styled.hr`
   border: none;
