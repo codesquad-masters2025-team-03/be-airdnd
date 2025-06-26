@@ -1,4 +1,5 @@
 spring:
+<<<<<<< review-BE
   data:
     redis:
       host: localhost
@@ -14,6 +15,8 @@ spring:
       max-file-size: 20MB
       max-request-size: 100MB
 
+=======
+>>>>>>> team-03
   springdoc:
     swagger-ui:
       path: /api/swagger-ui.html
