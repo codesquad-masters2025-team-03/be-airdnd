@@ -867,26 +867,20 @@ const AccommodationDetailPage = () => {
                     <LeftCol>
                         <Title>{name}</Title>
                         <Summary>최대 인원 {maxGuests}명 · 침대 {bedCount}개</Summary>
-
-                        <SectionDivider/>
                         <HostBox>
                             <HostProfile src={hostProfileUrl || 'https://via.placeholder.com/56'} alt={hostName}/>
                             <HostInfoCol>
                                 <HostName>호스트: {hostName || '알 수 없음'}</HostName>
                             </HostInfoCol>
                         </HostBox>
-
                         <SectionDivider/>
-
                         <SectionTitle>편의시설</SectionTitle>
                         <AmenitiesList>
                             {amenities && amenities.length > 0 ? amenities.map((a, i) => (
                                 <li key={a + i}>{AMENITY_ICONS[a] || null}{a}</li>
                             )) : <li>편의시설 정보 없음</li>}
                         </AmenitiesList>
-
                         <SectionDivider/>
-
                         <SectionTitle>소개</SectionTitle>
                         <DescriptionBox>
                             <DescText $expanded={descExpanded}>{description}</DescText>
@@ -894,39 +888,6 @@ const AccommodationDetailPage = () => {
                                 <MoreBtn onClick={() => setDescExpanded(true)}>더 보기</MoreBtn>
                             )}
                         </DescriptionBox>
-
-                        <SectionDivider/>
-
-                        <SectionTitle>위치</SectionTitle>
-                        <MapBox>
-                            <KakaoMap accommodations={mapMarkers} center={mapCenter}/>
-                        </MapBox>
-                        <Address>
-                            {address && (address.city || address.district || address.streetAddress)
-                                ? `${address.city || ''} ${address.district || ''} ${address.streetAddress || ''}`.trim()
-                                : '주소 정보가 없습니다.'}
-                        </Address>
-
-                        <SectionDivider/>
-
-                        <SectionTitle>후기</SectionTitle>
-                        <ReviewHeader>
-                            ★ {reviews?.avgRating ?? '-'} · 후기 {reviews?.reviewSize ?? 0}개
-                        </ReviewHeader>
-                        <ReviewList>
-                            {reviews && reviews.comments && reviews.comments.length > 0 ? reviews.comments.map(c => (
-                                <ReviewCard key={c.commentId}>
-                                    <ProfileImg src={c.profileUrl || 'https://via.placeholder.com/48'} alt={c.guestName} />
-                                    <ReviewContent>
-                                        <div>
-                                            <b>{c.guestName}</b> · {c.rating}점
-                                        </div>
-                                        <div>{c.content}</div>
-                                        <div style={{color:'#888', fontSize:'0.9em'}}>{c.createdAt}</div>
-                                    </ReviewContent>
-                                </ReviewCard>
-                            )) : <div style={{color:'#888'}}>아직 후기가 없습니다.</div>}
-                        </ReviewList>
                     </LeftCol>
                     <RightCol>
                         <ReserveForm>
@@ -974,6 +935,35 @@ const AccommodationDetailPage = () => {
                         </ReserveForm>
                     </RightCol>
                 </MainRow>
+                <SectionDivider/>
+                <SectionTitle>위치</SectionTitle>
+                <MapBox>
+                    <KakaoMap accommodations={mapMarkers} center={mapCenter}/>
+                </MapBox>
+                <Address>
+                    {address && (address.city || address.district || address.streetAddress)
+                        ? `${address.city || ''} ${address.district || ''} ${address.streetAddress || ''}`.trim()
+                        : '주소 정보가 없습니다.'}
+                </Address>
+                <SectionDivider/>
+                <SectionTitle>후기</SectionTitle>
+                <ReviewHeader>
+                    ★ {reviews?.avgRating ?? '-'} · 후기 {reviews?.reviewSize ?? 0}개
+                </ReviewHeader>
+                <ReviewList>
+                    {reviews && reviews.comments && reviews.comments.length > 0 ? reviews.comments.map(c => (
+                        <ReviewCard key={c.commentId}>
+                            <ProfileImg src={c.profileUrl || 'https://via.placeholder.com/48'} alt={c.guestName} />
+                            <ReviewContent>
+                                <div>
+                                    <b>{c.guestName}</b> · {c.rating}점
+                                </div>
+                                <div>{c.content}</div>
+                                <div style={{color:'#888', fontSize:'0.9em'}}>{c.createdAt}</div>
+                            </ReviewContent>
+                        </ReviewCard>
+                    )) : <div style={{color:'#888'}}>아직 후기가 없습니다.</div>}
+                </ReviewList>
             </PageWrapper>
             {paymentModal && paymentInfo && (
                 <PaymentModalOverlay onClick={closePaymentModal}>
