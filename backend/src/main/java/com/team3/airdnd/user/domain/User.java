@@ -14,8 +14,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
+@Setter
 @Entity
 @Builder
 @AllArgsConstructor
@@ -58,8 +60,7 @@ public class User {
 
 	public enum Role {
 		GUEST,
-		HOST,
-		ADMIN;
+		HOST;
 
 		public boolean isHost() {
 			return this == Role.HOST;
