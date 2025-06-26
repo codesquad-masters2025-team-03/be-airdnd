@@ -279,4 +279,23 @@ export const createChatRoom = async (reservationId, senderId) => {
     return response;
 };
 
+export const getUnavailableDates = async (accommodationId) => {
+    if (useMock) {
+        return {
+            data: [
+                {
+                    checkIn: "2025-07-10",
+                    checkOut: "2025-07-13"
+                },
+                {
+                    checkIn: "2025-08-01",
+                    checkOut: "2025-08-05"
+                }
+            ]
+        };
+    }
+    const response = await authAxios.get(`/api/accommodations/${accommodationId}/unavailable-dates`);
+    return response;
+};
+
 

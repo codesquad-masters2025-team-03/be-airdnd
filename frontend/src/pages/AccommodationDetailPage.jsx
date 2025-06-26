@@ -2,7 +2,7 @@ import React, {useEffect, useState, useMemo, useRef} from 'react';
 import styled from 'styled-components';
 import {useParams, useLocation, useNavigate, useSearchParams} from 'react-router-dom';
 import KakaoMap from '../components/KakaoMap';
-import {getAccommodationDetail, getReservationInfo, createReservation, createChatRoom} from '../api/accommodationApi';
+import {getAccommodationDetail, getReservationInfo, createReservation, createChatRoom, getUnavailableDates} from '../api/accommodationApi';
 import { format } from 'date-fns';
 import axios from 'axios';
 import { loadTossPayments } from '@tosspayments/payment-sdk';
@@ -331,6 +331,7 @@ const AmenitiesList = styled.ul`
 `;
 
 const ReserveForm = styled.div`
+    position: relative;
     border: 1px solid #eee;
     border-radius: 16px;
     background: #fff;
@@ -644,10 +645,21 @@ const AccommodationDetailPage = () => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [showModal, setShowModal] = useState(false);
 
+    // 달력 관련 상태 추가
+    const [showCalendar, setShowCalendar] = useState(false);
+    const [unavailableDates, setUnavailableDates] = useState([]);
+    const [calendarDates, setCalendarDates] = useState({
+        startDate: null,
+        endDate: null
+    });
+
+    // 달력 바깥영역 클릭 감지를 위한 ref
+    const calendarRef = useRef(null);
+
     // 예약 form 상태
     const queryParams = location.state?.queryParams || {};
-    const [checkIn] = useState(queryParams.checkIn || '');
-    const [checkOut] = useState(queryParams.checkOut || '');
+    const [checkIn, setCheckIn] = useState(queryParams.checkIn || '');
+    const [checkOut, setCheckOut] = useState(queryParams.checkOut || '');
     const [guests] = useState(queryParams.guests || 1);
 
     const [menuOpen, setMenuOpen] = useState(false);
@@ -708,6 +720,44 @@ const AccommodationDetailPage = () => {
         // 3줄 기준: 120자 이상이면 더보기 노출(대략적)
         return data.description.length > 120;
     }, [data]);
+
+    // 달력에서 날짜 선택 시 처리
+    useEffect(() => {
+        if (calendarDates.startDate && calendarDates.endDate) {
+            const newCheckIn = format(calendarDates.startDate, 'yyyy-MM-dd');
+            const newCheckOut = format(calendarDates.endDate, 'yyyy-MM-dd');
+            setCheckIn(newCheckIn);
+            setCheckOut(newCheckOut);
+            setShowCalendar(false);
+        }
+    }, [calendarDates]);
+
+    // 체크인/체크아웃 필드 클릭 핸들러
+    const handleDateInputClick = async () => {
+        try {
+            // 예약 불가능한 날짜 조회
+            const unavailableRes = await getUnavailableDates(id);
+            setUnavailableDates(unavailableRes.data.data.unavailableDates || []);
+        } catch (e) {
+            console.error('예약 불가능한 날짜 조회 실패:', e);
+            setUnavailableDates([]);
+        }
+        setShowCalendar(true);
+    };
+
+    // 달력 바깥영역 클릭 시 닫기
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (calendarRef.current && !calendarRef.current.contains(event.target) && showCalendar) {
+                setShowCalendar(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [showCalendar]);
 
     const handleReserve = async () => {
         if (!isLoggedIn) {
@@ -876,15 +926,36 @@ const AccommodationDetailPage = () => {
                         <ReserveForm>
                             <Price>₩{nightly.toLocaleString()} / 박</Price>
                             <ReserveInputRow>
-                                <ReserveInput>
+                                <ReserveInput onClick={handleDateInputClick}>
                                     <label>체크인</label>
-                                    <input type="text" readOnly value={checkIn ? checkIn : '연도. 월. 일.'} />
+                                    <input type="text" readOnly value={checkIn ? checkIn : '연도. 월. 일.'} style={{cursor: 'pointer'}} />
                                 </ReserveInput>
-                                <ReserveInput>
+                                <ReserveInput onClick={handleDateInputClick}>
                                     <label>체크아웃</label>
-                                    <input type="text" readOnly value={checkOut ? checkOut : '연도. 월. 일.'} />
+                                    <input type="text" readOnly value={checkOut ? checkOut : '연도. 월. 일.'} style={{cursor: 'pointer'}} />
                                 </ReserveInput>
                             </ReserveInputRow>
+
+                            {showCalendar && (
+                                <div
+                                    ref={calendarRef}
+                                    style={{
+                                        background: 'white',
+                                        border: '1px solid #ddd',
+                                        borderRadius: '12px',
+                                        boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
+                                        padding: '20px',
+                                        marginBottom: '20px'
+                                    }}
+                                >
+                                    <CalendarDropdown
+                                        dates={calendarDates}
+                                        setDates={setCalendarDates}
+                                        unavailableDates={unavailableDates}
+                                    />
+                                </div>
+                            )}
+
                             <ReserveInput style={{ width: '332px', maxWidth: '332px', marginBottom: '12px', marginLeft: 'auto', marginRight: 'auto' }}>
                                 <label>인원</label>
                                 <input type="text" readOnly value={guests} />
