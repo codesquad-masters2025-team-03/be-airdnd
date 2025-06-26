@@ -81,7 +81,6 @@ const PaymentSuccessPage = () => {
                 })
                 .catch(err => {
                     console.error('결제 승인 실패:', err);
-                    alert('결제 승인 처리 중 오류가 발생했습니다.');
                 });
         }
     }, [searchParams]);
