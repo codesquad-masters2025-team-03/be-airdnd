@@ -1,5 +1,6 @@
 package com.team3.airdnd.accommodation.controller;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -23,6 +24,7 @@ import com.team3.airdnd.accommodation.dto.PriceHistogramConditionDto;
 import com.team3.airdnd.accommodation.dto.PriceHistogramResponseDto;
 import com.team3.airdnd.accommodation.service.AccommodationService;
 import com.team3.airdnd.global.dto.ResponseDto;
+import com.team3.airdnd.reservation.service.ReservationService;
 import com.team3.airdnd.storedFile.validation.ImageValidator;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -35,6 +37,7 @@ import lombok.RequiredArgsConstructor;
 public class AccommodationController {
 
 	private final AccommodationService accommodationService;
+	private final ReservationService reservationService;
 	private final ImageValidator imageValidator;
 
 	@GetMapping("/{accommodationId}")
@@ -106,5 +109,13 @@ public class AccommodationController {
 
 		Map<String, Object> data = Map.of("accommodations", accommodations);
 		return ResponseDto.ok(data);
+	}
+
+	@GetMapping("/{accommodationId}/unavailable-dates")
+	public ResponseEntity<ResponseDto<Map<String, List<LocalDate>>>> getUnavailableDates(
+		@PathVariable Long accommodationId
+	) {
+		List<LocalDate> unavailableDates = reservationService.getUnavailableDates(accommodationId);
+		return ResponseDto.ok(Map.of("unavailableDates", unavailableDates));
 	}
 }
