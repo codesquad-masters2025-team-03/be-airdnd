@@ -35,4 +35,10 @@ public class AuthController {
 		Map<String, String> data = Map.of("accessToken", token);
 		return ResponseDto.ok(data);
 	}
+
+	@PostMapping("/logout")
+	public ResponseEntity<ResponseDto<Void>> logout() {
+		// 아무 동작 없이 성공 응답만 내려줌
+		return ResponseDto.ok(null);
+	}
 }
