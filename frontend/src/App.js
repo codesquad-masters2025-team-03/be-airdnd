@@ -6,6 +6,8 @@ import AccommodationListPage from './pages/AccommodationListPage';
 import AccommodationDetailPage from './pages/AccommodationDetailPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
+import PaymentSuccessPage from './pages/PaymentSuccessPage';
+import PaymentFailPage from './pages/PaymentFailPage';
 import './App.css';
 
 function App() {
@@ -19,6 +21,8 @@ function App() {
                     <Route path="/chatroom" element={<ChatPage/>}/>
                     <Route path="/login" element={<LoginPage/>}/>
                     <Route path="/signup" element={<SignupPage/>}/>
+                    <Route path="/payment/success" element={<PaymentSuccessPage/>}/>
+                    <Route path="/payment/fail" element={<PaymentFailPage/>}/>
                 </Routes>
             </div>
         </BrowserRouter>

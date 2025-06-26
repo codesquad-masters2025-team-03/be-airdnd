@@ -5,9 +5,52 @@ import axios from 'axios';
 // ✅ 지도 범위 기반 숙소 검색
 // accommodationApi.js
 const useMock = process.env.REACT_APP_USE_MOCK === 'true';
-const BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080';
+const BASE_URL = 'http://localhost:8080'; // 8080 포트로 직접 요청
+
+console.log('🔧 API 설정 확인:');
+console.log('🔧 REACT_APP_USE_MOCK:', process.env.REACT_APP_USE_MOCK);
+console.log('🔧 useMock:', useMock);
+console.log('🔧 BASE_URL:', BASE_URL);
+
+// 인증이 필요 없는 API용 axios 인스턴스
+const publicAxios = axios.create({
+    baseURL: BASE_URL
+});
+
+// 디버깅용 요청 인터셉터
+publicAxios.interceptors.request.use((config) => {
+    console.log('🔍 Public API 요청:', config.method?.toUpperCase(), config.url);
+    console.log('🔍 요청 헤더:', config.headers);
+    console.log('🔍 요청 파라미터:', config.params);
+    return config;
+});
+
+// 인증이 필요한 API용 axios 인스턴스
+const authAxios = axios.create({
+    baseURL: BASE_URL
+});
+
+// 인증 헤더 추가 인터셉터
+authAxios.interceptors.request.use((config) => {
+    const token = localStorage.getItem('jwt');
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+        console.log('🔐 JWT 토큰:', token);
+        console.log('🔐 토큰 길이:', token.length);
+        console.log('🔐 토큰 시작:', token.substring(0, 20) + '...');
+    } else {
+        console.log('⚠️ JWT 토큰이 없습니다!');
+    }
+    console.log('🔐 Auth API 요청:', config.method?.toUpperCase(), config.url);
+    console.log('🔐 요청 헤더:', config.headers);
+    return config;
+});
 
 export const getAccommodations = async (params) => {
+    console.log('🚀 getAccommodations 호출됨');
+    console.log('🚀 useMock 값:', useMock);
+    console.log('🚀 파라미터:', params);
+    
     if (useMock) {
         console.log("📦 [MOCK] getAccommodations 실행");
         return {
@@ -49,14 +92,20 @@ export const getAccommodations = async (params) => {
         };
     }
 
-    const response = await axios.get(`${BASE_URL}/api/accommodations`, {
+    console.log("🌐 실제 API 호출:", `${BASE_URL}/api/accommodations`);
+    const response = await authAxios.get(`/api/accommodations`, {
         params,
     });
     return response;
 };
 
 export const getAccommodationDetail = async (id) => {
+    console.log('🚀 getAccommodationDetail 호출됨');
+    console.log('🚀 accommodationId:', id);
+    console.log('🚀 useMock 값:', useMock);
+    
     if (useMock) {
+        console.log("📦 [MOCK] getAccommodationDetail 실행");
         // 필요시 mock 데이터 반환
         return {
             data: {
@@ -97,7 +146,9 @@ export const getAccommodationDetail = async (id) => {
             }
         };
     }
-    const response = await axios.get(`${BASE_URL}/api/accommodations/${id}`);
+    
+    console.log("🌐 실제 API 호출:", `${BASE_URL}/api/accommodations/${id}`);
+    const response = await authAxios.get(`/api/accommodations/${id}`);
     return response;
 };
 
@@ -114,7 +165,7 @@ export const getReservationInfo = async (accommodationId, checkIn, checkOut) => 
             }
         };
     }
-    const response = await axios.get(`${BASE_URL}/api/reservations/${accommodationId}`, {
+    const response = await authAxios.get(`/api/reservations/${accommodationId}`, {
         params: { checkIn, checkOut }
     });
     return response;
@@ -130,8 +181,8 @@ export const createReservation = async (accommodationId, guestId, checkIn, check
             }
         };
     }
-    const response = await axios.post(
-        `${BASE_URL}/api/reservations/${accommodationId}?guestId=${guestId}`,
+    const response = await authAxios.post(
+        `/api/reservations/${accommodationId}?guestId=${guestId}`,
         { checkIn, checkOut, guests }
     );
     return response;
@@ -153,10 +204,18 @@ export const login = async (loginId, password) => {
             }
         };
     }
-    const response = await axios.post(`${BASE_URL}/api/auth/login`, {
+    const response = await publicAxios.post(`/api/auth/login`, {
         loginId,
         password
     });
+    
+    // 🔍 로그인 응답 디버깅
+    console.log('🔐 로그인 응답:', response.data);
+    if (response.data?.data?.token) {
+        console.log('🔐 저장할 토큰:', response.data.data.token);
+        localStorage.setItem('jwt', response.data.data.token);
+    }
+    
     return response;
 };
 
@@ -176,7 +235,7 @@ export const signup = async (email, loginId, password, username, phone, profileI
             }
         };
     }
-    const response = await axios.post(`${BASE_URL}/api/auth/signup`, {
+    const response = await publicAxios.post(`/api/auth/signup`, {
         email,
         loginId,
         password,

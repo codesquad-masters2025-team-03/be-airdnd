@@ -1,10 +1,11 @@
 import React, {useEffect, useState, useMemo, useRef} from 'react';
 import styled from 'styled-components';
-import {useParams, useLocation, useNavigate} from 'react-router-dom';
+import {useParams, useLocation, useNavigate, useSearchParams} from 'react-router-dom';
 import KakaoMap from '../components/KakaoMap';
 import {getAccommodationDetail, getReservationInfo, createReservation} from '../api/accommodationApi';
 import { format } from 'date-fns';
 import axios from 'axios';
+import { loadTossPayments } from '@tosspayments/payment-sdk';
 
 import {
     FaWifi,
@@ -294,11 +295,11 @@ const DescriptionBox = styled.div`
 const DescText = styled.div`
     font-size: 1.1rem;
     line-height: 1.5;
-    max-height: ${({expanded}) => expanded ? 'none' : '3.2em'};
+    max-height: ${({$expanded}) => $expanded ? 'none' : '3.2em'};
     overflow: hidden;
     text-overflow: ellipsis;
     display: -webkit-box;
-    -webkit-line-clamp: ${({expanded}) => expanded ? 'unset' : 2};
+    -webkit-line-clamp: ${({$expanded}) => $expanded ? 'unset' : 2};
     -webkit-box-orient: vertical;
 `;
 const MoreBtn = styled.button`
@@ -531,6 +532,20 @@ const PayButton = styled.button`
     cursor: pointer;
 `;
 
+// 인증된 axios 인스턴스 생성
+const authAxios = axios.create({
+    baseURL: 'http://localhost:8080'
+});
+
+// 인증 헤더 추가 인터셉터
+authAxios.interceptors.request.use((config) => {
+    const token = localStorage.getItem('jwt');
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+});
+
 function parseJwt(token) {
     if (!token) return null;
     try {
@@ -636,7 +651,7 @@ const AccommodationDetailPage = () => {
             setReserveId(res.data.reservationId);
             setReserveBtnDone(true);
             // 결제 정보 모달 띄우기
-            const payRes = await axios.get(`${process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080'}/api/payment/reservation/${res.data.reservationId}`);
+            const payRes = await authAxios.get(`/api/payment/reservation/${res.data.reservationId}`);
             setPaymentInfo(payRes.data);
             setPaymentModal(true);
         } catch (e) {
@@ -646,6 +661,28 @@ const AccommodationDetailPage = () => {
         }
     };
     const closePaymentModal = () => setPaymentModal(false);
+
+    // 토스페이먼츠 결제 처리
+    const handlePayment = async () => {
+        try {
+            const tossPayments = await loadTossPayments(process.env.REACT_APP_TOSS_CLIENT_KEY || 'test_ck_D5GePWvyJnrK0W0k6q8gLzN97Eoq');
+            
+            const totalAmount = paymentInfo.totalPrice + paymentInfo.serviceFee;
+            
+            await tossPayments.requestPayment('카드', {
+                amount: totalAmount,
+                orderId: `order_${Date.now()}`,
+                orderName: `${paymentInfo.title} 예약`,
+                customerName: '고객명',
+                customerEmail: 'customer@example.com',
+                successUrl: `${window.location.origin}/payment/success`,
+                failUrl: `${window.location.origin}/payment/fail`,
+            });
+        } catch (error) {
+            console.error('결제 오류:', error);
+            alert('결제 처리 중 오류가 발생했습니다.');
+        }
+    };
 
     if (loading) return <PageWrapper>로딩 중...</PageWrapper>;
     if (error) return <PageWrapper>오류가 발생했습니다.</PageWrapper>;
@@ -726,7 +763,7 @@ const AccommodationDetailPage = () => {
                             ))}
                         </AmenitiesList>
                         <DescriptionBox>
-                            <DescText expanded={descExpanded}>{description}</DescText>
+                            <DescText $expanded={descExpanded}>{description}</DescText>
                             {!descExpanded && isLongDescription && (
                                 <MoreBtn onClick={() => setDescExpanded(true)}>더 보기</MoreBtn>
                             )}
@@ -831,7 +868,7 @@ const AccommodationDetailPage = () => {
                             <span>총액 <span style={{fontWeight:400}}>KRW</span></span>
                             <span>₩{(paymentInfo.totalPrice + paymentInfo.serviceFee).toLocaleString()}</span>
                         </ModalTotal>
-                        <PayButton>결제하기</PayButton>
+                        <PayButton onClick={handlePayment}>결제하기</PayButton>
                         <div style={{color:'#888', fontSize:'0.97rem', marginTop:'8px', textAlign:'center', cursor:'pointer'}}>요금 상세 내역</div>
                     </PaymentModalBox>
                 </PaymentModalOverlay>
