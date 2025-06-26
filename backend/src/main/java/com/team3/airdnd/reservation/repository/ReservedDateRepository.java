@@ -35,4 +35,7 @@ public interface ReservedDateRepository extends JpaRepository<ReservedDate, Long
 		@Param("checkOutExclusive") LocalDate checkOutExclusive
 	);
 
+	@Query("SELECT rd.reservedDate FROM ReservedDate rd WHERE rd.accommodation.id = :accommodationId")
+	List<LocalDate> findReservedDatesByAccommodationId(@Param("accommodationId") Long accommodationId);
+
 }

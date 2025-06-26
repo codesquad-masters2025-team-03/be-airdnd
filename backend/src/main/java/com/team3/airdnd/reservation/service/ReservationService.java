@@ -20,7 +20,6 @@ import com.team3.airdnd.global.exception.ErrorCode;
 import com.team3.airdnd.payment.repository.PaymentRepository;
 import com.team3.airdnd.reservation.domain.Reservation;
 import com.team3.airdnd.reservation.domain.ReservedDate;
-
 import com.team3.airdnd.reservation.dto.GuestReservationDto;
 import com.team3.airdnd.reservation.dto.HostReservationDto;
 import com.team3.airdnd.reservation.dto.ReservationRequestDto;
@@ -147,6 +146,26 @@ public class ReservationService {
 		paymentRepository.deleteByReservation(reservation);
 	}
 
+	//게스트 예약 조회
+	public List<GuestReservationDto> getConfirmedReservationsByGuest(Long guestId) {
+		return reservationQueryRepository.findConfirmedReservationsByGuestId(guestId);
+	}
+
+	//호스트가 자신이 등록한 숙소들의 예약을 최신순으로 조회
+	public List<HostReservationDto> getReservationsByHost(Long hostId) {
+		return reservationQueryRepository.findReservationsByHostId(hostId);
+	}
+
+	//호스트의 특정 숙소에 해당하는 예약 목록을 조회
+	public List<HostReservationDto> getReservationsByHostAndAccommodation(Long hostId, Long accommodationId) {
+		return reservationQueryRepository.findReservationsByHostIdAndAccommodationId(hostId, accommodationId);
+	}
+
+	//예약 불가능한 날짜 조회
+	public List<LocalDate> getUnavailableDates(Long accommodationId) {
+		return reservedDateRepository.findReservedDatesByAccommodationId(accommodationId);
+	}
+
 	// 예약 유효성 검사 (존재하는 예약인지)
 	private Reservation getReservationOrThrow(Long reservationId) {
 		return reservationRepository.findById(reservationId)
@@ -217,19 +236,5 @@ public class ReservationService {
 				lock.unlock();
 			}
 		}
-	}
-	//게스트 예약 조회
-	public List<GuestReservationDto> getConfirmedReservationsByGuest(Long guestId) {
-		return reservationQueryRepository.findConfirmedReservationsByGuestId(guestId);
-	}
-
-	//호스트가 자신이 등록한 숙소들의 예약을 최신순으로 조회
-	public List<HostReservationDto> getReservationsByHost(Long hostId) {
-		return reservationQueryRepository.findReservationsByHostId(hostId);
-	}
-
-	//호스트의 특정 숙소에 해당하는 예약 목록을 조회
-	public List<HostReservationDto> getReservationsByHostAndAccommodation(Long hostId, Long accommodationId) {
-		return reservationQueryRepository.findReservationsByHostIdAndAccommodationId(hostId, accommodationId);
 	}
 }

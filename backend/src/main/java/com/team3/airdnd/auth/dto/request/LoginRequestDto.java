@@ -10,10 +10,10 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class LoginRequest {
-  @NotBlank
-  private String loginId;
+public class LoginRequestDto {
+	@NotBlank
+	private String loginId;
 
-  @NotBlank
-  private String password;
+	@NotBlank
+	private String password;
 }
