@@ -1,8 +1,8 @@
 package com.team3.airdnd.accommodation.domain;
 
-import com.team3.airdnd.user.domain.User;
-
 import java.time.LocalDateTime;
+
+import com.team3.airdnd.user.domain.User;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -11,6 +11,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
@@ -37,7 +38,8 @@ public class Accommodation {
 	@Column(name = "price_per_night", nullable = false)
 	private Integer pricePerNight;
 
-	@Column(length = 500)
+	@Lob
+	@Column(nullable = false)
 	private String description;
 
 	@NotNull
