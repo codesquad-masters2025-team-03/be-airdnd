@@ -28,12 +28,16 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none #update
     show-sql: true
     properties:
       hibernate:
         dialect: org.hibernate.spatial.dialect.mysql.MySQLSpatialDialect
         format_sql: true
+  sql:
+    init:
+      mode: always     # SQL 초기화 스크립트 실행 허용
+      schema-locations: classpath:schema-and-data.sql  # 스키마 + 데이터 파일 위치 지정
 
 cloud:
   aws:
@@ -56,3 +60,7 @@ openai:
   api-key: ${OPENAI_KEY}
   model: gpt-3.5-turbo
   url: https://api.openai.com/v1/chat/completions
+
+logging:
+  level:
+    org.springframework.boot.autoconfigure.sql.init: DEBUG
