@@ -716,8 +716,13 @@ const AccommodationDetailPage = () => {
     } = data;
     const mainImg = imageUrls && imageUrls[0]?.imageUrl;
     const subImgs = imageUrls ? imageUrls.slice(1, 5) : [];
-    const mapCenter = {lat: address.latitude, lng: address.longitude};
-    const mapMarkers = [{latitude: address.latitude, longitude: address.longitude}];
+    // address가 없으면 서울 시청 좌표를 기본값으로 사용
+    const mapCenter = address && address.latitude && address.longitude 
+        ? {lat: address.latitude, lng: address.longitude} 
+        : {lat: 37.5665, lng: 126.9780};
+    const mapMarkers = address && address.latitude && address.longitude 
+        ? [{latitude: address.latitude, longitude: address.longitude}] 
+        : [];
 
     // 가격 계산 (수수료 10%)
     const nights = reservationInfo?.nights || 0;
@@ -835,7 +840,9 @@ const AccommodationDetailPage = () => {
                         <KakaoMap accommodations={mapMarkers} center={mapCenter}/>
                     </MapBox>
                     <Address>
-                        {address.city} {address.district} {address.streetAddress}
+                        {address && (address.city || address.district || address.streetAddress) 
+                            ? `${address.city || ''} ${address.district || ''} ${address.streetAddress || ''}`.trim() 
+                            : '주소 정보가 없습니다.'}
                     </Address>
                 </MapSection>
             </PageWrapper>
