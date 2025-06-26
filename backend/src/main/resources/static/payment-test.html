@@ -113,15 +113,15 @@
         async function createReservation() {
             showLoading(true);
             try {
-                const response = await fetch(`${baseUrl}/api/reservations/1?guestId=1`, {
+                const response = await fetch(`${baseUrl}/api/reservations/6?guestId=1`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        checkIn: '2025-08-01',
-                        checkOut: '2025-08-02',
-                        guests: 2
+                        checkIn: '2025-08-05',
+                        checkOut: '2025-08-06',
+                        guests: 1
                     })
                 });
 
