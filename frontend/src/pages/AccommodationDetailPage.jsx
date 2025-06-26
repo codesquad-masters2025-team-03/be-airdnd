@@ -625,6 +625,17 @@ const CloseButton = styled.button`
   z-index: 3;
 `;
 
+const SectionTitle = styled.h2`
+  font-size: 1.18rem;
+  font-weight: bold;
+  margin: 36px 0 16px 0;
+`;
+const SectionDivider = styled.hr`
+  border: none;
+  border-top: 1.5px solid #eee;
+  margin: 36px 0 36px 0;
+`;
+
 const AccommodationDetailPage = () => {
     const {id} = useParams();
     const location = useLocation();
@@ -828,49 +839,94 @@ const AccommodationDetailPage = () => {
                 </UserMenuContainer>
             </Navbar>
             <PageWrapper>
-                <Title>{name}</Title>
-                <Summary>최대 인원 {maxGuests}명 · 침대 {bedCount}개</Summary>
                 <ImageCarousel>
-                  {imageUrls && imageUrls.length > 1 && (
-                    <ArrowButton
-                      onClick={() => setCurrentIndex(currentIndex === 0 ? imageUrls.length - 1 : currentIndex - 1)}
-                      style={{ left: 16 }}
-                      aria-label="이전 사진"
-                    >&#8592;</ArrowButton>
-                  )}
-                  {imageUrls && imageUrls.length > 0 && (
-                    <MainImage
-                      src={imageUrls[currentIndex]}
-                      alt={name}
-                      style={{ cursor: 'pointer', height: '100%', objectFit: 'cover', borderRadius: '18px' }}
-                      onClick={() => setShowModal(true)}
-                    />
-                  )}
-                  {imageUrls && imageUrls.length > 1 && (
-                    <ArrowButton
-                      onClick={() => setCurrentIndex(currentIndex === imageUrls.length - 1 ? 0 : currentIndex + 1)}
-                      style={{ right: 16 }}
-                      aria-label="다음 사진"
-                    >&#8594;</ArrowButton>
-                  )}
+                    {imageUrls && imageUrls.length > 1 && (
+                        <ArrowButton
+                            onClick={() => setCurrentIndex(currentIndex === 0 ? imageUrls.length - 1 : currentIndex - 1)}
+                            style={{ left: 16 }}
+                            aria-label="이전 사진"
+                        >&#8592;</ArrowButton>
+                    )}
+                    {imageUrls && imageUrls.length > 0 && (
+                        <MainImage
+                            src={imageUrls[currentIndex]}
+                            alt={name}
+                            style={{ cursor: 'pointer', height: '100%', objectFit: 'cover', borderRadius: '18px' }}
+                            onClick={() => setShowModal(true)}
+                        />
+                    )}
+                    {imageUrls && imageUrls.length > 1 && (
+                        <ArrowButton
+                            onClick={() => setCurrentIndex(currentIndex === imageUrls.length - 1 ? 0 : currentIndex + 1)}
+                            style={{ right: 16 }}
+                            aria-label="다음 사진"
+                        >&#8594;</ArrowButton>
+                    )}
                 </ImageCarousel>
                 <MainRow>
                     <LeftCol>
+                        <Title>{name}</Title>
+                        <Summary>최대 인원 {maxGuests}명 · 침대 {bedCount}개</Summary>
+
+                        <SectionDivider/>
                         <HostBox>
                             <HostProfile src={hostProfileUrl || 'https://via.placeholder.com/56'} alt={hostName}/>
-                            <HostName>호스트: {hostName || '알 수 없음'}</HostName>
+                            <HostInfoCol>
+                                <HostName>호스트: {hostName || '알 수 없음'}</HostName>
+                            </HostInfoCol>
                         </HostBox>
+
+                        <SectionDivider/>
+
+                        <SectionTitle>편의시설</SectionTitle>
                         <AmenitiesList>
-                            {amenities && amenities.map(a => (
-                                <li key={a.id}>{AMENITY_ICONS[a.name] || null}{a.name}</li>
-                            ))}
+                            {amenities && amenities.length > 0 ? amenities.map((a, i) => (
+                                <li key={a + i}>{AMENITY_ICONS[a] || null}{a}</li>
+                            )) : <li>편의시설 정보 없음</li>}
                         </AmenitiesList>
+
+                        <SectionDivider/>
+
+                        <SectionTitle>소개</SectionTitle>
                         <DescriptionBox>
                             <DescText $expanded={descExpanded}>{description}</DescText>
                             {!descExpanded && isLongDescription && (
                                 <MoreBtn onClick={() => setDescExpanded(true)}>더 보기</MoreBtn>
                             )}
                         </DescriptionBox>
+
+                        <SectionDivider/>
+
+                        <SectionTitle>위치</SectionTitle>
+                        <MapBox>
+                            <KakaoMap accommodations={mapMarkers} center={mapCenter}/>
+                        </MapBox>
+                        <Address>
+                            {address && (address.city || address.district || address.streetAddress)
+                                ? `${address.city || ''} ${address.district || ''} ${address.streetAddress || ''}`.trim()
+                                : '주소 정보가 없습니다.'}
+                        </Address>
+
+                        <SectionDivider/>
+
+                        <SectionTitle>후기</SectionTitle>
+                        <ReviewHeader>
+                            ★ {reviews?.avgRating ?? '-'} · 후기 {reviews?.reviewSize ?? 0}개
+                        </ReviewHeader>
+                        <ReviewList>
+                            {reviews && reviews.comments && reviews.comments.length > 0 ? reviews.comments.map(c => (
+                                <ReviewCard key={c.commentId}>
+                                    <ProfileImg src={c.profileUrl || 'https://via.placeholder.com/48'} alt={c.guestName} />
+                                    <ReviewContent>
+                                        <div>
+                                            <b>{c.guestName}</b> · {c.rating}점
+                                        </div>
+                                        <div>{c.content}</div>
+                                        <div style={{color:'#888', fontSize:'0.9em'}}>{c.createdAt}</div>
+                                    </ReviewContent>
+                                </ReviewCard>
+                            )) : <div style={{color:'#888'}}>아직 후기가 없습니다.</div>}
+                        </ReviewList>
                     </LeftCol>
                     <RightCol>
                         <ReserveForm>
@@ -918,18 +974,6 @@ const AccommodationDetailPage = () => {
                         </ReserveForm>
                     </RightCol>
                 </MainRow>
-                <Separator/>
-                <MapSection>
-                    <h2 style={{fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '12px'}}>위치</h2>
-                    <MapBox>
-                        <KakaoMap accommodations={mapMarkers} center={mapCenter}/>
-                    </MapBox>
-                    <Address>
-                        {address && (address.city || address.district || address.streetAddress) 
-                            ? `${address.city || ''} ${address.district || ''} ${address.streetAddress || ''}`.trim() 
-                            : '주소 정보가 없습니다.'}
-                    </Address>
-                </MapSection>
             </PageWrapper>
             {paymentModal && paymentInfo && (
                 <PaymentModalOverlay onClick={closePaymentModal}>
@@ -979,26 +1023,26 @@ const AccommodationDetailPage = () => {
                 </PaymentModalOverlay>
             )}
             {showModal && imageUrls && imageUrls.length > 0 && (
-              <ModalOverlay onClick={() => setShowModal(false)}>
-                <ModalContent onClick={e => e.stopPropagation()}>
-                  {imageUrls.length > 1 && (
-                    <ArrowButton
-                      onClick={() => setCurrentIndex(currentIndex === 0 ? imageUrls.length - 1 : currentIndex - 1)}
-                      style={{ left: 0 }}
-                      aria-label="이전 사진"
-                    >&#8592;</ArrowButton>
-                  )}
-                  <ModalImage src={imageUrls[currentIndex]} alt={name} />
-                  {imageUrls.length > 1 && (
-                    <ArrowButton
-                      onClick={() => setCurrentIndex(currentIndex === imageUrls.length - 1 ? 0 : currentIndex + 1)}
-                      style={{ right: 0 }}
-                      aria-label="다음 사진"
-                    >&#8594;</ArrowButton>
-                  )}
-                  <CloseButton onClick={() => setShowModal(false)} aria-label="닫기">×</CloseButton>
-                </ModalContent>
-              </ModalOverlay>
+                <ModalOverlay onClick={() => setShowModal(false)}>
+                    <ModalContent onClick={e => e.stopPropagation()}>
+                        {imageUrls.length > 1 && (
+                            <ArrowButton
+                                onClick={() => setCurrentIndex(currentIndex === 0 ? imageUrls.length - 1 : currentIndex - 1)}
+                                style={{ left: 0 }}
+                                aria-label="이전 사진"
+                            >&#8592;</ArrowButton>
+                        )}
+                        <ModalImage src={imageUrls[currentIndex]} alt={name} />
+                        {imageUrls.length > 1 && (
+                            <ArrowButton
+                                onClick={() => setCurrentIndex(currentIndex === imageUrls.length - 1 ? 0 : currentIndex + 1)}
+                                style={{ right: 0 }}
+                                aria-label="다음 사진"
+                            >&#8594;</ArrowButton>
+                        )}
+                        <CloseButton onClick={() => setShowModal(false)} aria-label="닫기">×</CloseButton>
+                    </ModalContent>
+                </ModalOverlay>
             )}
         </>
     );
