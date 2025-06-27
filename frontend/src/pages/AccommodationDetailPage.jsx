@@ -687,11 +687,28 @@ const AccommodationDetailPage = () => {
     const handleDateInputClick = async () => {
         try {
             // 예약 불가능한 날짜 조회
+            console.log('🗓️ 예약 불가능한 날짜 조회 시작:', id);
             const unavailableRes = await getUnavailableDates(id);
-            setUnavailableDates(unavailableRes.data.data.unavailableDates || []);
+            console.log('🗓️ 예약 불가능한 날짜 API 응답:', unavailableRes);
+            
+            if (unavailableRes?.data?.data?.unavailableDates) {
+                setUnavailableDates(unavailableRes.data.data.unavailableDates);
+                console.log('🗓️ 설정된 예약 불가능한 날짜:', unavailableRes.data.data.unavailableDates);
+            } else {
+                console.warn('🗓️ API 응답에서 unavailableDates를 찾을 수 없음');
+                setUnavailableDates([]);
+            }
         } catch (e) {
-            console.error('예약 불가능한 날짜 조회 실패:', e);
+            console.error('🗓️ 예약 불가능한 날짜 조회 실패:', e);
+            console.error('🗓️ 에러 상세:', e.response?.data || e.message);
+            
+            // 백엔드 에러가 발생해도 달력은 정상 동작하도록 빈 배열 설정
             setUnavailableDates([]);
+            
+            // 개발 모드에서만 alert 표시
+            if (process.env.NODE_ENV === 'development') {
+                console.warn('개발 모드: 예약 불가능한 날짜 조회 실패, 빈 배열로 처리');
+            }
         }
         setShowCalendar(true);
     };
