@@ -33,8 +33,8 @@ public class ChatRestController {
 
 	// 안읽은 메시지 읽음 처리
 	@PostMapping("/rooms/{roomId}/read")
-	public ResponseEntity<Void> markMessagesAsRead(@PathVariable Long roomId) {
-		Long userId = 1L;
+	public ResponseEntity<Void> markMessagesAsRead(@PathVariable Long roomId, HttpServletRequest request) {
+		Long userId = (Long) request.getAttribute("userId");
 		chatService.markMessagesAsRead(roomId, userId);
 		return ResponseEntity.ok().build();
 	}
@@ -46,15 +46,6 @@ public class ChatRestController {
 	) {
 		//unreadOnly=false: 전체 채팅방 목록 + 각 채팅방의 읽지 않은 메시지 수
 		//unreadOnly=true: 읽지 않은 메시지가 있는 채팅방만
-
-		// 요청 로그 추가
-		System.out.println("=== ChatRoom API 요청 받음 ===");
-		System.out.println("Request URL: " + request.getRequestURL());
-		System.out.println("Request Method: " + request.getMethod());
-		System.out.println("unreadOnly 파라미터: " + unreadOnly);
-		System.out.println("Authorization 헤더: " + request.getHeader("Authorization"));
-		System.out.println("User-Agent: " + request.getHeader("User-Agent"));
-		System.out.println("===============================");
 		Long userId = (Long) request.getAttribute("userId");
 		List<ChatRoomWithUnreadCountDto> chatRooms = chatService.getMyChatRooms(userId, unreadOnly);
 		return ResponseDto.ok(chatRooms);
