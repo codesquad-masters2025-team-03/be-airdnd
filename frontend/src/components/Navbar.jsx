@@ -113,6 +113,8 @@ const Navbar = () => {
         handleMenuClose();
         if (action === 'login') {
             navigate('/login');
+        } else if (action === 'signup') {
+            navigate('/signup');
         } else if (action === 'messages') {
             navigate('/chatroom');
         } else if (action === 'trips') {
@@ -136,7 +138,10 @@ const Navbar = () => {
                 {menuOpen && (
                     <DropdownMenu onMouseLeave={handleMenuClose}>
                         {!isLoggedIn ? (
-                            <DropdownItem onClick={() => handleDropdownClick('login')}>로그인</DropdownItem>
+                            <>
+                                <DropdownItem onClick={() => handleDropdownClick('login')}>로그인</DropdownItem>
+                                <DropdownItem onClick={() => handleDropdownClick('signup')}>회원가입</DropdownItem>
+                            </>
                         ) : (
                             <>
                                 <DropdownItem onClick={() => handleDropdownClick('messages')}>메시지</DropdownItem>

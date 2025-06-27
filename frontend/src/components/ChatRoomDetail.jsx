@@ -99,6 +99,19 @@ const SendButton = styled.button`
   font-weight: bold;
   cursor: pointer;
 `;
+const Textarea = styled.textarea`
+  flex: 1;
+  padding: 12px 18px;
+  border-radius: 24px;
+  border: 1.5px solid #eee;
+  font-size: 1.08rem;
+  background: #fafafa;
+  resize: none;
+  min-height: 44px;
+  max-height: 120px;
+  line-height: 1.5;
+  outline: none;
+`;
 
 function formatTime(iso) {
   if (!iso) return '';
@@ -136,10 +149,10 @@ export default function ChatRoomDetail({ room }) {
   // 메시지 불러오기
   useEffect(() => {
     if (!room) return;
-    authAxios.get(`/api/chat/rooms/${room.roomId}/messages`)
+    authAxios.get(`/api/chat/rooms/${room.reservationId}/messages`)
       .then(res => setMessages(res.data.data || []));
     // 읽음 처리
-    authAxios.post(`/api/chat/rooms/${room.roomId}/read`).catch(()=>{});
+    authAxios.post(`/api/chat/rooms/${room.reservationId}/read`).catch(()=>{});
   }, [room]);
 
   // WebSocket 연결 및 구독
@@ -148,7 +161,7 @@ export default function ChatRoomDetail({ room }) {
     const socket = new SockJS(`${process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080'}/ws/chat`);
     const stompClient = Stomp.over(socket);
     stompClient.connect({}, () => {
-      stompClient.subscribe(`/sub/chat/accommodation/${room.roomId}`, (msg) => {
+      stompClient.subscribe(`/sub/chat/accommodation/${room.reservationId}`, (msg) => {
         const newMessage = JSON.parse(msg.body);
         setMessages(prev => [...prev, newMessage]);
       });
@@ -167,7 +180,7 @@ export default function ChatRoomDetail({ room }) {
   const sendMessage = () => {
     if (client && input.trim() && room) {
       const payload = {
-        reservationId: room.roomId,
+        reservationId: room.reservationId,
         senderId: userId,
         content: input.trim(),
       };
@@ -178,6 +191,18 @@ export default function ChatRoomDetail({ room }) {
         createdAt: new Date().toISOString(),
       }]);
       setInput('');
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      if (e.shiftKey) {
+        // 줄바꿈 허용 (textarea 기본 동작)
+        return;
+      } else {
+        e.preventDefault();
+        sendMessage();
+      }
     }
   };
 
@@ -194,20 +219,22 @@ export default function ChatRoomDetail({ room }) {
       <MessageList>
         {messages.map((msg, idx) => (
           <MessageRow key={idx} isMe={msg.senderId === userId}>
-            <Bubble isMe={msg.senderId === userId}>
-              {msg.content}
-            </Bubble>
+            <Bubble
+              isMe={msg.senderId === userId}
+              dangerouslySetInnerHTML={{ __html: msg.content }}
+            />
             <Time>{formatTime(msg.createdAt)}</Time>
           </MessageRow>
         ))}
         <div ref={messagesEndRef} />
       </MessageList>
       <InputBox>
-        <Input
+        <Textarea
           placeholder="메시지를 입력하세요"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+          onKeyDown={handleKeyDown}
+          rows={2}
         />
         <SendButton onClick={sendMessage}>전송</SendButton>
       </InputBox>

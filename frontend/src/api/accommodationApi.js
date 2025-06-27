@@ -236,14 +236,16 @@ export const signup = async (email, loginId, password, username, phone, profileI
             }
         };
     }
-    const response = await publicAxios.post(`/api/auth/signup`, {
-        email,
-        loginId,
-        password,
-        username,
-        phone,
-        profileImage
-    });
+    const formData = new FormData();
+    formData.append('email', email);
+    formData.append('loginId', loginId);
+    formData.append('password', password);
+    formData.append('username', username);
+    formData.append('phone', phone);
+    if (profileImage) {
+        formData.append('profileImage', profileImage); // 파일 객체
+    }
+    const response = await publicAxios.post(`/api/auth/signup`, formData);
     return response;
 };
 

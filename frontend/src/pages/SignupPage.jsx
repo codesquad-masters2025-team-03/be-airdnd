@@ -148,10 +148,17 @@ const SignupPage = () => {
     const [success, setSuccess] = useState('');
 
     const handleChange = (e) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value
-        });
+        if (e.target.name === 'profileImage') {
+            setFormData({
+                ...formData,
+                profileImage: e.target.files[0]
+            });
+        } else {
+            setFormData({
+                ...formData,
+                [e.target.name]: e.target.value
+            });
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -257,14 +264,13 @@ const SignupPage = () => {
                     </InputGroup>
                     
                     <InputGroup>
-                        <Label htmlFor="profileImage">프로필 이미지 URL (선택사항)</Label>
+                        <Label htmlFor="profileImage">프로필 이미지 (선택사항)</Label>
                         <Input
-                            type="url"
+                            type="file"
                             id="profileImage"
                             name="profileImage"
-                            value={formData.profileImage}
+                            accept="image/*"
                             onChange={handleChange}
-                            placeholder="프로필 이미지 URL을 입력하세요"
                         />
                     </InputGroup>
                     
