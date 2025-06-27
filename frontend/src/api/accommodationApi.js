@@ -298,4 +298,9 @@ export const getUnavailableDates = async (accommodationId) => {
     return response;
 };
 
+export const getConfirmedReservations = async () => {
+    const response = await authAxios.get('/api/reservations/guest/confirmed');
+    return response;
+};
+
 

@@ -8,6 +8,7 @@ import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import PaymentSuccessPage from './pages/PaymentSuccessPage';
 import PaymentFailPage from './pages/PaymentFailPage';
+import ReservationListPage from './pages/ReservationListPage';
 import './App.css';
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
                     <Route path="/signup" element={<SignupPage/>}/>
                     <Route path="/payment/success" element={<PaymentSuccessPage/>}/>
                     <Route path="/payment/fail" element={<PaymentFailPage/>}/>
+                    <Route path="/reservations" element={<ReservationListPage/>}/>
                 </Routes>
             </div>
         </BrowserRouter>
