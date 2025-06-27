@@ -63,7 +63,10 @@ const DateDivider = styled.div`
   margin: 18px 0 0 0;
 `;
 
-const FIRST_AI_MSG = '안녕하세요! 👋 여행지 추천 도우미 AI예요.\n가족, 친구, 연인 누구와 떠나든 딱 맞는 여행지를 추천해드릴 수 있어요!\n어떤 여행을 원하시나요? (예: 12월 가족여행, 아이와 함께, 바다 근처 등)';
+const GREETING_MSG = {
+  sender: 'ai',
+  content: '안녕하세요! 👋 여행지 추천 도우미 AI예요. 원하는 여행 스타일을 말씀해주시면 딱 맞는 여행지를 추천해드릴게요!'
+};
 
 function AiChatPage() {
   const [messages, setMessages] = useState([]);
@@ -81,19 +84,18 @@ function AiChatPage() {
         });
         const logs = await res.json();
         if (logs.length > 0) {
-          // createdAt 오름차순 정렬
           logs.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
           const loadedMsgs = [];
           logs.forEach(log => {
             loadedMsgs.push({ sender: 'me', content: log.question });
             loadedMsgs.push({ sender: 'ai', content: log.answer });
           });
-          setMessages(loadedMsgs);
+          setMessages([GREETING_MSG, ...loadedMsgs]);
         } else {
-          setMessages([{ sender: 'ai', content: FIRST_AI_MSG }]);
+          setMessages([GREETING_MSG]);
         }
       } catch (e) {
-        setMessages([{ sender: 'ai', content: FIRST_AI_MSG }]);
+        setMessages([GREETING_MSG]);
       }
     };
     fetchLogs();
