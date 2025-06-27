@@ -12,6 +12,7 @@ DROP TABLE IF EXISTS accommodation;
 DROP TABLE IF EXISTS address;
 DROP TABLE IF EXISTS payment_method;
 DROP TABLE IF EXISTS user;
+DROP TABLE IF EXISTS ai_chat_log;
 
 
 -- User 테이블
