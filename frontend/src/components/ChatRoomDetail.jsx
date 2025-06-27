@@ -99,6 +99,19 @@ const SendButton = styled.button`
   font-weight: bold;
   cursor: pointer;
 `;
+const Textarea = styled.textarea`
+  flex: 1;
+  padding: 12px 18px;
+  border-radius: 24px;
+  border: 1.5px solid #eee;
+  font-size: 1.08rem;
+  background: #fafafa;
+  resize: none;
+  min-height: 44px;
+  max-height: 120px;
+  line-height: 1.5;
+  outline: none;
+`;
 
 function formatTime(iso) {
   if (!iso) return '';
@@ -181,6 +194,18 @@ export default function ChatRoomDetail({ room }) {
     }
   };
 
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      if (e.shiftKey) {
+        // 줄바꿈 허용 (textarea 기본 동작)
+        return;
+      } else {
+        e.preventDefault();
+        sendMessage();
+      }
+    }
+  };
+
   if (!room) {
     return <Container style={{alignItems:'center', justifyContent:'center', color:'#aaa', fontSize:'1.2rem'}}>채팅방을 선택하세요</Container>;
   }
@@ -194,20 +219,22 @@ export default function ChatRoomDetail({ room }) {
       <MessageList>
         {messages.map((msg, idx) => (
           <MessageRow key={idx} isMe={msg.senderId === userId}>
-            <Bubble isMe={msg.senderId === userId}>
-              {msg.content}
-            </Bubble>
+            <Bubble
+              isMe={msg.senderId === userId}
+              dangerouslySetInnerHTML={{ __html: msg.content }}
+            />
             <Time>{formatTime(msg.createdAt)}</Time>
           </MessageRow>
         ))}
         <div ref={messagesEndRef} />
       </MessageList>
       <InputBox>
-        <Input
+        <Textarea
           placeholder="메시지를 입력하세요"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+          onKeyDown={handleKeyDown}
+          rows={2}
         />
         <SendButton onClick={sendMessage}>전송</SendButton>
       </InputBox>
