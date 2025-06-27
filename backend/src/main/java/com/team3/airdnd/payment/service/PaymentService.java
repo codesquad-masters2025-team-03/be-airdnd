@@ -46,7 +46,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class PaymentService {
 
@@ -173,7 +172,6 @@ public class PaymentService {
 
 		// 결제 상태 업데이트
 		payment.cancel(cancelReason);
-		payment.setCancelled(true);
 
 		// 예약 상태도 취소로 변경
 		Reservation reservation = payment.getReservation();
