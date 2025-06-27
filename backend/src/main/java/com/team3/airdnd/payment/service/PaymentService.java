@@ -59,14 +59,16 @@ public class PaymentService {
 	private final StoredFileRepository storedFileRepository;
 	private final ReservationService reservationService;
 
+	private final String url =  "https://api.tosspayments.com/v1/payments/confirm";
+
+	private final RestTemplate restTemplate;
+
 	@Value("${toss.secret-key}")
 	private String tossSecretKey;
 
 	//결제 승인
 	@Transactional
 	public Payment approvePayment(PaymentRequestDto dto) {
-		String url = "https://api.tosspayments.com/v1/payments/confirm";
-		RestTemplate restTemplate = new RestTemplate();
 
 		String encodedAuth = Base64.getEncoder().encodeToString((tossSecretKey + ":").getBytes(StandardCharsets.UTF_8));
 		HttpHeaders headers = new HttpHeaders();
