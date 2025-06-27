@@ -136,10 +136,10 @@ export default function ChatRoomDetail({ room }) {
   // 메시지 불러오기
   useEffect(() => {
     if (!room) return;
-    authAxios.get(`/api/chat/rooms/${room.roomId}/messages`)
+    authAxios.get(`/api/chat/rooms/${room.reservationId}/messages`)
       .then(res => setMessages(res.data.data || []));
     // 읽음 처리
-    authAxios.post(`/api/chat/rooms/${room.roomId}/read`).catch(()=>{});
+    authAxios.post(`/api/chat/rooms/${room.reservationId}/read`).catch(()=>{});
   }, [room]);
 
   // WebSocket 연결 및 구독
@@ -148,7 +148,7 @@ export default function ChatRoomDetail({ room }) {
     const socket = new SockJS(`${process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080'}/ws/chat`);
     const stompClient = Stomp.over(socket);
     stompClient.connect({}, () => {
-      stompClient.subscribe(`/sub/chat/accommodation/${room.roomId}`, (msg) => {
+      stompClient.subscribe(`/sub/chat/accommodation/${room.reservationId}`, (msg) => {
         const newMessage = JSON.parse(msg.body);
         setMessages(prev => [...prev, newMessage]);
       });
@@ -167,7 +167,7 @@ export default function ChatRoomDetail({ room }) {
   const sendMessage = () => {
     if (client && input.trim() && room) {
       const payload = {
-        reservationId: room.roomId,
+        reservationId: room.reservationId,
         senderId: userId,
         content: input.trim(),
       };
