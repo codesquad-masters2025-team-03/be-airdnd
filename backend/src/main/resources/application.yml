@@ -1,6 +1,67 @@
 spring:
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+  redisson:
+    config: |
+      singleServerConfig:
+        address: "redis://127.0.0.1:6379"
+
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 100MB
+
   springdoc:
     swagger-ui:
       path: /api/swagger-ui.html
     api-docs:
       path: /api/v3/api-docs
+
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: none #update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.spatial.dialect.mysql.MySQLSpatialDialect
+        format_sql: true
+
+  sql:
+    init:
+      mode: always     # SQL 초기화 스크립트 실행 허용
+      schema-locations: classpath:schema-and-data.sql  # 스키마 + 데이터 파일 위치 지정
+
+cloud:
+  aws:
+    region:
+      static: ap-northeast-2
+    s3:
+      bucket: bbz-airdnd-s3
+
+toss:
+  secret-key: ${TOSS_SECRET_KEY}
+  client-key: ${TOSS_CLIENT_KEY}
+
+profile:
+  default-image-url: ${DEFAULT_PROFILE_URL}
+
+jwt:
+  secret: ${JWT_SECRET}
+
+openai:
+  api-key: ${OPENAI_KEY}
+  model: gpt-3.5-turbo
+  url: https://api.openai.com/v1/chat/completions
+
+logging:
+  level:
+    org.springframework.boot.autoconfigure.sql.init: DEBUG
