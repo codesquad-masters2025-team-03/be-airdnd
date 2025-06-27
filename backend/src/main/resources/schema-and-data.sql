@@ -205,8 +205,6 @@ INSERT INTO user (email, username, login_id, password, role, phone, profile_url,
 ('guest10@example.com', '이종석', 'guest10', '$2a$10$Ck1vZ1tcHTul3AOLtWzA1/xJz5lG1fV64D7Bqjofu5p4nWXXIQK5v', 'GUEST', '010-2000-2010', 'https://bbz-airdnd-s3.s3.ap-northeast-2.amazonaws.com/default_profile.png', NOW());
 
 
-
-
 INSERT INTO address (city, district, street_address, detail_address, latitude, longitude) VALUES
 ('서울', '강남구', '서울 강남구 505번길 49', '', 37.498011, 127.066864),
 ('서울', '강남구', '서울 강남구 75번길 3', '', 37.518418, 127.046114),

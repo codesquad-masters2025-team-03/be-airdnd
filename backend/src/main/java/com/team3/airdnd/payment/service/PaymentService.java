@@ -46,7 +46,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class PaymentService {
 
@@ -59,22 +58,38 @@ public class PaymentService {
 	private final StoredFileRepository storedFileRepository;
 	private final ReservationService reservationService;
 
+	private final String url =  "https://api.tosspayments.com/v1/payments/confirm";
+
+	private final RestTemplate restTemplate;
+	private final String encodedAuth;
+
 	@Value("${toss.secret-key}")
 	private String tossSecretKey;
+
+	public PaymentService(PaymentRepository paymentRepository, PaymentMethodRepository paymentMethodRepository,
+		ReservationRepository reservationRepository, PaymentQueryRepository paymentQueryRepository,
+		AccommodationRepository accommodationRepository, ReservedDateRepository reservedDateRepository,
+		StoredFileRepository storedFileRepository, ReservationService reservationService, RestTemplate restTemplate, @Value("${toss.secret-key}") String tossSecretKey) {
+		this.paymentRepository = paymentRepository;
+		this.paymentMethodRepository = paymentMethodRepository;
+		this.reservationRepository = reservationRepository;
+		this.paymentQueryRepository = paymentQueryRepository;
+		this.accommodationRepository = accommodationRepository;
+		this.reservedDateRepository = reservedDateRepository;
+		this.storedFileRepository = storedFileRepository;
+		this.reservationService = reservationService;
+		this.restTemplate = restTemplate;
+		this.encodedAuth = Base64.getEncoder().encodeToString((tossSecretKey + ":").getBytes());
+	}
+
 
 	//결제 승인
 	@Transactional
 	public Payment approvePayment(PaymentRequestDto dto) {
-		String url = "https://api.tosspayments.com/v1/payments/confirm";
-		RestTemplate restTemplate = new RestTemplate();
 
-		String encodedAuth = Base64.getEncoder().encodeToString((tossSecretKey + ":").getBytes(StandardCharsets.UTF_8));
 		HttpHeaders headers = new HttpHeaders();
 		headers.set("Authorization", "Basic " + encodedAuth);
 		headers.setContentType(MediaType.APPLICATION_JSON);
-
-		log.info("tossSecretKey: {}", tossSecretKey);
-		log.info("Encoded Authorization: Basic {}", encodedAuth);
 
 		String body = String.format(
 			"{\"paymentKey\":\"%s\",\"orderId\":\"%s\",\"amount\":%d}",
@@ -157,7 +172,6 @@ public class PaymentService {
 
 		// 결제 상태 업데이트
 		payment.cancel(cancelReason);
-		payment.setCancelled(true);
 
 		// 예약 상태도 취소로 변경
 		Reservation reservation = payment.getReservation();
@@ -166,15 +180,14 @@ public class PaymentService {
 
 	private void cancelPaymentInToss(String paymentKey, String cancelReason) {
 		HttpHeaders headers = new HttpHeaders();
-		String encodedKey = Base64.getEncoder().encodeToString((tossSecretKey + ":").getBytes(StandardCharsets.UTF_8));
-		headers.set("Authorization", "Basic " + encodedKey);
+		headers.set("Authorization", "Basic " + encodedAuth);
 		headers.setContentType(MediaType.APPLICATION_JSON);
 
 		Map<String, String> body = new HashMap<>();
 		body.put("cancelReason", cancelReason);
 
 		HttpEntity<Map<String, String>> request = new HttpEntity<>(body, headers);
-		RestTemplate restTemplate = new RestTemplate();
+
 		restTemplate.postForEntity(
 			"https://api.tosspayments.com/v1/payments/" + paymentKey + "/cancel",
 			request,
