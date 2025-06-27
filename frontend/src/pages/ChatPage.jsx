@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import ChatRoomList from '../components/ChatRoomList';
 import ChatRoomDetail from '../components/ChatRoomDetail';
+import Navbar from '../components/Navbar';
 
 // JWT 파싱 함수
 function parseJwt(token) {
@@ -46,13 +47,16 @@ const ChatPage = () => {
   }
 
   return (
-    <Container>
-      <ChatRoomList 
-        selectedRoom={selectedRoom} 
-        setSelectedRoom={setSelectedRoom} 
-      />
-      <ChatRoomDetail room={selectedRoom} />
-    </Container>
+    <>
+      <Navbar />
+      <Container>
+        <ChatRoomList 
+          selectedRoom={selectedRoom} 
+          setSelectedRoom={setSelectedRoom} 
+        />
+        <ChatRoomDetail room={selectedRoom} />
+      </Container>
+    </>
   );
 };
 

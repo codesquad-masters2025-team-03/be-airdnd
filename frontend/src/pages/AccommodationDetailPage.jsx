@@ -12,6 +12,7 @@ import {
 import {format} from 'date-fns';
 import axios from 'axios';
 import {loadTossPayments} from '@tosspayments/payment-sdk';
+import Navbar from '../components/Navbar';
 
 import {
     FaWifi,
@@ -391,84 +392,6 @@ const ReservePriceRow = styled.div`
     align-items: center;
     font-size: 1.08rem;
     margin: 6px 0;
-`;
-
-const Navbar = styled.nav`
-    width: 100vw;
-    min-width: 320px;
-    background: #fff;
-    border-bottom: 1.5px solid #eee;
-    display: flex;
-    align-items: center;
-    height: 64px;
-    padding: 0 32px;
-    box-sizing: border-box;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-`;
-const Logo = styled.div`
-    font-size: 1.6rem;
-    font-weight: bold;
-    color: #FF385C;
-    cursor: pointer;
-    user-select: none;
-`;
-
-const UserMenuContainer = styled.div`
-    position: relative;
-    display: flex;
-    align-items: center;
-`;
-const UserButton = styled.button`
-    background: #f7f7f7;
-    border: none;
-    border-radius: 50px;
-    padding: 8px 16px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: 500;
-    color: #444;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
-`;
-const UserIcon = styled.span`
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    background: #bbb;
-    color: #fff;
-    font-size: 18px;
-`;
-const DropdownMenu = styled.div`
-    position: absolute;
-    top: 48px;
-    right: 0;
-    min-width: 160px;
-    background: #fff;
-    border: 2px dashed #6c3;
-    border-radius: 16px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.13);
-    z-index: 100;
-    padding: 16px 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-`;
-const DropdownItem = styled.div`
-    padding: 10px 24px;
-    cursor: pointer;
-    font-size: 16px;
-    color: #222;
-
-    &:hover {
-        background: #f7f7f7;
-    }
 `;
 
 const PaymentModalOverlay = styled.div`
@@ -882,29 +805,7 @@ const AccommodationDetailPage = () => {
 
     return (
         <>
-            <Navbar>
-                <Logo onClick={() => navigate('/')}>AirDND</Logo>
-                <div style={{flex: 1}}/>
-                <UserMenuContainer>
-                    <UserButton onClick={handleMenuClick}>
-                        <span style={{fontSize: '20px'}}>☰</span>
-                        <UserIcon> <span role="img" aria-label="user">👤</span> </UserIcon>
-                    </UserButton>
-                    {menuOpen && (
-                        <DropdownMenu onMouseLeave={handleMenuClose}>
-                            {!isLoggedIn ? (
-                                <DropdownItem onClick={() => handleDropdownClick('login')}>로그인</DropdownItem>
-                            ) : (
-                                <>
-                                    <DropdownItem onClick={() => handleDropdownClick('messages')}>메시지</DropdownItem>
-                                    <DropdownItem onClick={() => handleDropdownClick('trips')}>내 여행</DropdownItem>
-                                    <DropdownItem onClick={() => handleDropdownClick('profile')}>프로필</DropdownItem>
-                                </>
-                            )}
-                        </DropdownMenu>
-                    )}
-                </UserMenuContainer>
-            </Navbar>
+            <Navbar />
             <PageWrapper>
                 <ImageCarousel>
                     {imageUrls && imageUrls.length > 1 && (
