@@ -119,6 +119,8 @@ const Navbar = () => {
             navigate('/reservations');
         } else if (action === 'profile') {
             navigate('/profile');
+        } else if (action === 'ai-chat') {
+            navigate('/ai-chat');
         }
     };
 
@@ -140,6 +142,7 @@ const Navbar = () => {
                                 <DropdownItem onClick={() => handleDropdownClick('messages')}>메시지</DropdownItem>
                                 <DropdownItem onClick={() => handleDropdownClick('trips')}>내 여행</DropdownItem>
                                 <DropdownItem onClick={() => handleDropdownClick('profile')}>프로필</DropdownItem>
+                                <DropdownItem onClick={() => handleDropdownClick('ai-chat')}>여행지 추천받기</DropdownItem>
                                 <DropdownItem onClick={handleLogout}>로그아웃</DropdownItem>
                             </>
                         )}

@@ -9,6 +9,7 @@ import SignupPage from './pages/SignupPage';
 import PaymentSuccessPage from './pages/PaymentSuccessPage';
 import PaymentFailPage from './pages/PaymentFailPage';
 import ReservationListPage from './pages/ReservationListPage';
+import AiChatPage from './pages/AiChatPage';
 import './App.css';
 
 function App() {
@@ -25,6 +26,7 @@ function App() {
                     <Route path="/payment/success" element={<PaymentSuccessPage/>}/>
                     <Route path="/payment/fail" element={<PaymentFailPage/>}/>
                     <Route path="/reservations" element={<ReservationListPage/>}/>
+                    <Route path="/ai-chat" element={<AiChatPage/>}/>
                 </Routes>
             </div>
         </BrowserRouter>
