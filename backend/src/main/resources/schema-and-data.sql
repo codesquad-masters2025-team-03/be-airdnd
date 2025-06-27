@@ -170,6 +170,14 @@ CREATE TABLE payment (
                          FOREIGN KEY (payment_method_id) REFERENCES payment_method(id)
 );
 
+CREATE TABLE ai_chat_log (
+                             id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                             user_id BIGINT,
+                             question VARCHAR(1000) NOT NULL,
+                             answer VARCHAR(2000) NOT NULL,
+                             created_at DATETIME
+);
+
 
 -- HOST 유저 10명 비밀번호는 password에 id값 더한 것 -> id가 1번인 유저는 비밀번호 평문이 password1
 INSERT INTO user (email, username, login_id, password, role, phone, profile_url, created_at) VALUES
