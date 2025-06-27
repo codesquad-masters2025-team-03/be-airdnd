@@ -15,6 +15,7 @@ import com.team3.airdnd.chat.dto.ChatRoomWithUnreadCountDto;
 import com.team3.airdnd.chat.service.ChatService;
 import com.team3.airdnd.global.dto.ResponseDto;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -32,19 +33,20 @@ public class ChatRestController {
 
 	// 안읽은 메시지 읽음 처리
 	@PostMapping("/rooms/{roomId}/read")
-	public ResponseEntity<Void> markMessagesAsRead(@PathVariable Long roomId) {
-		Long userId = 1L;
+	public ResponseEntity<Void> markMessagesAsRead(@PathVariable Long roomId, HttpServletRequest request) {
+		Long userId = (Long) request.getAttribute("userId");
 		chatService.markMessagesAsRead(roomId, userId);
 		return ResponseEntity.ok().build();
 	}
 
 	@GetMapping("/rooms")
 	public ResponseEntity<ResponseDto<List<ChatRoomWithUnreadCountDto>>> getMyChatRooms(
-		@RequestParam(value = "unreadOnly", required = false, defaultValue = "false") boolean unreadOnly
+		@RequestParam(value = "unreadOnly", required = false, defaultValue = "false") boolean unreadOnly,
+		HttpServletRequest request
 	) {
 		//unreadOnly=false: 전체 채팅방 목록 + 각 채팅방의 읽지 않은 메시지 수
 		//unreadOnly=true: 읽지 않은 메시지가 있는 채팅방만
-		Long userId = 1L;
+		Long userId = (Long) request.getAttribute("userId");
 		List<ChatRoomWithUnreadCountDto> chatRooms = chatService.getMyChatRooms(userId, unreadOnly);
 		return ResponseDto.ok(chatRooms);
 	}
