@@ -108,6 +108,14 @@ CREATE TABLE review (
         FOREIGN KEY (reservation_id) REFERENCES reservation(id)
 );
 
+CREATE TABLE reserved_date (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    accommodation_id BIGINT NOT NULL,
+    reserved_date DATE NOT NULL,
+    CONSTRAINT uq_reserved UNIQUE (accommodation_id, reserved_date),
+    FOREIGN KEY (accommodation_id) REFERENCES accommodation(id)
+);
+
 
 -- HOST 유저 10명 비밀번호는 password에 id값 더한 것 -> id가 1번인 유저는 비밀번호 평문이 password1
 INSERT INTO user (email, username, login_id, password, role, phone, profile_url, created_at) VALUES
@@ -4948,3 +4956,40 @@ INSERT INTO review (reservation_id, rating, content, created_at) VALUES
 (28, 5.0, '아름다운 전망과 넓은 공간이 인상적이었어요.', '2025-06-23 10:10:10'),
 (4, 4.0, '가성비 좋은 숙소라 추천합니다.', '2025-06-20 09:00:00'),
 (10, 3.0, '냉난방 시설이 고장 나서 조금 힘들었어요.', '2025-06-18 23:15:00');
+
+INSERT INTO reserved_date (accommodation_id, reserved_date) VALUES
+    (45, '2025-07-10'),
+    (45, '2025-07-11'),
+    (300, '2025-09-01'),
+    (300, '2025-09-02'),
+    (300, '2025-09-03'),
+    (250, '2025-08-15'),
+    (250, '2025-08-16'),
+    (60, '2025-07-28'),
+    (60, '2025-07-29'),
+    (210, '2025-09-12'),
+    (210, '2025-09-13'),
+    (30, '2025-08-20'),
+    (30, '2025-08-21'),
+    (110, '2025-07-15'),
+    (110, '2025-07-16'),
+    (330, '2025-09-18'),
+    (330, '2025-09-19'),
+    (140, '2025-08-12'),
+    (140, '2025-08-13'),
+    (140, '2025-08-14'),
+    (310, '2025-07-18'),
+    (310, '2025-07-19'),
+    (310, '2025-07-20'),
+    (70, '2025-09-03'),
+    (70, '2025-09-04'),
+    (230, '2025-08-17'),
+    (230, '2025-08-18'),
+    (60, '2025-07-30'),
+    (60, '2025-07-31'),
+    (60, '2025-08-01'),
+    (270, '2025-09-06'),
+    (270, '2025-09-07'),
+    (220, '2025-08-14'),
+    (220, '2025-08-15');
+
