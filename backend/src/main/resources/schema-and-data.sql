@@ -116,30 +116,55 @@ CREATE TABLE reserved_date (
     FOREIGN KEY (accommodation_id) REFERENCES accommodation(id)
 );
 
+CREATE TABLE chat_room (
+                           id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                           host_id BIGINT NOT NULL,
+                           guest_id BIGINT NOT NULL,
+                           reservation_id BIGINT UNIQUE, -- OneToOne 매핑
+                           created_at DATETIME NOT NULL,
+                           last_message VARCHAR(500),
+                           last_message_at DATETIME,
+
+                           FOREIGN KEY (host_id) REFERENCES user(id),
+                           FOREIGN KEY (guest_id) REFERENCES user(id),
+                           FOREIGN KEY (reservation_id) REFERENCES reservation(id)
+);
+
+CREATE TABLE message (
+                         id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                         chat_room_id BIGINT NOT NULL,
+                         sender_id BIGINT NOT NULL,
+                         content TEXT NOT NULL,
+                         sent_at DATETIME NOT NULL,
+
+                         FOREIGN KEY (chat_room_id) REFERENCES chat_room(id),
+                         FOREIGN KEY (sender_id) REFERENCES user(id)
+);
+
 
 -- HOST 유저 10명 비밀번호는 password에 id값 더한 것 -> id가 1번인 유저는 비밀번호 평문이 password1
 INSERT INTO user (email, username, login_id, password, role, phone, profile_url, created_at) VALUES
-('host1@example.com', '김하늘', 'host1', '$2a$10$Z3CyYIhU8Fne5DE5ZTCDzulFzNw2K6Jqq/RSBksiBeIV/pY5Pja/q', 'HOST', '010-1000-1001', NULL, NOW()),
-('host2@example.com', '박서준', 'host2', '$2a$10$D6r8BLmks5nZUDmyHdbCM.5rBfxfzFiv3a0h1Y2BSaq5xw0lPfbti', 'HOST', '010-1000-1002', NULL, NOW()),
-('host3@example.com', '이수민', 'host3', '$2a$10$NfXG7HgHbQJseb3CidRubOUQpfAlPfMwVzKhI6V4n1vCtbmZh9bMa', 'HOST', '010-1000-1003', NULL, NOW()),
-('host4@example.com', '정지훈', 'host4', '$2a$10$JpHG1dSc6p6BvGjufH6G5eCqWbmWzxubUoilKx2oyS9MhUlCT3oc6', 'HOST', '010-1000-1004', NULL, NOW()),
-('host5@example.com', '한지민', 'host5', '$2a$10$sQoNqT9XyM54q9WlH0IpeqT9vU8FoenV1eX9f7oOJPfm6.H/EjV1O', 'HOST', '010-1000-1005', NULL, NOW()),
-('host6@example.com', '서강준', 'host6', '$2a$10$XXIQK5vCk1vZ1tcHTul3AOLtWzA1/xJz5lG1fV64D7Bqjofu5p4nW', 'HOST', '010-1000-1006', NULL, NOW()),
-('host7@example.com', '전지현', 'host7', '$2a$10$dy1gXkGLumZ5qX6Ch12HDeDTXiiMHDL/95B2S/bRMyCV2wE8p8nPq', 'HOST', '010-1000-1007', NULL, NOW()),
-('host8@example.com', '장동건', 'host8', '$2a$10$wWWmXvq1xJ6eRQIqMT7UCeLjXLp8dkUBaRdOyqK8BPVKxH/efxWW2', 'HOST', '010-1000-1008', NULL, NOW()),
-('host9@example.com', '김지원', 'host9', '$2a$10$nsoQKcJsteVEh9UpAJZciOUgLko.gIwrKyYVJZZzKzbwQ6vurIWBK', 'HOST', '010-1000-1009', NULL, NOW()),
-('host10@example.com', '조인성', 'host10', '$2a$10$sB6mOyqK8BPVKxH/efxWW2ZnsoQKcJsteVEh9UpAJZciOUgLko.gI', 'HOST', '010-1000-1010', NULL, NOW()),
+('host1@example.com', '김하늘', 'host1', '$2a$10$Z3CyYIhU8Fne5DE5ZTCDzulFzNw2K6Jqq/RSBksiBeIV/pY5Pja/q', 'HOST', '010-1000-1001', 'https://bbz-airdnd-s3.s3.ap-northeast-2.amazonaws.com/default_profile.png', NOW()),
+('host2@example.com', '박서준', 'host2', '$2a$10$D6r8BLmks5nZUDmyHdbCM.5rBfxfzFiv3a0h1Y2BSaq5xw0lPfbti', 'HOST', '010-1000-1002', 'https://bbz-airdnd-s3.s3.ap-northeast-2.amazonaws.com/default_profile.png', NOW()),
+('host3@example.com', '이수민', 'host3', '$2a$10$NfXG7HgHbQJseb3CidRubOUQpfAlPfMwVzKhI6V4n1vCtbmZh9bMa', 'HOST', '010-1000-1003', 'https://bbz-airdnd-s3.s3.ap-northeast-2.amazonaws.com/default_profile.png', NOW()),
+('host4@example.com', '정지훈', 'host4', '$2a$10$JpHG1dSc6p6BvGjufH6G5eCqWbmWzxubUoilKx2oyS9MhUlCT3oc6', 'HOST', '010-1000-1004', 'https://bbz-airdnd-s3.s3.ap-northeast-2.amazonaws.com/default_profile.png', NOW()),
+('host5@example.com', '한지민', 'host5', '$2a$10$sQoNqT9XyM54q9WlH0IpeqT9vU8FoenV1eX9f7oOJPfm6.H/EjV1O', 'HOST', '010-1000-1005', 'https://bbz-airdnd-s3.s3.ap-northeast-2.amazonaws.com/default_profile.png', NOW()),
+('host6@example.com', '서강준', 'host6', '$2a$10$XXIQK5vCk1vZ1tcHTul3AOLtWzA1/xJz5lG1fV64D7Bqjofu5p4nW', 'HOST', '010-1000-1006', 'https://bbz-airdnd-s3.s3.ap-northeast-2.amazonaws.com/default_profile.png', NOW()),
+('host7@example.com', '전지현', 'host7', '$2a$10$dy1gXkGLumZ5qX6Ch12HDeDTXiiMHDL/95B2S/bRMyCV2wE8p8nPq', 'HOST', '010-1000-1007', 'https://bbz-airdnd-s3.s3.ap-northeast-2.amazonaws.com/default_profile.png', NOW()),
+('host8@example.com', '장동건', 'host8', '$2a$10$wWWmXvq1xJ6eRQIqMT7UCeLjXLp8dkUBaRdOyqK8BPVKxH/efxWW2', 'HOST', '010-1000-1008', 'https://bbz-airdnd-s3.s3.ap-northeast-2.amazonaws.com/default_profile.png', NOW()),
+('host9@example.com', '김지원', 'host9', '$2a$10$nsoQKcJsteVEh9UpAJZciOUgLko.gIwrKyYVJZZzKzbwQ6vurIWBK', 'HOST', '010-1000-1009', 'https://bbz-airdnd-s3.s3.ap-northeast-2.amazonaws.com/default_profile.png', NOW()),
+('host10@example.com', '조인성', 'host10', '$2a$10$sB6mOyqK8BPVKxH/efxWW2ZnsoQKcJsteVEh9UpAJZciOUgLko.gI', 'HOST', '010-1000-1010', 'https://bbz-airdnd-s3.s3.ap-northeast-2.amazonaws.com/default_profile.png', NOW()),
 
-('guest1@example.com', '최수영', 'guest1', '$2a$10$aGJJ9cG0Ba8np5xpoE2m6OMQxSNabenEwPhYu95LjAqS4I2oXeB9y', 'GUEST', '010-2000-2001', NULL, NOW()),
-('guest2@example.com', '이동욱', 'guest2', '$2a$10$gJ2b8np5xpoE2m6OMQxSNWzmqJsteVEh9UpAJZciOUgLko.gIwrKy', 'GUEST', '010-2000-2002', NULL, NOW()),
-('guest3@example.com', '김태희', 'guest3', '$2a$10$n7r3a0h1Y2BSaq5xw0lPfbMhUlCT3oc6JpHG1dSc6p6BvGjufH6G5', 'GUEST', '010-2000-2003', NULL, NOW()),
-('guest4@example.com', '소지섭', 'guest4', '$2a$10$CD.zulFzNw2K6Jqq/RSBksiBeIV/pY5Pja/qZ3CyYIhU8Fne5DE5Z', 'GUEST', '010-2000-2004', NULL, NOW()),
-('guest5@example.com', '손예진', 'guest5', '$2a$10$BfxfzFiv3a0h1Y2BSaq5xw0lPfbtiD6r8BLmks5nZUDmyHdbCM.5r', 'GUEST', '010-2000-2005', NULL, NOW()),
-('guest6@example.com', '이민호', 'guest6', '$2a$10$vzKhI6V4n1vCtbmZh9bMaNfXG7HgHbQJseb3CidRubOUQpfAlPfMw', 'GUEST', '010-2000-2006', NULL, NOW()),
-('guest7@example.com', '윤아', 'guest7', '$2a$10$WbmWzxubUoilKx2oyS9MhUlCT3oc6JpHG1dSc6p6BvGjufH6G5eCq', 'GUEST', '010-2000-2007', NULL, NOW()),
-('guest8@example.com', '강동원', 'guest8', '$2a$10$FoenV1eX9f7oOJPfm6.H/EjV1OsQoNqT9XyM54q9WlH0IpeqT9vU8', 'GUEST', '010-2000-2008', NULL, NOW()),
-('guest9@example.com', '수지', 'guest9', '$2a$10$1/xJz5lG1fV64D7Bqjofu5p4nWXXIQK5vCk1vZ1tcHTul3AOLtWzA', 'GUEST', '010-2000-2009', NULL, NOW()),
-('guest10@example.com', '이종석', 'guest10', '$2a$10$Ck1vZ1tcHTul3AOLtWzA1/xJz5lG1fV64D7Bqjofu5p4nWXXIQK5v', 'GUEST', '010-2000-2010', NULL, NOW());
+('guest1@example.com', '최수영', 'guest1', '$2a$10$aGJJ9cG0Ba8np5xpoE2m6OMQxSNabenEwPhYu95LjAqS4I2oXeB9y', 'GUEST', '010-2000-2001', 'https://bbz-airdnd-s3.s3.ap-northeast-2.amazonaws.com/default_profile.png', NOW()),
+('guest2@example.com', '이동욱', 'guest2', '$2a$10$gJ2b8np5xpoE2m6OMQxSNWzmqJsteVEh9UpAJZciOUgLko.gIwrKy', 'GUEST', '010-2000-2002', 'https://bbz-airdnd-s3.s3.ap-northeast-2.amazonaws.com/default_profile.png', NOW()),
+('guest3@example.com', '김태희', 'guest3', '$2a$10$n7r3a0h1Y2BSaq5xw0lPfbMhUlCT3oc6JpHG1dSc6p6BvGjufH6G5', 'GUEST', '010-2000-2003', 'https://bbz-airdnd-s3.s3.ap-northeast-2.amazonaws.com/default_profile.png', NOW()),
+('guest4@example.com', '소지섭', 'guest4', '$2a$10$CD.zulFzNw2K6Jqq/RSBksiBeIV/pY5Pja/qZ3CyYIhU8Fne5DE5Z', 'GUEST', '010-2000-2004', 'https://bbz-airdnd-s3.s3.ap-northeast-2.amazonaws.com/default_profile.png', NOW()),
+('guest5@example.com', '손예진', 'guest5', '$2a$10$BfxfzFiv3a0h1Y2BSaq5xw0lPfbtiD6r8BLmks5nZUDmyHdbCM.5r', 'GUEST', '010-2000-2005', 'https://bbz-airdnd-s3.s3.ap-northeast-2.amazonaws.com/default_profile.png', NOW()),
+('guest6@example.com', '이민호', 'guest6', '$2a$10$vzKhI6V4n1vCtbmZh9bMaNfXG7HgHbQJseb3CidRubOUQpfAlPfMw', 'GUEST', '010-2000-2006', 'https://bbz-airdnd-s3.s3.ap-northeast-2.amazonaws.com/default_profile.png', NOW()),
+('guest7@example.com', '윤아', 'guest7', '$2a$10$WbmWzxubUoilKx2oyS9MhUlCT3oc6JpHG1dSc6p6BvGjufH6G5eCq', 'GUEST', '010-2000-2007', 'https://bbz-airdnd-s3.s3.ap-northeast-2.amazonaws.com/default_profile.png', NOW()),
+('guest8@example.com', '강동원', 'guest8', '$2a$10$FoenV1eX9f7oOJPfm6.H/EjV1OsQoNqT9XyM54q9WlH0IpeqT9vU8', 'GUEST', '010-2000-2008', 'https://bbz-airdnd-s3.s3.ap-northeast-2.amazonaws.com/default_profile.png', NOW()),
+('guest9@example.com', '수지', 'guest9', '$2a$10$1/xJz5lG1fV64D7Bqjofu5p4nWXXIQK5vCk1vZ1tcHTul3AOLtWzA', 'GUEST', '010-2000-2009', 'https://bbz-airdnd-s3.s3.ap-northeast-2.amazonaws.com/default_profile.png', NOW()),
+('guest10@example.com', '이종석', 'guest10', '$2a$10$Ck1vZ1tcHTul3AOLtWzA1/xJz5lG1fV64D7Bqjofu5p4nWXXIQK5v', 'GUEST', '010-2000-2010', 'https://bbz-airdnd-s3.s3.ap-northeast-2.amazonaws.com/default_profile.png', NOW());
 
 
 
