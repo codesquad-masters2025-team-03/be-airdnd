@@ -150,6 +150,26 @@ CREATE TABLE payment_method (
                                 FOREIGN KEY (user_id) REFERENCES user(id)
 );
 
+CREATE TABLE payment (
+                         id BIGINT AUTO_INCREMENT PRIMARY KEY,
+
+                         reservation_id BIGINT NOT NULL UNIQUE,
+                         payment_method_id BIGINT NOT NULL,
+
+                         order_id VARCHAR(100) NOT NULL UNIQUE,
+                         amount BIGINT,
+
+                         paid_at DATETIME NOT NULL,
+                         is_cancelled BOOLEAN NOT NULL DEFAULT FALSE,
+                         cancelled_at DATETIME,
+
+                         payment_key VARCHAR(255),
+                         cancel_reason VARCHAR(255),
+
+                         FOREIGN KEY (reservation_id) REFERENCES reservation(id),
+                         FOREIGN KEY (payment_method_id) REFERENCES payment_method(id)
+);
+
 
 -- HOST 유저 10명 비밀번호는 password에 id값 더한 것 -> id가 1번인 유저는 비밀번호 평문이 password1
 INSERT INTO user (email, username, login_id, password, role, phone, profile_url, created_at) VALUES
