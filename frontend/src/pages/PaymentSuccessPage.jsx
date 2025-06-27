@@ -90,7 +90,7 @@ const PaymentSuccessPage = () => {
     };
 
     const handleGoTrips = () => {
-        navigate('/trips'); // 여행 페이지로 이동 (필요시 구현)
+        navigate('/reservations'); // 내 여행(예약 목록) 페이지로 이동
     };
 
     return (

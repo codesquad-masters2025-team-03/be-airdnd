@@ -147,12 +147,12 @@ export default function ChatRoomList({ selectedRoom, setSelectedRoom }) {
   useEffect(() => {
     setLoading(true);
     authAxios.get('/api/chat/rooms', {
-      params: { userId, unreadOnly: filter === 'unread' }
+      params: { unreadOnly: filter === 'unread' }
     })
       .then(res => setRooms(res.data.data || []))
       .catch(() => setRooms([]))
       .finally(() => setLoading(false));
-  }, [userId, filter]);
+  }, [filter]);
 
   const filteredRooms = rooms.filter(room =>
     !search || room.otherUserName.toLowerCase().includes(search.toLowerCase())

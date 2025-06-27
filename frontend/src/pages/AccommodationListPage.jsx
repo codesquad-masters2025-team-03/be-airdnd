@@ -7,6 +7,7 @@ import {getAccommodations} from '../api/accommodationApi';
 import SearchBar from "../components/SearchBar";
 import {FaSearch} from "react-icons/fa";
 import {isLoggedIn, getCurrentUser} from '../utils/auth';
+import Navbar from '../components/Navbar';
 
 const PageContainer = styled.div`
     display: flex;
@@ -35,21 +36,6 @@ const LoadingText = styled.p`
 const Header = styled.header`
     padding: 16px;
     border-bottom: 1px solid #ddd;
-`;
-
-const Navbar = styled.nav`
-    width: 100vw;
-    min-width: 320px;
-    background: #fff;
-    border-bottom: 1.5px solid #eee;
-    display: flex;
-    align-items: center;
-    height: 64px;
-    padding: 0 32px;
-    box-sizing: border-box;
-    position: sticky;
-    top: 0;
-    z-index: 100;
 `;
 
 const NavbarContent = styled.div`
@@ -429,54 +415,7 @@ const AccommodationListPage = () => {
 
     return (
         <>
-            <Navbar>
-                <NavbarContent>
-                    <NavbarFlex>
-                        <NavbarLeft>
-                            <Logo onClick={() => navigate('/')}>AirDND</Logo>
-                        </NavbarLeft>
-                        <NavbarCenter>
-                            {renderMiniSearchBar()}
-                        </NavbarCenter>
-                        <NavbarRight style={{justifyContent:'flex-end', display:'flex'}}>
-                            <UserMenuContainer>
-                                <UserButton onClick={handleMenuClick}>
-                                    <span style={{fontSize:'20px'}}>☰</span>
-                                    {isUserLoggedIn && user?.profileImage ? (
-                                        <UserIcon>
-                                            <img 
-                                                src={user.profileImage} 
-                                                alt="프로필" 
-                                                style={{
-                                                    width: '28px',
-                                                    height: '28px',
-                                                    borderRadius: '50%',
-                                                    objectFit: 'cover'
-                                                }}
-                                            />
-                                        </UserIcon>
-                                    ) : (
-                                        <UserIcon> <span role="img" aria-label="user">👤</span> </UserIcon>
-                                    )}
-                                </UserButton>
-                                {menuOpen && (
-                                    <DropdownMenu onMouseLeave={handleMenuClose}>
-                                        {!isUserLoggedIn ? (
-                                            <DropdownItem onClick={() => handleDropdownClick('login')}>로그인</DropdownItem>
-                                        ) : (
-                                            <>
-                                                <DropdownItem onClick={() => handleDropdownClick('messages')}>메시지</DropdownItem>
-                                                <DropdownItem onClick={() => handleDropdownClick('trips')}>내 여행</DropdownItem>
-                                                <DropdownItem onClick={() => handleDropdownClick('profile')}>프로필</DropdownItem>
-                                            </>
-                                        )}
-                                    </DropdownMenu>
-                                )}
-                            </UserMenuContainer>
-                        </NavbarRight>
-                    </NavbarFlex>
-                </NavbarContent>
-            </Navbar>
+            <Navbar />
             {isSearchOpen && (
                 <>
                     <Overlay />
