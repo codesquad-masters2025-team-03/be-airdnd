@@ -958,7 +958,7 @@ const AccommodationDetailPage = () => {
                     </LeftCol>
                     <RightCol>
                         <ReserveForm>
-                            <Price>₩{nightly.toLocaleString()} / 박</Price>
+                            <Price>₩{reservationInfo?.pricePerNight?.toLocaleString() || pricePerNight?.toLocaleString()} / 박</Price>
                             <ReserveInputRow>
                                 <ReserveInput onClick={handleDateInputClick}>
                                     <label>체크인</label>
@@ -1010,23 +1010,21 @@ const AccommodationDetailPage = () => {
                                 {reserveBtnLoading ? '예약 중...' : reserveBtnDone ? '예약 완료' : '예약하기'}
                             </ReserveButton>
                             <ReserveSummary>예약 확정 전에는 요금이 청구되지 않습니다.</ReserveSummary>
-                            {checkIn && checkOut && (
-                                <>
-                                    <ReservePriceRow>
-                                        <span>₩{nightly.toLocaleString()} x {nights}박</span>
-                                        <span>₩{totalPrice.toLocaleString()}</span>
-                                    </ReservePriceRow>
-                                    <ReservePriceRow>
-                                        <span>에어디엔디 서비스 수수료</span>
-                                        <span>₩{serviceFee.toLocaleString()}</span>
-                                    </ReservePriceRow>
-                                    <hr style={{margin: '12px 0', border: 'none', borderTop: '1px solid #eee'}}/>
-                                    <ReserveTotal>
-                                        <span>총액</span>
-                                        <span>₩{finalPrice.toLocaleString()}</span>
-                                    </ReserveTotal>
-                                </>
-                            )}
+                            <>
+                                <ReservePriceRow>
+                                    <span>₩{reservationInfo?.pricePerNight?.toLocaleString() || pricePerNight?.toLocaleString() || '0'} x {reservationInfo?.nights ?? 0}박</span>
+                                    <span>₩{reservationInfo?.totalPrice?.toLocaleString() || '0'}</span>
+                                </ReservePriceRow>
+                                <ReservePriceRow>
+                                    <span>에어디엔디 서비스 수수료</span>
+                                    <span>₩{reservationInfo?.serviceFee?.toLocaleString() || '0'}</span>
+                                </ReservePriceRow>
+                                <hr style={{margin: '12px 0', border: 'none', borderTop: '1px solid #eee'}}/>
+                                <ReserveTotal>
+                                    <span>총액</span>
+                                    <span>₩{reservationInfo?.finalPrice?.toLocaleString() || '0'}</span>
+                                </ReserveTotal>
+                            </>
                             {reserveError && <div style={{color: 'red', marginTop: '8px'}}>예약 정보를 불러올 수 없습니다.</div>}
                         </ReserveForm>
                     </RightCol>
