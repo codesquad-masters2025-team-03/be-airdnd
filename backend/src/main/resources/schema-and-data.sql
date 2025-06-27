@@ -141,6 +141,15 @@ CREATE TABLE message (
                          FOREIGN KEY (sender_id) REFERENCES user(id)
 );
 
+CREATE TABLE payment_method (
+                                id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                                user_id BIGINT,
+                                method_type VARCHAR(50) NOT NULL,
+                                last_four_digits VARCHAR(255),
+                                is_default BOOLEAN,
+                                FOREIGN KEY (user_id) REFERENCES user(id)
+);
+
 
 -- HOST 유저 10명 비밀번호는 password에 id값 더한 것 -> id가 1번인 유저는 비밀번호 평문이 password1
 INSERT INTO user (email, username, login_id, password, role, phone, profile_url, created_at) VALUES
